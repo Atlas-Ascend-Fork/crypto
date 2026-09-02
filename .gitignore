@@ -1,0 +1,45 @@
+# 构建产物
+build/
+out/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+install_manifest.txt
+compile_commands.json
+
+# 编译中间件与库
+*.o
+*.a
+*.so
+*.so.*
+*.d
+*.lo
+*.la
+
+# Ascend 算子编译产物
+kernel_meta*/
+fusion_result.json
+*.om
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 测试向量：由 scripts/ 下脚本获取，不入库
+tests/vectors/
+
+# 日志与临时文件
+*.log
+*.tmp
+
+# 编辑器与系统
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
