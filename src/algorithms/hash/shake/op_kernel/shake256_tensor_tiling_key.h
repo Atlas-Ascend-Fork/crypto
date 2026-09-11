@@ -1,0 +1,3 @@
+#pragma once
+
+#define SHAKE256_TENSOR_TILING_KEY_DEFAULT 0UL

@@ -1,0 +1,6 @@
+add_executable(example_keccak_f1600_tensor test_aclnn_keccak_f1600_tensor.cpp)
+target_link_libraries(example_keccak_f1600_tensor PRIVATE keccak_runtime)
+cann_warnings(example_keccak_f1600_tensor)
+if(CANN_BUILD_TESTS)
+    cann_device_test(example_keccak_f1600_tensor keccak)
+endif()

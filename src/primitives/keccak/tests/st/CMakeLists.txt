@@ -1,0 +1,4 @@
+add_executable(keccak_device_test test_aclnn_keccak.cpp)
+target_link_libraries(keccak_device_test PRIVATE keccak_runtime cann_crypto_keccak_reference)
+cann_warnings(keccak_device_test)
+cann_device_test(keccak_device_test keccak)

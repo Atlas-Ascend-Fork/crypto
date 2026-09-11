@@ -1,0 +1,8 @@
+add_executable(example_shake_tensor test_aclnn_shake_tensor.cpp)
+target_include_directories(example_shake_tensor PRIVATE "${KECCAK_DIR}/examples")
+target_link_libraries(example_shake_tensor PRIVATE shake_runtime)
+cann_warnings(example_shake_tensor)
+if(CANN_BUILD_TESTS)
+    cann_device_test(example_shake_tensor shake 128)
+    cann_device_test(example_shake_tensor shake 256)
+endif()
