@@ -1,0 +1,1 @@
+ascend_ops_add_current_op(OP_TARGET)
