@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.16)
+project(cann_crypto LANGUAGES CXX)
+
+include(CTest)
+option(CRYPTO_NTT_CANN_ADAPTER "Build the optional CANN Ntt registration/tiling adapter" OFF)
+option(CRYPTO_NTT_DEVICE "Build the NTT device package using the installed CANN SDK" OFF)
+option(CRYPTO_NTT_SIMULATOR "Link the device example against Camodel" OFF)
+if(CRYPTO_NTT_DEVICE)
+    enable_language(C)
+endif()
+set(ASCEND_CANN_PACKAGE_PATH "" CACHE PATH "CANN SDK root for optional adapter compilation")
+add_subdirectory(src/math/ntt)

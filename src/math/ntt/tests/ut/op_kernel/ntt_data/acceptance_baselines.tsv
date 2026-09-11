@@ -1,0 +1,5 @@
+# profile	backend	n	q	cycles_per_poly	statistic	scope	source_revision
+ml-kem	liboqs-avx2	256	3329	229.887109	p50	batch256-l1-evicted-perf-cycles	8979276ad1eb008215aa78a3c56b3649f604bbb1
+ml-kem	fasterntt-avx2-reference	256	0	3117.000000	median	fasterntt-rq256-four-rns-normalized	95179634d2edbd7ae9e1ad3c39b8609bf74d20a6
+ml-dsa	liboqs-avx2	256	8380417	844.494922	p50	batch256-l1-evicted-perf-cycles	8979276ad1eb008215aa78a3c56b3649f604bbb1
+ml-dsa	fasterntt-avx2-reference	256	0	3117.000000	median	fasterntt-rq256-four-rns-normalized	95179634d2edbd7ae9e1ad3c39b8609bf74d20a6

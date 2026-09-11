@@ -1,0 +1,118 @@
+{
+  "op_type": "Ntt",
+  "op_list": [
+    {
+      "bin_filename": "Ntt_int32_nd",
+      "inputs": [
+        {
+          "name": "x",
+          "index": 0,
+          "dtype": "int32",
+          "format": "ND",
+          "paramType": "required",
+          "shape": [
+            -2
+          ],
+          "format_match_mode": "FormatAgnostic"
+        },
+        {
+          "name": "matrix_phase1",
+          "index": 1,
+          "dtype": "int8",
+          "format": "ND",
+          "paramType": "required",
+          "shape": [
+            -2
+          ],
+          "format_match_mode": "FormatAgnostic"
+        },
+        {
+          "name": "matrix_phase2",
+          "index": 2,
+          "dtype": "int8",
+          "format": "ND",
+          "paramType": "required",
+          "shape": [
+            -2
+          ],
+          "format_match_mode": "FormatAgnostic"
+        },
+        {
+          "name": "twiddle_phase12",
+          "index": 3,
+          "dtype": "int32",
+          "format": "ND",
+          "paramType": "required",
+          "shape": [
+            -2
+          ],
+          "format_match_mode": "FormatAgnostic"
+        }
+      ],
+      "attrs": [
+        {
+          "name": "block_dim",
+          "dtype": "int",
+          "value": 4
+        },
+        {
+          "name": "sub_bench",
+          "dtype": "int",
+          "value": 16
+        },
+        {
+          "name": "channel_block",
+          "dtype": "int",
+          "value": 1
+        },
+        {
+          "name": "q",
+          "dtype": "int",
+          "value": 8380417
+        },
+        {
+          "name": "g",
+          "dtype": "int",
+          "value": 10
+        },
+        {
+          "name": "logp",
+          "dtype": "int",
+          "value": 0
+        },
+        {
+          "name": "rns_channels",
+          "dtype": "int",
+          "value": 1
+        },
+        {
+          "name": "q_list",
+          "dtype": "list_int",
+          "value": [
+            8380417
+          ]
+        },
+        {
+          "name": "g_list",
+          "dtype": "list_int",
+          "value": [
+            10
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "name": "y",
+          "index": 0,
+          "dtype": "int32",
+          "format": "ND",
+          "paramType": "required",
+          "shape": [
+            -2
+          ],
+          "format_match_mode": "FormatAgnostic"
+        }
+      ]
+    }
+  ]
+}

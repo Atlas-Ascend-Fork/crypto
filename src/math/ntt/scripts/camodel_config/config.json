@@ -1,0 +1,27 @@
+{
+    "LOG": {
+        "rotating_file_size": 1048576,
+        "rotating_file_number": 1,
+        "flush_level": 3,
+        "core_enable_mask": ["0x0"],
+        "disable_list": [
+            "instr_log",
+            "instr_popped_log",
+            "icache_log",
+            "dcache_log",
+            "ccu_log",
+            "mte_log",
+            "hwts_log",
+            "cube_log",
+            "vec_log"
+        ]
+    },
+    "L2CACHE": {
+        "cache_enable": 1,
+        "cache_set_size": 24,
+        "cache_way_size": 16384,
+        "cache_line_size": 512,
+        "cache_read_latency": 241,
+        "cache_write_latency": 96
+    }
+}
