@@ -1,8 +1,25 @@
 # 测试
 
-| 目录        | 运行环境     | 内容                                    | 触发时机 |
-| ----------- | ------------ | --------------------------------------- | -------- |
-| `host/`   | 无需 NPU     | KAT、差分测试、ABI 兼容、负面用例、fuzz | 每个 PR  |
-| `device/` | 需要昇腾设备 | SoC × 分发路径矩阵、性能回归           | 每日构建 |
+目录结构与 `ops-math`、`ops-nn`、`ops-transformer` 保持一致：仓库级用例放在
+`ut/` 下，按算子代码层划分；组件自带用例放在各组件的 `tests/ut/` 下，采用
+相同的层次划分。
+
+| 目录 | 内容 | 是否需要昇腾设备 |
+| --- | --- | --- |
+| `ut/common/` | 跨算法的公共用例：KAT 向量比对、与 `reference/` 的差分测试、ABI 兼容性检查 | 否 |
+| `ut/op_api/` | aclnn 接口层 | 否 |
+| `ut/op_host/` | tiling、infershape 等 Host 侧逻辑 | 否 |
+| `ut/op_kernel/` | Ascend C 核函数 | 是 |
+
+运行方式：
+
+```bash
+bash build.sh -u                # 全部
+bash build.sh -u --ophost       # 仅 op_host 层
+bash build.sh -u --opkernel     # 仅 op_kernel 层
+```
+
+门禁单次执行限时 15 分钟，因此只运行不需要设备的层次；`op_kernel` 层的完整
+矩阵与性能回归放入每日构建。
 
 测试向量由 `../scripts/` 下的脚本获取并校验，不随仓库分发。
