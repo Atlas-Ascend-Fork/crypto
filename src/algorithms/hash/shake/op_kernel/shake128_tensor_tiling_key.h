@@ -1,3 +1,0 @@
-#pragma once
-
-#define SHAKE128_TENSOR_TILING_KEY_DEFAULT 0UL
