@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--    Copyright (c) 2026 Huawei Technologies Co., Ltd.
+        This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+        CANN Open Software License Agreement Version 2.0 (the "License").
+        Please refer to the License for details. You may not use this file except in compliance with the License.
+        THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+        INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+        See LICENSE in the root of the software repository for the full text of the License.
+-->
+
+<configuration>
+    <oatconfig>
+        <licensefile>LICENSE</licensefile>
+        <policylist>
+            <policy name="projectPolicy" desc="">
+                <policyitem type="license" name="CANN-2.0" path=".*" desc="Project license, CANN Open Software License Agreement Version 2.0"/>
+                <policyitem type="copyright" name="Huawei Technologies Co., Ltd." path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="Developed by Huawei"/>
+            </policy>
+        </policylist>
+        <filefilterlist>
+            <filefilter name="defaultFilter" desc="Files not to check">
+            </filefilter>
+            <filefilter name="defaultPolicyFilter" desc="Filters for compatibility，license header policies">
+                <filteritem type="filename" name="*.yaml|*.yml" desc="YAML configuration files, no license header required"/>
+                <filteritem type="filename" name="requirements.txt" desc="Python dependency list, no license header required"/>
+                <filteritem type="filename" name="LICENSE" desc="Full text of the project license itself, not a source file"/>
+            </filefilter>
+            <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
+                <filteritem type="filename" name="*.yaml|*.yml" desc="YAML configuration files, no copyright header required"/>
+                <filteritem type="filename" name="requirements.txt" desc="Python dependency list, no copyright header required"/>
+                <filteritem type="filename" name="Third_Party_Open_Source_Software_Notice" desc="Lists copyright notices of third-party components by design"/>
+            </filefilter>
+            <filefilter name="licenseFileNamePolicyFilter" desc="Filters for LICENSE file policies">
+            </filefilter>
+            <filefilter name="readmeFileNamePolicyFilter" desc="Filters for README file policies">
+            </filefilter>
+            <filefilter name="readmeOpenSourcefileNamePolicyFilter" desc="Filters for README.OpenSource file policies">
+            </filefilter>
+            <filefilter name="binaryFileTypePolicyFilter" desc="Filters for binary file policies">
+            </filefilter>
+        </filefilterlist>
+        <licensematcherlist>
+            <licensematcher name="CANN-2.0" desc="If the scanning result is InvalidLicense, you can define matching rules here. Note that quotation marks must be escaped.">
+                <licensetext name="
+                    This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+                    CANN Open Software License Agreement Version 2.0 (the &quot;License&quot;).
+                    Please refer to the License for details. You may not use this file except in compliance with the License.
+                    THIS SOFTWARE IS PROVIDED ON AN &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+                    INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+                    See LICENSE in the root of the software repository for the full text of the License.
+                 " desc=""/>
+            </licensematcher>
+        </licensematcherlist>
+    </oatconfig>
+</configuration>
