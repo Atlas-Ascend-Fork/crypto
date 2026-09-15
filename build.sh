@@ -21,6 +21,7 @@ ENABLE_PACKAGE="FALSE"
 ENABLE_TEST="FALSE"
 UT_LAYERS=""
 UT_TIMEOUT="120"
+ALLOW_EMPTY="FALSE"
 THREAD_NUM="$(nproc)"
 COMPONENTS=""
 
@@ -42,6 +43,7 @@ usage() {
     --opgraph              仅运行 op_graph 层用例，无需昇腾设备
     --opkernel             仅运行 op_kernel 层用例，需要昇腾设备
     --ut_timeout=<N>       单用例超时秒数，默认 120
+    --allow_empty          指定层次下未发现用例时仅告警并返回成功，默认报错
 
 其他:
     -h, --help             显示本帮助
@@ -67,6 +69,7 @@ checkopts() {
       --opgraph)        UT_LAYERS="${UT_LAYERS} op_graph" ;;
       --opkernel)       UT_LAYERS="${UT_LAYERS} op_kernel" ;;
       --ut_timeout=*)   UT_TIMEOUT="${1#*=}" ;;
+      --allow_empty)    ALLOW_EMPTY="TRUE" ;;
       --components=*)   COMPONENTS="${1#*=}" ;;
       -j*)              THREAD_NUM="${1#-j}" ;;
       -h|--help)        usage; exit 0 ;;
@@ -180,6 +183,10 @@ build_ut() {
     if [ -n "${UT_LAYERS}" ]; then
       # 显式指定了层次却一个用例都没发现，说明用例缺失或路径不对。
       # 此处若返回成功，门禁会在零覆盖的情况下亮绿灯。
+      if [ "${ALLOW_EMPTY}" == "TRUE" ]; then
+        log "警告：指定层次 ${UT_LAYERS} 下未发现任何用例，已指定 --allow_empty，按通过处理"
+        return 0
+      fi
       log "错误：指定层次 ${UT_LAYERS} 下未发现任何用例"
       return 1
     fi

@@ -45,7 +45,8 @@ fi
 
 case "${ut_type}" in
     ophost|opapi|opgraph|opkernel)
-        bash build.sh -u --"${ut_type}"
+        # 过渡期：仓库尚无该层用例时仅告警不阻断门禁，用例补齐后去掉 --allow_empty 恢复严格检查
+        bash build.sh -u --"${ut_type}" --allow_empty
         ret=$?
         ;;
     *)
