@@ -170,6 +170,23 @@ build_ut() {
   # 组件自带用例：src/<组件>/tests/ut/<layer>
   for c in $(list_components); do
     local base="${SCRIPT_DIR}/src/${c}/tests"
+    # CMake components may keep their device-independent tests in tests/host.
+    # Configure the component and run its generated CTest suite from the build tree.
+    if echo "${layers}" | grep -qw op_host && has_tests "${base}/host" \
+        && [ -f "${SCRIPT_DIR}/src/${c}/CMakeLists.txt" ]; then
+      local component_dir="${SCRIPT_DIR}/src/${c}"
+      ran=$((ran + 1))
+      log "测试 ${c}/host（CMake）"
+      if ! (
+        cmake -S "${component_dir}" -B "${component_dir}/build" \
+          -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON &&
+        cmake --build "${component_dir}/build" -j "${THREAD_NUM}" &&
+        ctest --test-dir "${component_dir}/build" --output-on-failure \
+          --no-tests=error --timeout "${UT_TIMEOUT}"
+      ); then
+        failed+=("${c}/host")
+      fi
+    fi
     for l in ${layers}; do
       run_layer "${base}/ut/${l}" "${c}/ut/${l}"
     done

@@ -1,0 +1,152 @@
+{
+  "cases": [
+    {
+      "generator": "generate_mlkem",
+      "operation": "ntt",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "903036620184074d648727d52515f94d1df36065bd99b9455ddb5bf30df89192"
+    },
+    {
+      "generator": "generate_mlkem",
+      "operation": "intt",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "7e443d02621a8a96b930e4dba10a4f269ea15ed558408650ffe5fe79504a9a81"
+    },
+    {
+      "generator": "generate_mlkem",
+      "operation": "roundtrip",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "05d7d8cfeb19dc3d025e18e0596ed70d9fe69f35df6f24d074c7e1ca5cd39041"
+    },
+    {
+      "generator": "generate_mlkem",
+      "operation": "basemul",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "0efa97806dd2f8c586bb555ca2b03428c66fc9255e875bf929e65891d9d95bb5"
+    },
+    {
+      "generator": "generate_mlkem",
+      "operation": "matvec",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "0c43462e9e9b52469788375ffe4af4ef2ba863a7c35a0ab1b6f453d35b345414"
+    },
+    {
+      "generator": "generate_mlkem",
+      "operation": "matvec3",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "0bc681aab796ed9dc18d0d470806bcadcb16cf58266049f9c4ed53a9f2df88f9"
+    },
+    {
+      "generator": "generate_mldsa",
+      "operation": "ntt",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "2d39602bee6b1288072f7166a93f9c8213cf50bd5d32d6dd13e69782730a20c0"
+    },
+    {
+      "generator": "generate_mldsa",
+      "operation": "intt",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "f07b3d62df7a3dc0bcae3f8794001a8a0ce238a33b9b8cc7bd349dbd92672e35"
+    },
+    {
+      "generator": "generate_mldsa",
+      "operation": "roundtrip",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "89cb88eb26895120cde80cfbe5a74b1eb4e361c084682939e7f25c7c0a790e7f"
+    },
+    {
+      "generator": "generate_mldsa",
+      "operation": "pointwise",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "8789b018023146cc218c8f90f3dcfa936e6aef02c14fcf994c340596a5425933"
+    },
+    {
+      "generator": "generate_mldsa",
+      "operation": "matvec",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "8effb795b096607b710120038b9158a6481057ea301a86dc878f198ed16718c4"
+    },
+    {
+      "generator": "generate_keccak",
+      "operation": "shake128",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "fff9cafd20fc18ffe69e75153dd2d07eebf682e9ace346407e10bd9ddce61fcf"
+    },
+    {
+      "generator": "generate_keccak",
+      "operation": "shake256",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "f29fe33af1bc4e1be772944c85b4a1e8086127a62981063eac8528ef3940400a"
+    },
+    {
+      "generator": "generate_keccak",
+      "operation": "sha3-256",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "391d7f806fc3242ea65a0224d472cde7caedc8a551065541857c76551c92ec82"
+    },
+    {
+      "generator": "generate_keccak",
+      "operation": "sha3-512",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "751c73962f29ea841b231b9684c1600592427546494d1e101dfac8ceb0a2d09a"
+    },
+    {
+      "generator": "generate_sampling",
+      "operation": "cbd-eta2",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "d193f760b9babb05e7104c7b01d224387994d7a63d138004910101109bb9308d"
+    },
+    {
+      "generator": "generate_sampling",
+      "operation": "cbd-eta3",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "4c3cbb6bca0025b8db7a4fed97fc916454e9ed490e55d9ccb33c6a0e0f194de5"
+    },
+    {
+      "generator": "generate_sampling",
+      "operation": "rej-uniform",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "b0b74a738538bf884a365915cb305eee0453adc20651704ae741e73543695b6c"
+    },
+    {
+      "generator": "generate_slhdsa_hash",
+      "operation": "wots-chain",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "91ed49564d44e8f29061c8c5fab6ff3aff019b3743afedc58c0b1a0eb42c9a55"
+    },
+    {
+      "generator": "generate_slhdsa_hash",
+      "operation": "fors-leaf",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "0daea68c0e098095ed373e8a3f6f90a08bc6b3a8505ee6e9a2675a2ac0518eb8"
+    },
+    {
+      "generator": "generate_slhdsa_hash",
+      "operation": "merkle-node",
+      "batch": 2,
+      "seed": 910203,
+      "sha256": "1326cc9c217909933791096ee4c67ffb3ba6792098a6f0a4062332f3198d7194"
+    }
+  ],
+  "mlkem_matrix_sha256": "de8a6eeb7e757b3ca0af41477f4a842afeef72c8614008996551c6cdeccbc925"
+}
