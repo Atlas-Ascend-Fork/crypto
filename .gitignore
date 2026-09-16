@@ -37,6 +37,9 @@ tests/vectors/
 *.log
 *.tmp
 
+# pre-commit 的 OAT 检查报告
+oat_reports/
+
 # 编辑器与系统
 .vscode/
 .idea/
