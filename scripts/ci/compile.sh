@@ -10,7 +10,7 @@
 # ----------------------------------------------------------------------------
 #
 # CI 编译脚本。compile_action.yml 在检出的代码根目录下
-# 以 BuildAccelerate bash scripts/ci/compile.sh 执行。
+# 以 bash scripts/ci/compile.sh 执行。
 # 本脚本只负责准备 CI 环境并调用仓库根目录的 build.sh，构建逻辑不在此处维护。
 # 放在 .gitcode 之外便于 SIG 自行评审，稳定后迁移到 .gitcode/scripts/。
 #
