@@ -24,7 +24,7 @@ void Check(bool condition, int line)
         ++failures;
     }
 }
-}
+} // namespace
 #define CHECK(value) Check((value), __LINE__)
 
 int main()

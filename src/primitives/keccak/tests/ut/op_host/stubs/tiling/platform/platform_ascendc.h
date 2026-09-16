@@ -18,8 +18,9 @@ class PlatformAscendC {
 public:
     explicit PlatformAscendC(gert::TestPlatform* platform) : platform_(platform) {}
     uint32_t GetCoreNumAiv() const { return platform_->coreCount; }
+
 private:
     gert::TestPlatform* platform_;
 };
-}
+} // namespace platform_ascendc
 #endif

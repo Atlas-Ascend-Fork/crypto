@@ -15,10 +15,7 @@
 
 namespace cann_crypto::shake {
 // 内部请求和调度配置不依赖 CANN 类型。
-enum class Algorithm : uint32_t {
-    SHAKE128 = 128U,
-    SHAKE256 = 256U
-};
+enum class Algorithm : uint32_t { SHAKE128 = 128U, SHAKE256 = 256U };
 
 struct Request {
     Algorithm algorithm;
@@ -36,6 +33,6 @@ struct LaunchConfig {
     uint32_t blockDim;
 };
 
-bool BuildLaunchConfig(const Request &request, uint32_t aivCoreCount, LaunchConfig &config);
+bool BuildLaunchConfig(const Request& request, uint32_t aivCoreCount, LaunchConfig& config);
 } // namespace cann_crypto::shake
 #endif

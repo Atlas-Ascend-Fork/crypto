@@ -51,8 +51,7 @@ private:
     __aicore__ inline GM_ADDR ParallelBatPartialMatrix(int32_t matrixId) const;
 
     __aicore__ inline void ProcessParallelDirectBat(
-        __gm__ int32_t* srcBase, __gm__ int32_t* dstBase,
-        GM_ADDR matrixBase);
+        __gm__ int32_t* srcBase, __gm__ int32_t* dstBase, GM_ADDR matrixBase);
 
     __aicore__ inline int32_t ParallelPqcTileCount() const;
 
@@ -65,8 +64,7 @@ private:
     __aicore__ inline void RunPqcCubePipeline(GM_ADDR matrixBase, int32_t roundCount, bool kem);
 
     __aicore__ inline void ProcessPqcTilePipeline(
-        __gm__ int32_t* srcBase, __gm__ int32_t* dstBase,
-        GM_ADDR matrixBase, bool kem);
+        __gm__ int32_t* srcBase, __gm__ int32_t* dstBase, GM_ADDR matrixBase, bool kem);
 
     __aicore__ inline void PqcTileMmad(GM_ADDR matrix, int32_t tile, bool kem);
 
@@ -74,31 +72,24 @@ private:
 
     __aicore__ inline void PqcTileMerge(__gm__ int32_t* dst, int32_t tile, bool kem);
 
-    __aicore__ inline void ProcessKemTilePipeline(
-        __gm__ int32_t* srcBase, __gm__ int32_t* dstBase, GM_ADDR matrixBase);
+    __aicore__ inline void ProcessKemTilePipeline(__gm__ int32_t* srcBase, __gm__ int32_t* dstBase, GM_ADDR matrixBase);
 
-    __aicore__ inline void ProcessDsaTilePipeline(
-        __gm__ int32_t* srcBase, __gm__ int32_t* dstBase, GM_ADDR matrixBase);
+    __aicore__ inline void ProcessDsaTilePipeline(__gm__ int32_t* srcBase, __gm__ int32_t* dstBase, GM_ADDR matrixBase);
 
     __aicore__ inline void StoreKemParityDigits(
         LocalTensor<int8_t>& digit0, LocalTensor<int8_t>& digit1, int32_t polyStart);
 
-    __aicore__ inline void ParallelKemParitySplit(
-        __gm__ int32_t* srcBase, int32_t tileId);
+    __aicore__ inline void ParallelKemParitySplit(__gm__ int32_t* srcBase, int32_t tileId);
 
-    __aicore__ inline void ParallelKemParityMmad(
-        GM_ADDR matrixBase, int32_t tileId);
+    __aicore__ inline void ParallelKemParityMmad(GM_ADDR matrixBase, int32_t tileId);
 
-    __aicore__ inline void ParallelDsaTileMmad(
-        GM_ADDR matrixBase, int32_t tileId);
+    __aicore__ inline void ParallelDsaTileMmad(GM_ADDR matrixBase, int32_t tileId);
 
-    __aicore__ inline void ParallelKemParityMerge(
-        __gm__ int32_t* dstBase, int32_t tileId);
+    __aicore__ inline void ParallelKemParityMerge(__gm__ int32_t* dstBase, int32_t tileId);
 
     __aicore__ inline PqcPanel MakePqcPanel(int32_t forcedTile) const;
 
-    __aicore__ inline void LoadPqcInput(
-        NttSplitBuffers& buffers, __gm__ int32_t* srcBase, const PqcPanel& panel);
+    __aicore__ inline void LoadPqcInput(NttSplitBuffers& buffers, __gm__ int32_t* srcBase, const PqcPanel& panel);
 
     __aicore__ inline void ComputePqcSplit(NttSplitBuffers& buffers, int32_t tileLength);
 
@@ -115,31 +106,26 @@ private:
     __aicore__ inline void ParallelBatMmad(GM_ADDR matrixBase);
 
     __aicore__ inline void ParallelBatLoadDigitSum(
-        LocalTensor<int32_t>& dst, LocalTensor<int32_t>& tmp,
-        int32_t outDigit, int32_t polyStart, int32_t coeffStart,
+        LocalTensor<int32_t>& dst, LocalTensor<int32_t>& tmp, int32_t outDigit, int32_t polyStart, int32_t coeffStart,
         int32_t panelWidth, int32_t n);
 
     __aicore__ inline void ParallelBatReduce(
-        LocalTensor<int32_t>& value, LocalTensor<int32_t>& tmp0,
-        LocalTensor<int32_t>& tmp1, int32_t count, bool fastFold);
+        LocalTensor<int32_t>& value, LocalTensor<int32_t>& tmp0, LocalTensor<int32_t>& tmp1, int32_t count,
+        bool fastFold);
 
     __aicore__ inline void ParallelBatReduceSignedDsa(
-        LocalTensor<int32_t>& value, LocalTensor<int32_t>& tmp0,
-        LocalTensor<int32_t>& tmp1, int32_t count);
+        LocalTensor<int32_t>& value, LocalTensor<int32_t>& tmp0, LocalTensor<int32_t>& tmp1, int32_t count);
 
     __aicore__ inline void ParallelBatMulBase256Dsa(
-        LocalTensor<int32_t>& value, LocalTensor<int32_t>& tmp0,
-        LocalTensor<int32_t>& tmp1, int32_t count);
+        LocalTensor<int32_t>& value, LocalTensor<int32_t>& tmp0, LocalTensor<int32_t>& tmp1, int32_t count);
 
     __aicore__ inline void ParallelBatMergeStepDsa(
-        LocalTensor<int32_t>& value, LocalTensor<int32_t>& addend,
-        LocalTensor<int32_t>& tmp0, LocalTensor<int32_t>& tmp1,
-        int32_t count);
+        LocalTensor<int32_t>& value, LocalTensor<int32_t>& addend, LocalTensor<int32_t>& tmp0,
+        LocalTensor<int32_t>& tmp1, int32_t count);
 
     __aicore__ inline void ParallelBatMergeStep(
-        LocalTensor<int32_t>& value, LocalTensor<int32_t>& addend,
-        LocalTensor<int32_t>& tmp0, LocalTensor<int32_t>& tmp1,
-        int32_t count, bool fastFold);
+        LocalTensor<int32_t>& value, LocalTensor<int32_t>& addend, LocalTensor<int32_t>& tmp0,
+        LocalTensor<int32_t>& tmp1, int32_t count, bool fastFold);
 
     __aicore__ inline void ComputePqcMerge(NttVectorBuffers<7>& buffers, const PqcPanel& panel);
 
@@ -202,21 +188,17 @@ private:
 
     __aicore__ inline void LoadRowPairTwiddles(RowPairBuffers& b, int32_t rowStart);
 
-    __aicore__ inline void ProcessRowPairHalf(
-        RowPairBuffers& b, size_t polyOffset, int32_t rowStart, int32_t half);
+    __aicore__ inline void ProcessRowPairHalf(RowPairBuffers& b, size_t polyOffset, int32_t rowStart, int32_t half);
 
-    __aicore__ inline void ProcessRowPairPolynomial(
-        RowPairBuffers& b, int32_t poly, int32_t rowStart);
+    __aicore__ inline void ProcessRowPairPolynomial(RowPairBuffers& b, int32_t poly, int32_t rowStart);
 
     __aicore__ inline void PreparePhase2Input64x64RowPairInt10();
 
     __aicore__ inline PanelWork MakePanelWork() const;
 
-    __aicore__ inline void LoadPhase2Panel(
-        LocalTensor<int32_t>& dst, __gm__ int32_t* base, const PanelRect& rect);
+    __aicore__ inline void LoadPhase2Panel(LocalTensor<int32_t>& dst, __gm__ int32_t* base, const PanelRect& rect);
 
-    __aicore__ inline void StorePhase2Panel(
-        LocalTensor<int32_t>& src, size_t polyOffset, const PanelRect& rect);
+    __aicore__ inline void StorePhase2Panel(LocalTensor<int32_t>& src, size_t polyOffset, const PanelRect& rect);
 
     __aicore__ inline void SplitPhase2Twiddles(Phase2Buffers& b);
 

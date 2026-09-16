@@ -33,4 +33,4 @@ static ge::graphStatus InferShape(gert::InferShapeContext* context)
 
 IMPL_OP_INFERSHAPE(KeccakF1600Tensor).InferShape(InferShape);
 
-}  // namespace ops
+} // namespace ops

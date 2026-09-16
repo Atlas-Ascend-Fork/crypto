@@ -31,12 +31,10 @@ public:
             .Format({ge::FORMAT_ND})
             .UnknownShapeFormat({ge::FORMAT_ND});
 
-        this->AICore()
-            .AddConfig("ascend910b")
-            .AddConfig("ascend910_93");
+        this->AICore().AddConfig("ascend910b").AddConfig("ascend910_93");
     }
 };
 
-}  // namespace ops
+} // namespace ops
 
 #endif

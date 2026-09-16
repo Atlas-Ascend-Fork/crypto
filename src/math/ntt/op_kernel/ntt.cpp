@@ -12,8 +12,8 @@
 #include "ntt_device.hpp"
 
 extern "C" __global__ __aicore__ void ntt(
-    GM_ADDR x, GM_ADDR matrixPhase1, GM_ADDR matrixPhase2,
-    GM_ADDR twiddlePhase12, GM_ADDR z, GM_ADDR workspace, GM_ADDR tiling)
+    GM_ADDR x, GM_ADDR matrixPhase1, GM_ADDR matrixPhase2, GM_ADDR twiddlePhase12, GM_ADDR z, GM_ADDR workspace,
+    GM_ADDR tiling)
 {
     REGISTER_TILING_DEFAULT(NttTilingData);
     GET_TILING_DATA_WITH_STRUCT(NttTilingData, tilingData, tiling);
@@ -26,7 +26,6 @@ extern "C" __global__ __aicore__ void ntt(
         return;
     }
     CubeNtt op;
-    op.Init(x, z, userWorkspace, matrixPhase1, matrixPhase2,
-        twiddlePhase12, tilingData);
+    op.Init(x, z, userWorkspace, matrixPhase1, matrixPhase2, twiddlePhase12, tilingData);
     op.Process();
 }

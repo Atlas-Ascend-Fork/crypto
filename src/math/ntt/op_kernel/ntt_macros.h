@@ -43,10 +43,10 @@ inline bool ReadCpuTiling(T& destination, const void* source)
 
 #if defined(ASCENDC_CPU_DEBUG) && !defined(GET_TILING_DATA_WITH_STRUCT)
 #define GET_TILING_DATA_WITH_STRUCT(tilingStruct, tilingData, tilingArg) \
-    tilingStruct tilingData{};                                             \
-    if (!ReadCpuTiling(tilingData, tilingArg)) { \
-        AscendC::printf("invalid NTT tiling data\n"); \
-        return; \
+    tilingStruct tilingData{};                                           \
+    if (!ReadCpuTiling(tilingData, tilingArg)) {                         \
+        AscendC::printf("invalid NTT tiling data\n");                    \
+        return;                                                          \
     }
 #endif
 
@@ -81,29 +81,30 @@ using t32 = AscendC::LocalTensor<int32_t>;
         }                                                                               \
         AscendC::printf("\n");                                                          \
     }
-#define NTT_CHECK_DIFF(x, y, len, read_value, action)                                           \
-    do {                                                                                     \
-        int32_t differences = 0;                                                             \
-        int32_t firstIndex = -1;                                                             \
-        int64_t firstActual = 0;                                                             \
-        int64_t firstExpected = 0;                                                           \
-        for (int32_t i = 0; i < (len); ++i) {                                                 \
-            const auto actual = (read_value);                                                \
-            if (actual != (y)[i]) {                                                          \
-                if (firstIndex < 0) {                                                        \
-                    firstIndex = i;                                                          \
-                    firstActual = actual;                                                    \
-                    firstExpected = (y)[i];                                                  \
-                }                                                                           \
-                ++differences;                                                              \
-            }                                                                               \
-        }                                                                                   \
-        if (differences != 0) {                                                              \
-            AscendC::printf("%d diff between %s and %s, first=(%lld,%lld at %d), %s:%d\n",    \
-                differences, #x, #y, static_cast<long long>(firstActual),                     \
-                static_cast<long long>(firstExpected), firstIndex, __FILE__, __LINE__);       \
-            action;                                                                         \
-        }                                                                                   \
+#define NTT_CHECK_DIFF(x, y, len, read_value, action)                                                             \
+    do {                                                                                                          \
+        int32_t differences = 0;                                                                                  \
+        int32_t firstIndex = -1;                                                                                  \
+        int64_t firstActual = 0;                                                                                  \
+        int64_t firstExpected = 0;                                                                                \
+        for (int32_t i = 0; i < (len); ++i) {                                                                     \
+            const auto actual = (read_value);                                                                     \
+            if (actual != (y)[i]) {                                                                               \
+                if (firstIndex < 0) {                                                                             \
+                    firstIndex = i;                                                                               \
+                    firstActual = actual;                                                                         \
+                    firstExpected = (y)[i];                                                                       \
+                }                                                                                                 \
+                ++differences;                                                                                    \
+            }                                                                                                     \
+        }                                                                                                         \
+        if (differences != 0) {                                                                                   \
+            AscendC::printf(                                                                                      \
+                "%d diff between %s and %s, first=(%lld,%lld at %d), %s:%d\n", differences, #x, #y,               \
+                static_cast<long long>(firstActual), static_cast<long long>(firstExpected), firstIndex, __FILE__, \
+                __LINE__);                                                                                        \
+            action;                                                                                               \
+        }                                                                                                         \
     } while (0)
 
 #define __check_diff_vec(x, y, len) NTT_CHECK_DIFF(x, y, len, (x)[i], (void)0)

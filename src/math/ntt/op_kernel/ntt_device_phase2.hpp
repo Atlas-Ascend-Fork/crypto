@@ -69,30 +69,27 @@ __aicore__ inline void CubeNtt::LoadRowPairTwiddles(RowPairBuffers& b, int32_t r
     }
 }
 
-__aicore__ inline void CubeNtt::ProcessRowPairHalf(
-    RowPairBuffers& b, size_t polyOffset, int32_t rowStart, int32_t half)
+__aicore__ inline void CubeNtt::ProcessRowPairHalf(RowPairBuffers& b, size_t polyOffset, int32_t rowStart, int32_t half)
 {
     constexpr int32_t count = 32 * 32;
     const int32_t digit = 4 + 3 * half;
     AscendC::Gather(b.input, b.fullInput, b.select[half], 0U, static_cast<uint32_t>(count));
     AscendC::PipeBarrier<PIPE_ALL>();
     MulModVecVecInt10SchoolbookPresplitRhs(
-        b.product, b.input, activeQ_, activeFold28_, b.temp[digit], b.temp[digit + 1], b.temp[digit + 2],
-        b.temp[0], b.temp[1], b.temp[2], b.temp[3], b.temp[10], b.temp[11], b.temp[12], b.temp[11],
-        activeUseInt10TwoWrap_, activeUseInt10OneWrap_, count);
+        b.product, b.input, activeQ_, activeFold28_, b.temp[digit], b.temp[digit + 1], b.temp[digit + 2], b.temp[0],
+        b.temp[1], b.temp[2], b.temp[3], b.temp[10], b.temp[11], b.temp[12], b.temp[11], activeUseInt10TwoWrap_,
+        activeUseInt10OneWrap_, count);
     AscendC::PipeBarrier<PIPE_ALL>();
     AscendC::Gather(b.output, b.product, b.transpose, 0U, static_cast<uint32_t>(count));
     AscendC::PipeBarrier<PIPE_ALL>();
     for (int32_t j = 0; j < 32; ++j) {
         AscendC::GlobalTensor<int32_t> dst;
-        dst.SetGlobalBuffer(
-            workPhase2Base_ + polyOffset + static_cast<size_t>(half * 32 + j) * 64 + rowStart, 32);
+        dst.SetGlobalBuffer(workPhase2Base_ + polyOffset + static_cast<size_t>(half * 32 + j) * 64 + rowStart, 32);
         AscendC::DataCopy(dst, b.output[j * 32], 32);
     }
 }
 
-__aicore__ inline void CubeNtt::ProcessRowPairPolynomial(
-    RowPairBuffers& b, int32_t poly, int32_t rowStart)
+__aicore__ inline void CubeNtt::ProcessRowPairPolynomial(RowPairBuffers& b, int32_t poly, int32_t rowStart)
 {
     const size_t offset = static_cast<size_t>(poly) * 64 * 64;
     AscendC::GlobalTensor<int32_t> src;
@@ -137,8 +134,7 @@ __aicore__ inline PanelWork CubeNtt::MakePanelWork() const
     return work;
 }
 
-__aicore__ inline void CubeNtt::LoadPhase2Panel(
-    LocalTensor<int32_t>& dst, __gm__ int32_t* base, const PanelRect& rect)
+__aicore__ inline void CubeNtt::LoadPhase2Panel(LocalTensor<int32_t>& dst, __gm__ int32_t* base, const PanelRect& rect)
 {
     constexpr int32_t count = kTransposePanel * kTransposePanel;
     if (rect.rows != kTransposePanel || rect.cols != kTransposePanel) {
@@ -158,8 +154,7 @@ __aicore__ inline void CubeNtt::LoadPhase2Panel(
     }
 }
 
-__aicore__ inline void CubeNtt::StorePhase2Panel(
-    LocalTensor<int32_t>& src, size_t polyOffset, const PanelRect& rect)
+__aicore__ inline void CubeNtt::StorePhase2Panel(LocalTensor<int32_t>& src, size_t polyOffset, const PanelRect& rect)
 {
     for (int32_t j = 0; j < rect.cols; ++j) {
         AscendC::GlobalTensor<int32_t> dst;
@@ -195,18 +190,18 @@ __aicore__ inline void CubeNtt::MultiplyPhase2Panel(Phase2Buffers& b)
 {
     constexpr int32_t count = kTransposePanel * kTransposePanel;
     if (activeBarrettK_ <= kDefaultBarrettK) {
-        MulModVecVecInt7Horner(b.product, b.input, b.twiddle, activeQ_, activeBarrettK_,
-            static_cast<int32_t>(activeBarrettMu_), b.temp[0], b.temp[1], b.temp[2], b.temp[3], b.temp[4], count);
+        MulModVecVecInt7Horner(
+            b.product, b.input, b.twiddle, activeQ_, activeBarrettK_, static_cast<int32_t>(activeBarrettMu_), b.temp[0],
+            b.temp[1], b.temp[2], b.temp[3], b.temp[4], count);
     } else if (activeUseInt10_) {
         MulModVecVecInt10SchoolbookPresplitRhs(
             b.product, b.input, activeQ_, activeFold28_, b.temp[4], b.temp[5], b.temp[6], b.temp[0], b.temp[1],
-            b.temp[2], b.temp[8], b.temp[9], b.temp[10], b.temp[11], b.temp[12],
-            activeUseInt10TwoWrap_, activeUseInt10OneWrap_, count);
+            b.temp[2], b.temp[8], b.temp[9], b.temp[10], b.temp[11], b.temp[12], activeUseInt10TwoWrap_,
+            activeUseInt10OneWrap_, count);
     } else {
         MulModVecVecInt7SchoolbookPresplitRhs(
-            b.product, b.input, activeQ_, activeFold28_, b.temp[4], b.temp[5], b.temp[6], b.temp[7],
-            b.temp[0], b.temp[1], b.temp[2], b.temp[3], b.temp[8], b.temp[9], b.temp[10], b.temp[11],
-            b.temp[12], count);
+            b.product, b.input, activeQ_, activeFold28_, b.temp[4], b.temp[5], b.temp[6], b.temp[7], b.temp[0],
+            b.temp[1], b.temp[2], b.temp[3], b.temp[8], b.temp[9], b.temp[10], b.temp[11], b.temp[12], count);
     }
 }
 
@@ -216,8 +211,7 @@ __aicore__ inline void CubeNtt::RunPhase2Panel(Phase2Buffers& b, size_t polyOffs
     AscendC::PipeBarrier<PIPE_ALL>();
     MultiplyPhase2Panel(b);
     AscendC::PipeBarrier<PIPE_ALL>();
-    AscendC::Gather(b.output, b.product, b.transpose, 0U,
-        static_cast<uint32_t>(kTransposePanel * kTransposePanel));
+    AscendC::Gather(b.output, b.product, b.transpose, 0U, static_cast<uint32_t>(kTransposePanel * kTransposePanel));
     AscendC::PipeBarrier<PIPE_ALL>();
     StorePhase2Panel(b.output, polyOffset, rect);
     AscendC::PipeBarrier<PIPE_ALL>();
@@ -237,8 +231,8 @@ __aicore__ inline void CubeNtt::PrepareLocalPanel(Phase2Buffers& b, const PanelW
     }
     const int32_t row = localPanel / work.colPanelCount;
     const int32_t col = localPanel - row * work.colPanelCount;
-    const PanelRect rect{row * kTransposePanel, col * kTransposePanel,
-        MinInt(kTransposePanel, tiling_.n1 - row * kTransposePanel),
+    const PanelRect rect{
+        row * kTransposePanel, col * kTransposePanel, MinInt(kTransposePanel, tiling_.n1 - row * kTransposePanel),
         MinInt(kTransposePanel, tiling_.n2 - col * kTransposePanel)};
     LoadPhase2Panel(b.twiddle, activeTwiddlePhase12Base_, rect);
     AscendC::PipeBarrier<PIPE_ALL>();
@@ -253,8 +247,7 @@ __aicore__ inline void CubeNtt::InitTransposeTable(LocalTensor<uint32_t>& lut)
 {
     for (int32_t i = 0; i < kTransposePanel; ++i) {
         for (int32_t j = 0; j < kTransposePanel; ++j) {
-            lut.SetValue(j * kTransposePanel + i,
-                static_cast<uint32_t>((i * kTransposePanel + j) * sizeof(int32_t)));
+            lut.SetValue(j * kTransposePanel + i, static_cast<uint32_t>((i * kTransposePanel + j) * sizeof(int32_t)));
         }
     }
 }
@@ -264,8 +257,7 @@ __aicore__ inline void CubeNtt::PreparePhase2Input()
     if (isAic_) {
         return;
     }
-    if (tiling_.n1 == 64 && tiling_.n2 == 64 && kTransposePanel == 32 &&
-        aivCoreCount_ >= 4 && activeUseInt10_) {
+    if (tiling_.n1 == 64 && tiling_.n2 == 64 && kTransposePanel == 32 && aivCoreCount_ >= 4 && activeUseInt10_) {
         PreparePhase2Input64x64RowPairInt10();
         return;
     }

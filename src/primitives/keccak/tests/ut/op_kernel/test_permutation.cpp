@@ -22,12 +22,11 @@ bool TestXorSlots()
 {
     using namespace KeccakF1600U32Vector;
     // 依次覆盖输出与左输入重合、与右输入重合、不重合及轮常量输入。
-    constexpr std::array<std::array<uint32_t, 3>, 4> cases{{
-        {{STATE_BASE, STATE_BASE, C_BASE}},
-        {{STATE_BASE, C_BASE, STATE_BASE}},
-        {{D_BASE, C_BASE, STATE_BASE}},
-        {{STATE_BASE, STATE_BASE, TMP0}}
-    }};
+    constexpr std::array<std::array<uint32_t, 3>, 4> cases{
+        {{{STATE_BASE, STATE_BASE, C_BASE}},
+         {{STATE_BASE, C_BASE, STATE_BASE}},
+         {{D_BASE, C_BASE, STATE_BASE}},
+         {{STATE_BASE, STATE_BASE, TMP0}}}};
     for (const uint32_t count : {64U, 80U, 128U, 192U, 208U, 256U}) {
         for (const auto& slots : cases) {
             std::vector<uint32_t> memory(SLOT_COUNT * TILE);
@@ -37,16 +36,15 @@ bool TestXorSlots()
             Permutation permutation;
             for (uint32_t repeat = 0; repeat < 2U; ++repeat) {
                 const auto before = memory;
-                permutation.XorSlot(AscendC::LocalTensor<uint32_t>(memory.data()),
-                    slots[0], slots[1], slots[2], count);
+                permutation.XorSlot(AscendC::LocalTensor<uint32_t>(memory.data()), slots[0], slots[1], slots[2], count);
                 for (uint32_t slot = 0; slot < SLOT_COUNT; ++slot) {
                     for (uint32_t i = 0; i < TILE; ++i) {
                         if (slot == TMP1 && i < count) {
                             continue;
                         }
-                        const uint32_t expected = slot == slots[0] && i < count
-                            ? before[slots[1] * TILE + i] ^ before[slots[2] * TILE + i]
-                            : before[slot * TILE + i];
+                        const uint32_t expected = slot == slots[0] && i < count ?
+                                                      before[slots[1] * TILE + i] ^ before[slots[2] * TILE + i] :
+                                                      before[slot * TILE + i];
                         if (memory[slot * TILE + i] != expected) {
                             std::cerr << "XorSlot mismatch: " << count << ' ' << slot << ' ' << i << '\n';
                             return false;
@@ -86,7 +84,7 @@ int main()
         for (uint32_t message = 0; message < count; ++message) {
             for (uint32_t lane = 0; lane < 25U; ++lane) {
                 const uint64_t actual = static_cast<uint64_t>(memory[(2U * lane + 1U) * TILE + message]) << 32U |
-                    memory[(2U * lane) * TILE + message];
+                                        memory[(2U * lane) * TILE + message];
                 if (actual != expected[message * 25U + lane]) {
                     std::cerr << "permutation mismatch: " << count << ' ' << message << ' ' << lane << '\n';
                     return 1;

@@ -152,7 +152,6 @@ public:
 
     __aicore__ inline void Init(GM_ADDR dst, GM_ADDR src0, GM_ADDR src1, GM_ADDR src2, GM_ADDR src3)
     {
-
         gm_src0.SetGlobalBuffer((__gm__ int32_t*)src0, static_cast<size_t>(n) * 4 * bench);
         gm_src1.SetGlobalBuffer((__gm__ int32_t*)src1, static_cast<size_t>(n) * 4 * bench);
         gm_src2.SetGlobalBuffer((__gm__ int32_t*)src2, static_cast<size_t>(n) * 4 * bench);
@@ -192,7 +191,6 @@ public:
 #ifdef ASCENDC_CPU_DEBUG
     __aicore__ inline std::vector<int64_t> CaptureReference(LocalTensor<int32_t> (&x)[4][4], int32_t count)
     {
-
         std::vector<int64_t> tx(count);
         for (int i = 0; i < count; i++) {
             tx[i] = x[0][0].GetValue(i);
@@ -209,7 +207,6 @@ public:
     __aicore__ inline void VerifyReference(
         const std::vector<int64_t>& tx, LocalTensor<int32_t> (&x)[4][4], int32_t count)
     {
-
         std::vector<int64_t> ta(count), tb(count);
         for (int i = 0; i < count; i++) {
             ta[i] = tx[i] & ((1L << 28) - 1);
@@ -257,11 +254,9 @@ public:
         Add(b, b, t1, count);
         ShiftLeft(t1, x[3][3], 42 - 22, count);
         Add(t1, b, t1, count);
-
     }
 
-    __aicore__ inline void ReduceDigits(
-        LocalTensor<int32_t> (&x)[4][4], LocalTensor<int32_t>& local_dst, int32_t count)
+    __aicore__ inline void ReduceDigits(LocalTensor<int32_t> (&x)[4][4], LocalTensor<int32_t>& local_dst, int32_t count)
     {
         constexpr int32_t b_mu = 8396807, q = 8380417;
         using AscendC::Add, AscendC::ShiftLeft, AscendC::ShiftRight, AscendC::Muls, AscendC::Sub;

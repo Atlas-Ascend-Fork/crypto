@@ -87,10 +87,7 @@ struct NttScratch {
     size_t splitBytes;
     size_t accumBytes;
 
-    __aicore__ inline GM_ADDR Split(int32_t digit) const
-    {
-        return base + static_cast<size_t>(digit) * splitBytes;
-    }
+    __aicore__ inline GM_ADDR Split(int32_t digit) const { return base + static_cast<size_t>(digit) * splitBytes; }
 
     __aicore__ inline GM_ADDR Accum(int32_t digit) const
     {

@@ -28,12 +28,10 @@ public:
             .Format({ge::FORMAT_ND})
             .UnknownShapeFormat({ge::FORMAT_ND});
 
-        this->AICore()
-            .AddConfig("ascend910b")
-            .AddConfig("ascend910_93");
+        this->AICore().AddConfig("ascend910b").AddConfig("ascend910_93");
     }
 };
 
 OP_ADD(KeccakF1600Tensor);
 
-}  // namespace ops
+} // namespace ops

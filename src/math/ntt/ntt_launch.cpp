@@ -28,8 +28,8 @@ NttStatus PrepareNttLaunch(const NttParams& params, NttPlan& plan, const char** 
     result.workspaceBytes = systemWorkspaceBytes + result.userWorkspaceBytes;
     result.launchBlockDim = static_cast<uint32_t>(t.blockDim * std::min(t.channelBlock, t.rnsChannels));
     // All variants share the original mixed AIC:AIV=1:2 kernel and tiling key 0.
-    const bool directPqc = t.n == 256 && t.rnsChannels == 1 && t.channelBlock == 1 &&
-        t.blockDim == 16 && t.subBench == 16;
+    const bool directPqc =
+        t.n == 256 && t.rnsChannels == 1 && t.channelBlock == 1 && t.blockDim == 16 && t.subBench == 16;
     if (directPqc && t.q == 3329) {
         result.variant = NttVariant::KemBat2;
     } else if (directPqc && t.q == 8380417) {
@@ -41,8 +41,9 @@ NttStatus PrepareNttLaunch(const NttParams& params, NttPlan& plan, const char** 
     return NttStatus::Success;
 }
 
-NttStatus LaunchNtt(const NttParams& params, const NttBuffers& buffers,
-                    NttEnqueue enqueue, void* backendContext, void* stream, const char** error)
+NttStatus LaunchNtt(
+    const NttParams& params, const NttBuffers& buffers, NttEnqueue enqueue, void* backendContext, void* stream,
+    const char** error)
 {
     NttPlan plan;
     const auto status = PrepareNttLaunch(params, plan, error);
@@ -55,12 +56,14 @@ NttStatus LaunchNtt(const NttParams& params, const NttBuffers& buffers,
         }
         return code;
     };
-    const NttBuffer inputs[] = {buffers.x, buffers.matrixPhase1, buffers.matrixPhase2,
-                               buffers.twiddlePhase12, buffers.y, buffers.workspace};
+    const NttBuffer inputs[] = {buffers.x, buffers.matrixPhase1, buffers.matrixPhase2, buffers.twiddlePhase12,
+                                buffers.y, buffers.workspace};
     const size_t required[] = {static_cast<size_t>(params.xElements) * sizeof(int32_t),
-        static_cast<size_t>(params.matrixPhase1Elements), static_cast<size_t>(params.matrixPhase2Elements),
-        static_cast<size_t>(params.twiddleElements) * sizeof(int32_t),
-        static_cast<size_t>(params.xElements) * sizeof(int32_t), plan.workspaceBytes};
+                               static_cast<size_t>(params.matrixPhase1Elements),
+                               static_cast<size_t>(params.matrixPhase2Elements),
+                               static_cast<size_t>(params.twiddleElements) * sizeof(int32_t),
+                               static_cast<size_t>(params.xElements) * sizeof(int32_t),
+                               plan.workspaceBytes};
     for (size_t i = 0; i < 6; ++i) {
         if (inputs[i].data == nullptr) {
             return fail(NttStatus::InvalidArgument, "device buffer is null");

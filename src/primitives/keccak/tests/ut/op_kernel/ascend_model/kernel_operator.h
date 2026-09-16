@@ -22,16 +22,21 @@ namespace AscendC {
 template <typename T>
 class LocalTensor {
 public:
-    explicit LocalTensor(T *pointer) : pointer_(pointer) {}
+    explicit LocalTensor(T* pointer) : pointer_(pointer) {}
     LocalTensor operator[](uint32_t offset) const { return LocalTensor(pointer_ + offset); }
     template <typename U>
-    LocalTensor<U> ReinterpretCast() const { return LocalTensor<U>(reinterpret_cast<U *>(pointer_)); }
-    T *Data() const { return pointer_; }
+    LocalTensor<U> ReinterpretCast() const
+    {
+        return LocalTensor<U>(reinterpret_cast<U*>(pointer_));
+    }
+    T* Data() const { return pointer_; }
+
 private:
-    T *pointer_;
+    T* pointer_;
 };
 template <int Pipe>
-void PipeBarrier() {}
+void PipeBarrier()
+{}
 template <typename T>
 void DataCopy(LocalTensor<T> dst, LocalTensor<T> src, uint32_t count)
 {
@@ -49,27 +54,37 @@ void Xor(LocalTensor<T> dst, LocalTensor<T> left, LocalTensor<T> right, uint32_t
     if (dst.Data() == left.Data() || dst.Data() == right.Data()) {
         throw std::logic_error("Xor requires a destination distinct from its inputs");
     }
-    for (uint32_t i = 0; i < count; ++i) { dst.Data()[i] = left.Data()[i] ^ right.Data()[i]; }
+    for (uint32_t i = 0; i < count; ++i) {
+        dst.Data()[i] = left.Data()[i] ^ right.Data()[i];
+    }
 }
 template <typename T>
 void And(LocalTensor<T> dst, LocalTensor<T> left, LocalTensor<T> right, uint32_t count)
 {
-    for (uint32_t i = 0; i < count; ++i) { dst.Data()[i] = left.Data()[i] & right.Data()[i]; }
+    for (uint32_t i = 0; i < count; ++i) {
+        dst.Data()[i] = left.Data()[i] & right.Data()[i];
+    }
 }
 template <typename T>
 void Or(LocalTensor<T> dst, LocalTensor<T> left, LocalTensor<T> right, uint32_t count)
 {
-    for (uint32_t i = 0; i < count; ++i) { dst.Data()[i] = left.Data()[i] | right.Data()[i]; }
+    for (uint32_t i = 0; i < count; ++i) {
+        dst.Data()[i] = left.Data()[i] | right.Data()[i];
+    }
 }
 template <typename T>
 void ShiftLeft(LocalTensor<T> dst, LocalTensor<T> src, uint32_t shift, uint32_t count)
 {
-    for (uint32_t i = 0; i < count; ++i) { dst.Data()[i] = src.Data()[i] << shift; }
+    for (uint32_t i = 0; i < count; ++i) {
+        dst.Data()[i] = src.Data()[i] << shift;
+    }
 }
 template <typename T>
 void ShiftRight(LocalTensor<T> dst, LocalTensor<T> src, uint32_t shift, uint32_t count)
 {
-    for (uint32_t i = 0; i < count; ++i) { dst.Data()[i] = src.Data()[i] >> shift; }
+    for (uint32_t i = 0; i < count; ++i) {
+        dst.Data()[i] = src.Data()[i] >> shift;
+    }
 }
 } // namespace AscendC
 #endif

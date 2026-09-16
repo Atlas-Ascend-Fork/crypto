@@ -186,4 +186,3 @@ private:
 
     AscendC::GlobalTensor<int32_t> gmSrc0_, gmSrc1_, gmSrc2_, gmSrc3_;
 };
-

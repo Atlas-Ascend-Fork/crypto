@@ -38,7 +38,9 @@ int main(int argc, char** argv)
         RequireAcl(aclFinalize(), "aclFinalize");
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';
-        if (stream != nullptr) { aclrtDestroyStream(stream); }
+        if (stream != nullptr) {
+            aclrtDestroyStream(stream);
+        }
         aclrtResetDevice(deviceId);
         aclFinalize();
         passed = false;

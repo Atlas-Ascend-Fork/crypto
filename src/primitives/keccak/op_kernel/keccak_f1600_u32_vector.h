@@ -27,67 +27,42 @@ constexpr uint32_t TMP1 = 125; // XorSlot 专用临时输出，不作为调用�
 constexpr uint32_t SLOT_COUNT = 126;
 
 constexpr uint64_t RC[24] = {
-    0x0000000000000001ULL, 0x0000000000008082ULL,
-    0x800000000000808aULL, 0x8000000080008000ULL,
-    0x000000000000808bULL, 0x0000000080000001ULL,
-    0x8000000080008081ULL, 0x8000000000008009ULL,
-    0x000000000000008aULL, 0x0000000000000088ULL,
-    0x0000000080008009ULL, 0x000000008000000aULL,
-    0x000000008000808bULL, 0x800000000000008bULL,
-    0x8000000000008089ULL, 0x8000000000008003ULL,
-    0x8000000000008002ULL, 0x8000000000000080ULL,
-    0x000000000000800aULL, 0x800000008000000aULL,
-    0x8000000080008081ULL, 0x8000000000008080ULL,
-    0x0000000080000001ULL, 0x8000000080008008ULL,
+    0x0000000000000001ULL, 0x0000000000008082ULL, 0x800000000000808aULL, 0x8000000080008000ULL, 0x000000000000808bULL,
+    0x0000000080000001ULL, 0x8000000080008081ULL, 0x8000000000008009ULL, 0x000000000000008aULL, 0x0000000000000088ULL,
+    0x0000000080008009ULL, 0x000000008000000aULL, 0x000000008000808bULL, 0x800000000000008bULL, 0x8000000000008089ULL,
+    0x8000000000008003ULL, 0x8000000000008002ULL, 0x8000000000000080ULL, 0x000000000000800aULL, 0x800000008000000aULL,
+    0x8000000080008081ULL, 0x8000000000008080ULL, 0x0000000080000001ULL, 0x8000000080008008ULL,
 };
 
 constexpr int RHO[25] = {
-     0,  1, 62, 28, 27,
-    36, 44,  6, 55, 20,
-     3, 10, 43, 25, 39,
-    41, 45, 15, 21,  8,
-    18,  2, 61, 56, 14,
+    0, 1, 62, 28, 27, 36, 44, 6, 55, 20, 3, 10, 43, 25, 39, 41, 45, 15, 21, 8, 18, 2, 61, 56, 14,
 };
 
 class Permutation {
 public:
     __aicore__ inline Permutation() {}
 
-    __aicore__ inline AscendC::LocalTensor<uint32_t> Slot(
-        const AscendC::LocalTensor<uint32_t>& base,
-        uint32_t slot)
+    __aicore__ inline AscendC::LocalTensor<uint32_t> Slot(const AscendC::LocalTensor<uint32_t>& base, uint32_t slot)
     {
         return base[slot * TILE];
     }
 
-    __aicore__ inline uint32_t LanePart(uint32_t lane, uint32_t part)
-    {
-        return lane * 2U + part;
-    }
+    __aicore__ inline uint32_t LanePart(uint32_t lane, uint32_t part) { return lane * 2U + part; }
 
     __aicore__ inline void CopySlot(
-        const AscendC::LocalTensor<uint32_t>& base,
-        uint32_t dstSlot,
-        uint32_t srcSlot,
-        uint32_t n)
+        const AscendC::LocalTensor<uint32_t>& base, uint32_t dstSlot, uint32_t srcSlot, uint32_t n)
     {
         AscendC::DataCopy(Slot(base, dstSlot), Slot(base, srcSlot), n);
     }
 
     __aicore__ inline void XorSlot(
-        const AscendC::LocalTensor<uint32_t>& base,
-        uint32_t dstSlot,
-        uint32_t src0Slot,
-        uint32_t src1Slot,
-        uint32_t n)
+        const AscendC::LocalTensor<uint32_t>& base, uint32_t dstSlot, uint32_t src0Slot, uint32_t src1Slot, uint32_t n)
     {
         const bool overlapsInput = dstSlot == src0Slot || dstSlot == src1Slot;
         const uint32_t xorDstSlot = overlapsInput ? TMP1 : dstSlot;
         AscendC::Xor(
-            Slot(base, xorDstSlot).ReinterpretCast<uint16_t>(),
-            Slot(base, src0Slot).ReinterpretCast<uint16_t>(),
-            Slot(base, src1Slot).ReinterpretCast<uint16_t>(),
-            n * 2U);
+            Slot(base, xorDstSlot).ReinterpretCast<uint16_t>(), Slot(base, src0Slot).ReinterpretCast<uint16_t>(),
+            Slot(base, src1Slot).ReinterpretCast<uint16_t>(), n * 2U);
         if (overlapsInput) {
             // 保留源数据直至异或完成；回写完成后才允许下一次复用临时槽。
             AscendC::PipeBarrier<PIPE_V>();
@@ -97,39 +72,23 @@ public:
     }
 
     __aicore__ inline void AndSlot(
-        const AscendC::LocalTensor<uint32_t>& base,
-        uint32_t dstSlot,
-        uint32_t src0Slot,
-        uint32_t src1Slot,
-        uint32_t n)
+        const AscendC::LocalTensor<uint32_t>& base, uint32_t dstSlot, uint32_t src0Slot, uint32_t src1Slot, uint32_t n)
     {
         AscendC::And(
-            Slot(base, dstSlot).ReinterpretCast<uint16_t>(),
-            Slot(base, src0Slot).ReinterpretCast<uint16_t>(),
-            Slot(base, src1Slot).ReinterpretCast<uint16_t>(),
-            n * 2U);
+            Slot(base, dstSlot).ReinterpretCast<uint16_t>(), Slot(base, src0Slot).ReinterpretCast<uint16_t>(),
+            Slot(base, src1Slot).ReinterpretCast<uint16_t>(), n * 2U);
     }
 
     __aicore__ inline void OrSlot(
-        const AscendC::LocalTensor<uint32_t>& base,
-        uint32_t dstSlot,
-        uint32_t src0Slot,
-        uint32_t src1Slot,
-        uint32_t n)
+        const AscendC::LocalTensor<uint32_t>& base, uint32_t dstSlot, uint32_t src0Slot, uint32_t src1Slot, uint32_t n)
     {
         AscendC::Or(
-            Slot(base, dstSlot).ReinterpretCast<uint16_t>(),
-            Slot(base, src0Slot).ReinterpretCast<uint16_t>(),
-            Slot(base, src1Slot).ReinterpretCast<uint16_t>(),
-            n * 2U);
+            Slot(base, dstSlot).ReinterpretCast<uint16_t>(), Slot(base, src0Slot).ReinterpretCast<uint16_t>(),
+            Slot(base, src1Slot).ReinterpretCast<uint16_t>(), n * 2U);
     }
 
     __aicore__ inline void RotlLaneTo(
-        const AscendC::LocalTensor<uint32_t>& base,
-        uint32_t dstBase,
-        uint32_t srcBase,
-        uint32_t rot,
-        uint32_t n)
+        const AscendC::LocalTensor<uint32_t>& base, uint32_t dstBase, uint32_t srcBase, uint32_t rot, uint32_t n)
     {
         const uint32_t wordShift = rot / 32U;
         const uint32_t bitShift = rot % 32U;
@@ -161,10 +120,7 @@ public:
         AscendC::PipeBarrier<PIPE_V>();
     }
 
-    __aicore__ inline void Round(
-        const AscendC::LocalTensor<uint32_t>& base,
-        uint32_t round,
-        uint32_t n)
+    __aicore__ inline void Round(const AscendC::LocalTensor<uint32_t>& base, uint32_t round, uint32_t n)
     {
         // θ：按列计算奇偶校验。高低两个 U32 部分独立，整列完成后同步。
         for (uint32_t x = 0; x < 5; ++x) {
@@ -210,11 +166,8 @@ public:
             for (uint32_t x = 0; x < 5; ++x) {
                 const uint32_t lane = x + 5U * y;
                 for (uint32_t p = 0; p < 2; ++p) {
-                    XorSlot(base,
-                            STATE_BASE + LanePart(lane, p),
-                            STATE_BASE + LanePart(lane, p),
-                            D_BASE + x * 2U + p,
-                            n);
+                    XorSlot(
+                        base, STATE_BASE + LanePart(lane, p), STATE_BASE + LanePart(lane, p), D_BASE + x * 2U + p, n);
                 }
             }
         }
@@ -292,9 +245,7 @@ public:
         }
     }
 
-    __aicore__ inline void Permute24(
-        const AscendC::LocalTensor<uint32_t>& base,
-        uint32_t n)
+    __aicore__ inline void Permute24(const AscendC::LocalTensor<uint32_t>& base, uint32_t n)
     {
         for (uint32_t round = 0; round < 24U; ++round) {
             Round(base, round, n);
@@ -302,4 +253,4 @@ public:
     }
 };
 
-}  // namespace KeccakF1600U32Vector
+} // namespace KeccakF1600U32Vector

@@ -23,10 +23,7 @@ __aicore__ inline static constexpr T max(T a, U b)
 // int8_t type, cube block: [16, 32]
 static constexpr uint32_t CUBE_BLOCK_SIZE = 16 * 32;
 constexpr size_t matMFileSize = 256 * 256 * sizeof(int32_t);
-static constexpr __aicore__ inline uint16_t ceil_div(uint16_t a, uint16_t mod)
-{
-    return (a + mod - 1) / mod;
-}
+static constexpr __aicore__ inline uint16_t ceil_div(uint16_t a, uint16_t mod) { return (a + mod - 1) / mod; }
 
 class AicMmad {
 public:
@@ -82,15 +79,9 @@ public:
         }
     }
 
-    __aicore__ inline AscendC::LocalTensor<int32_t> AllocAccum()
-    {
-        return outQueueCO1.AllocTensor<int32_t>();
-    }
+    __aicore__ inline AscendC::LocalTensor<int32_t> AllocAccum() { return outQueueCO1.AllocTensor<int32_t>(); }
 
-    __aicore__ inline void EnqueAccum(AscendC::LocalTensor<int32_t>& cLocal)
-    {
-        outQueueCO1.EnQue<int32_t>(cLocal);
-    }
+    __aicore__ inline void EnqueAccum(AscendC::LocalTensor<int32_t>& cLocal) { outQueueCO1.EnQue<int32_t>(cLocal); }
 
     __aicore__ inline void ComputeAccum(AscendC::LocalTensor<int32_t>& cLocal, bool initC)
     {

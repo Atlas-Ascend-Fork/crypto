@@ -28,8 +28,7 @@ static ge::graphStatus TilingFunc(gert::TilingContext* context)
 
     const gert::Shape& shape = xShape->GetStorageShape();
     const auto& output = yShape->GetStorageShape();
-    if (shape.GetDimNum() != 2 || shape.GetDim(0) != 50 ||
-        output.GetDimNum() != 2 || output.GetDim(0) != 50 ||
+    if (shape.GetDimNum() != 2 || shape.GetDim(0) != 50 || output.GetDimNum() != 2 || output.GetDim(0) != 50 ||
         output.GetDim(1) != shape.GetDim(1)) {
         return ge::GRAPH_FAILED;
     }
@@ -50,8 +49,7 @@ static ge::graphStatus TilingFunc(gert::TilingContext* context)
     }
     const uint32_t blockDim = tileCount < coreNum ? tileCount : coreNum;
 
-    KeccakF1600TensorTilingData* tiling =
-        context->GetTilingData<KeccakF1600TensorTilingData>();
+    KeccakF1600TensorTilingData* tiling = context->GetTilingData<KeccakF1600TensorTilingData>();
     if (tiling == nullptr || context->GetRawTilingData() == nullptr) {
         return ge::GRAPH_FAILED;
     }
@@ -70,4 +68,4 @@ static ge::graphStatus TilingFunc(gert::TilingContext* context)
 
 IMPL_OP_OPTILING(KeccakF1600Tensor).Tiling(TilingFunc);
 
-}  // namespace optiling
+} // namespace optiling

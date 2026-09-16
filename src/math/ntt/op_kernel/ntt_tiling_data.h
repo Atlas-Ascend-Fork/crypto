@@ -63,20 +63,11 @@ constexpr size_t sub_ntt_pipeline_slots = 8;
 constexpr size_t sync_ints_per_core = 8;
 constexpr int32_t mix_aiv_per_aic = 2;
 
-inline bool IsValidN(int32_t n)
-{
-    return n > 0 && n <= static_cast<int32_t>(max_n) && (n & (n - 1)) == 0;
-}
+inline bool IsValidN(int32_t n) { return n > 0 && n <= static_cast<int32_t>(max_n) && (n & (n - 1)) == 0; }
 
-inline bool IsValidKernelN(int32_t n)
-{
-    return IsValidN(n) && n >= 32;
-}
+inline bool IsValidKernelN(int32_t n) { return IsValidN(n) && n >= 32; }
 
-inline int32_t KernelN(int32_t logicalN)
-{
-    return logicalN < 32 ? 32 : logicalN;
-}
+inline int32_t KernelN(int32_t logicalN) { return logicalN < 32 ? 32 : logicalN; }
 
 inline int32_t AlignUp(int32_t value, int32_t align)
 {
@@ -115,10 +106,7 @@ inline int32_t CeilDiv(int32_t a, int32_t b)
     return (a + b - 1) / b;
 }
 
-inline int32_t RnsChannels(const TilingData& tiling)
-{
-    return tiling.rnsChannels > 0 ? tiling.rnsChannels : 1;
-}
+inline int32_t RnsChannels(const TilingData& tiling) { return tiling.rnsChannels > 0 ? tiling.rnsChannels : 1; }
 
 inline int32_t ChannelBlock(const TilingData& tiling)
 {
@@ -132,35 +120,17 @@ inline int32_t ChannelGroupCount(const TilingData& tiling)
     return CeilDiv(RnsChannels(tiling), ChannelBlock(tiling));
 }
 
-inline int32_t LaunchBlockDim(const TilingData& tiling)
-{
-    return tiling.blockDim * ChannelBlock(tiling);
-}
+inline int32_t LaunchBlockDim(const TilingData& tiling) { return tiling.blockDim * ChannelBlock(tiling); }
 
-inline int32_t MaxBenchPerBlock(int32_t bench, int32_t w)
-{
-    return (bench <= 0 || w <= 0) ? 0 : CeilDiv(bench, w);
-}
+inline int32_t MaxBenchPerBlock(int32_t bench, int32_t w) { return (bench <= 0 || w <= 0) ? 0 : CeilDiv(bench, w); }
 
-inline size_t MatrixBytes(size_t n)
-{
-    return matrix_count * n * n * sizeof(int8_t);
-}
+inline size_t MatrixBytes(size_t n) { return matrix_count * n * n * sizeof(int8_t); }
 
-inline size_t SplitBytes(size_t n, size_t bench)
-{
-    return split_count * n * bench * sizeof(int8_t);
-}
+inline size_t SplitBytes(size_t n, size_t bench) { return split_count * n * bench * sizeof(int8_t); }
 
-inline size_t AccumulatorBytes(size_t n, size_t bench)
-{
-    return accum_count * n * bench * sizeof(int32_t);
-}
+inline size_t AccumulatorBytes(size_t n, size_t bench) { return accum_count * n * bench * sizeof(int32_t); }
 
-inline size_t ScratchBytes(size_t n, size_t bench)
-{
-    return SplitBytes(n, bench) + AccumulatorBytes(n, bench);
-}
+inline size_t ScratchBytes(size_t n, size_t bench) { return SplitBytes(n, bench) + AccumulatorBytes(n, bench); }
 
 inline size_t WorkspaceBytes(size_t n, size_t maxBenchPerBlock, size_t w)
 {
@@ -178,10 +148,7 @@ struct FourStepWorkspaceLayout {
 };
 
 namespace tiling_fourstep {
-inline size_t Int32Bytes(int32_t elemCount)
-{
-    return static_cast<size_t>(elemCount) * sizeof(int32_t);
-}
+inline size_t Int32Bytes(int32_t elemCount) { return static_cast<size_t>(elemCount) * sizeof(int32_t); }
 
 inline size_t PackedBytes(int32_t kernelN, int32_t subBench, int32_t blockDim)
 {
@@ -203,10 +170,7 @@ inline size_t SyncBytes(int32_t blockDim)
            tiling_one::sync_ints_per_core * sizeof(int32_t);
 }
 
-inline size_t MaxSize(size_t a, size_t b)
-{
-    return a > b ? a : b;
-}
+inline size_t MaxSize(size_t a, size_t b) { return a > b ? a : b; }
 
 inline FourStepWorkspaceLayout MakeWorkspaceLayout(const TilingData& tiling)
 {

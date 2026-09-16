@@ -28,15 +28,15 @@
 
 namespace {
 
+using cann_crypto::test::Checksum;
+using cann_crypto::test::DeviceBuffer;
 using cann_crypto::test::GetWorkspaceFn;
 using cann_crypto::test::LaunchFn;
+using cann_crypto::test::LaunchTensor;
 using cann_crypto::test::RequireAcl;
 using cann_crypto::test::RequireAclnn;
-using cann_crypto::test::DeviceBuffer;
-using cann_crypto::test::TensorHandle;
-using cann_crypto::test::LaunchTensor;
-using cann_crypto::test::Checksum;
 using cann_crypto::test::RunKeccakCase;
+using cann_crypto::test::TensorHandle;
 using EvpFn = const EVP_MD* (*)();
 
 struct Algorithm {
@@ -55,28 +55,14 @@ struct TestCase {
     uint32_t seed;
 };
 
-const Algorithm SHAKE128 = {
-    "SHAKE128",
-    168,
-    32,
-    aclnnShake128TensorGetWorkspaceSize,
-    aclnnShake128Tensor,
-    EVP_shake128};
+const Algorithm SHAKE128 = {"SHAKE128",          168,         32, aclnnShake128TensorGetWorkspaceSize,
+                            aclnnShake128Tensor, EVP_shake128};
 
-const Algorithm SHAKE256 = {
-    "SHAKE256",
-    136,
-    64,
-    aclnnShake256TensorGetWorkspaceSize,
-    aclnnShake256Tensor,
-    EVP_shake256};
+const Algorithm SHAKE256 = {"SHAKE256",          136,         64, aclnnShake256TensorGetWorkspaceSize,
+                            aclnnShake256Tensor, EVP_shake256};
 
 void OpenSslShake(
-    const Algorithm& algorithm,
-    const uint8_t* input,
-    size_t inputLength,
-    uint8_t* output,
-    size_t outputLength)
+    const Algorithm& algorithm, const uint8_t* input, size_t inputLength, uint8_t* output, size_t outputLength)
 {
     EVP_MD_CTX* context = EVP_MD_CTX_new();
     if (context == nullptr) {
@@ -103,15 +89,11 @@ std::vector<uint8_t> MakeInput(const TestCase& testCase)
     }
 
     if (testCase.batch > 0 && testCase.inputLength > 0) {
-        std::fill(
-            input.begin(),
-            input.begin() + static_cast<std::ptrdiff_t>(testCase.inputLength),
-            0U);
+        std::fill(input.begin(), input.begin() + static_cast<std::ptrdiff_t>(testCase.inputLength), 0U);
     }
     if (testCase.batch > 1 && testCase.inputLength > 0) {
         for (size_t byte = 0; byte < testCase.inputLength; ++byte) {
-            input[testCase.inputLength + byte] =
-                static_cast<uint8_t>(byte & 0xffU);
+            input[testCase.inputLength + byte] = static_cast<uint8_t>(byte & 0xffU);
         }
     }
     return input;
@@ -120,18 +102,12 @@ std::vector<uint8_t> MakeInput(const TestCase& testCase)
 std::vector<uint8_t> ShakeReference(
     const Algorithm& algorithm, const TestCase& testCase, const std::vector<uint8_t>& input)
 {
-    std::vector<uint8_t> expected(
-        testCase.batch * testCase.outputLength, 0U);
+    std::vector<uint8_t> expected(testCase.batch * testCase.outputLength, 0U);
 
     for (size_t message = 0; message < testCase.batch; ++message) {
-        const uint8_t* inputRow = testCase.inputLength == 0
-            ? nullptr
-            : input.data() + message * testCase.inputLength;
+        const uint8_t* inputRow = testCase.inputLength == 0 ? nullptr : input.data() + message * testCase.inputLength;
         OpenSslShake(
-            algorithm,
-            inputRow,
-            testCase.inputLength,
-            expected.data() + message * testCase.outputLength,
+            algorithm, inputRow, testCase.inputLength, expected.data() + message * testCase.outputLength,
             testCase.outputLength);
     }
 
@@ -139,70 +115,46 @@ std::vector<uint8_t> ShakeReference(
 }
 
 void RunShakeDevice(
-    const Algorithm& algorithm, const TestCase& testCase,
-    const std::vector<uint8_t>& input, std::vector<uint8_t>& actual, aclrtStream stream)
+    const Algorithm& algorithm, const TestCase& testCase, const std::vector<uint8_t>& input,
+    std::vector<uint8_t>& actual, aclrtStream stream)
 {
     DeviceBuffer deviceInput(input.size());
     DeviceBuffer deviceOutput(actual.size());
     if (!input.empty()) {
         RequireAcl(
-            aclrtMemcpy(
-                deviceInput.get(), deviceInput.size(),
-                input.data(), input.size(), ACL_MEMCPY_HOST_TO_DEVICE),
+            aclrtMemcpy(deviceInput.get(), deviceInput.size(), input.data(), input.size(), ACL_MEMCPY_HOST_TO_DEVICE),
             "input H2D");
     }
-    RequireAcl(
-        aclrtMemset(
-            deviceOutput.get(), deviceOutput.size(), 0, deviceOutput.size()),
-        "output memset");
+    RequireAcl(aclrtMemset(deviceOutput.get(), deviceOutput.size(), 0, deviceOutput.size()), "output memset");
 
     TensorHandle inputTensor(
-        deviceInput.get(),
-        {static_cast<int64_t>(testCase.batch),
-         static_cast<int64_t>(testCase.inputLength)});
+        deviceInput.get(), {static_cast<int64_t>(testCase.batch), static_cast<int64_t>(testCase.inputLength)});
     TensorHandle outputTensor(
-        deviceOutput.get(),
-        {static_cast<int64_t>(testCase.batch),
-         static_cast<int64_t>(testCase.outputLength)});
+        deviceOutput.get(), {static_cast<int64_t>(testCase.batch), static_cast<int64_t>(testCase.outputLength)});
 
     LaunchTensor(inputTensor, outputTensor, algorithm.getWorkspace, algorithm.launch, stream);
     RequireAcl(
-        aclrtMemcpy(
-            actual.data(), actual.size(),
-            deviceOutput.get(), deviceOutput.size(),
-            ACL_MEMCPY_DEVICE_TO_HOST),
+        aclrtMemcpy(actual.data(), actual.size(), deviceOutput.get(), deviceOutput.size(), ACL_MEMCPY_DEVICE_TO_HOST),
         "输出由设备复制到主机");
 }
 
 bool CheckShakeResult(
-    const Algorithm& algorithm, const TestCase& testCase,
-    const std::vector<uint8_t>& actual, const std::vector<uint8_t>& expected)
+    const Algorithm& algorithm, const TestCase& testCase, const std::vector<uint8_t>& actual,
+    const std::vector<uint8_t>& expected)
 {
-    const auto mismatch = std::mismatch(
-        actual.begin(), actual.end(), expected.begin());
+    const auto mismatch = std::mismatch(actual.begin(), actual.end(), expected.begin());
     if (mismatch.first != actual.end()) {
-        const size_t offset = static_cast<size_t>(
-            mismatch.first - actual.begin());
-        std::cerr
-            << "[失败] " << algorithm.name
-            << " batch=" << testCase.batch
-            << " 输入长度=" << testCase.inputLength
-            << " 输出长度=" << testCase.outputLength
-            << " 消息序号=" << (offset / testCase.outputLength)
-            << " 字节序号=" << (offset % testCase.outputLength)
-            << " 实际值=" << static_cast<unsigned>(*mismatch.first)
-            << " 期望值=" << static_cast<unsigned>(*mismatch.second)
-            << std::endl;
+        const size_t offset = static_cast<size_t>(mismatch.first - actual.begin());
+        std::cerr << "[失败] " << algorithm.name << " batch=" << testCase.batch << " 输入长度=" << testCase.inputLength
+                  << " 输出长度=" << testCase.outputLength << " 消息序号=" << (offset / testCase.outputLength)
+                  << " 字节序号=" << (offset % testCase.outputLength)
+                  << " 实际值=" << static_cast<unsigned>(*mismatch.first)
+                  << " 期望值=" << static_cast<unsigned>(*mismatch.second) << std::endl;
         return false;
     }
 
-    std::cout
-        << "[通过] " << algorithm.name
-        << " batch=" << testCase.batch
-        << " 输入长度=" << testCase.inputLength
-        << " 输出长度=" << testCase.outputLength
-        << " 校验和=" << Checksum(actual)
-        << std::endl;
+    std::cout << "[通过] " << algorithm.name << " batch=" << testCase.batch << " 输入长度=" << testCase.inputLength
+              << " 输出长度=" << testCase.outputLength << " 校验和=" << Checksum(actual) << std::endl;
     return true;
 }
 
@@ -257,9 +209,7 @@ bool RunAllCases(bool stressOnly, aclrtStream stream)
         }
     }
     for (const Algorithm& algorithm : {SHAKE128, SHAKE256}) {
-        const std::vector<TestCase> cases = stressOnly
-            ? BuildStressCases(algorithm)
-            : BuildCases(algorithm);
+        const std::vector<TestCase> cases = stressOnly ? BuildStressCases(algorithm) : BuildCases(algorithm);
         for (const TestCase& testCase : cases) {
             passed = RunCase(algorithm, testCase, stream) && passed;
         }
@@ -267,13 +217,12 @@ bool RunAllCases(bool stressOnly, aclrtStream stream)
     return passed;
 }
 
-}  // namespace
+} // namespace
 
 int main(int argc, char** argv)
 {
     const int deviceId = argc > 1 ? std::atoi(argv[1]) : 0;
-    const bool stressOnly = argc > 2 &&
-        std::string(argv[2]) == "--stress-case";
+    const bool stressOnly = argc > 2 && std::string(argv[2]) == "--stress-case";
 
     bool passed = true;
     aclrtStream stream = nullptr;
@@ -299,8 +248,6 @@ int main(int argc, char** argv)
         aclFinalize();
     }
 
-    std::cout << "CORRECTNESS_RESULT="
-              << (passed ? "PASS" : "FAIL")
-              << std::endl;
+    std::cout << "CORRECTNESS_RESULT=" << (passed ? "PASS" : "FAIL") << std::endl;
     return passed ? 0 : 1;
 }

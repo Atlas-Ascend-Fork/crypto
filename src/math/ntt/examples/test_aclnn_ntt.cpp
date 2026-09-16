@@ -36,8 +36,8 @@
     } while (0)
 
 namespace {
-using cann_crypto::ntt::test::ReadBinary;
 using cann_crypto::ntt::test::PrepackBatMatricesToB1Nz;
+using cann_crypto::ntt::test::ReadBinary;
 
 constexpr char kDataDir[] = "ntt_example_data";
 constexpr size_t kBatTileCount = 16;
@@ -50,15 +50,9 @@ std::string Profile()
     return value == nullptr || *value == '\0' ? "rns" : value;
 }
 
-bool IsMlKemProfile()
-{
-    return Profile() == "ml-kem";
-}
+bool IsMlKemProfile() { return Profile() == "ml-kem"; }
 
-bool IsMlDsaProfile()
-{
-    return Profile() == "ml-dsa";
-}
+bool IsMlDsaProfile() { return Profile() == "ml-dsa"; }
 
 int64_t GetShapeSize(const std::vector<int64_t>& shape)
 {
@@ -101,15 +95,9 @@ int CreateAclTensor(
     return *tensor == nullptr ? -1 : 0;
 }
 
-std::string InputPath(const std::string& filename)
-{
-    return std::string(kDataDir) + "/input/" + filename;
-}
+std::string InputPath(const std::string& filename) { return std::string(kDataDir) + "/input/" + filename; }
 
-std::string OutputPath(const std::string& filename)
-{
-    return std::string(kDataDir) + "/output/" + filename;
-}
+std::string OutputPath(const std::string& filename) { return std::string(kDataDir) + "/output/" + filename; }
 
 int GenerateData()
 {
@@ -119,7 +107,8 @@ int GenerateData()
         std::filesystem::create_directories(kDataDir);
         for (const auto& entry : std::filesystem::directory_iterator(NTT_DATA_SOURCE_DIR)) {
             if (entry.is_regular_file()) {
-                std::filesystem::copy_file(entry.path(), std::filesystem::path(kDataDir) / entry.path().filename(),
+                std::filesystem::copy_file(
+                    entry.path(), std::filesystem::path(kDataDir) / entry.path().filename(),
                     std::filesystem::copy_options::overwrite_existing);
             }
         }
@@ -183,8 +172,8 @@ bool CheckResult(const std::vector<int32_t>& result, const std::vector<int32_t>&
         return false;
     }
     for (size_t i = 0; i < result.size(); ++i) {
-        const bool same = IsMlDsaProfile() ?
-            (static_cast<int64_t>(result[i]) - golden[i]) % 8380417 == 0 : result[i] == golden[i];
+        const bool same =
+            IsMlDsaProfile() ? (static_cast<int64_t>(result[i]) - golden[i]) % 8380417 == 0 : result[i] == golden[i];
         if (!same) {
             LOG_PRINT("result mismatch at %zu: actual=%d, expected=%d\n", i, result[i], golden[i]);
             return false;
@@ -231,10 +220,10 @@ struct NttExampleData {
     {
         CHECK_RET(tiling.n > 0, return -1);
         CHECK_RET(input.size() % static_cast<size_t>(tiling.n) == 0, return -1);
-        const size_t phase1Bytes = static_cast<size_t>(tiling.rnsChannels) * kBatTileCount *
-            tiling.phase1KernelN * tiling.phase1KernelN;
-        const size_t phase2Bytes = static_cast<size_t>(tiling.rnsChannels) * kBatTileCount *
-            tiling.phase2KernelN * tiling.phase2KernelN;
+        const size_t phase1Bytes =
+            static_cast<size_t>(tiling.rnsChannels) * kBatTileCount * tiling.phase1KernelN * tiling.phase1KernelN;
+        const size_t phase2Bytes =
+            static_cast<size_t>(tiling.rnsChannels) * kBatTileCount * tiling.phase2KernelN * tiling.phase2KernelN;
         CHECK_RET(matrixPhase1.size() == phase1Bytes && matrixPhase2.size() == phase2Bytes, return -1);
         output.assign(golden.size(), 0);
         xShape = {static_cast<int64_t>(input.size() / tiling.n), tiling.n};
@@ -297,11 +286,10 @@ private:
     {
         const auto& t = data_.tiling;
         LOG_PRINT("calling aclnnNttGetWorkspaceSize...\n");
-        const auto ret = aclnnNttGetWorkspaceSize(tensor_[0], tensor_[1], tensor_[2], tensor_[3],
-            t.blockDim, t.subBench, t.channelBlock, t.q, t.g, t.logP, t.rnsChannels,
-            qList_, gList_, tensor_[4], &workspaceSize_, &executor_);
-        CHECK_RET(ret == ACL_SUCCESS,
-            LOG_PRINT("aclnnNttGetWorkspaceSize failed. ERROR: %d\n", ret); return ret);
+        const auto ret = aclnnNttGetWorkspaceSize(
+            tensor_[0], tensor_[1], tensor_[2], tensor_[3], t.blockDim, t.subBench, t.channelBlock, t.q, t.g, t.logP,
+            t.rnsChannels, qList_, gList_, tensor_[4], &workspaceSize_, &executor_);
+        CHECK_RET(ret == ACL_SUCCESS, LOG_PRINT("aclnnNttGetWorkspaceSize failed. ERROR: %d\n", ret); return ret);
         LOG_PRINT("aclnnNttGetWorkspaceSize done, workspaceSize=%lu\n", workspaceSize_);
         return 0;
     }
@@ -340,7 +328,8 @@ private:
         }
         CHECK_RET(CheckResult(data_.output, data_.golden), return -1);
         std::ofstream file(OutputPath("output_z.bin"), std::ios::binary);
-        file.write(reinterpret_cast<const char*>(data_.output.data()),
+        file.write(
+            reinterpret_cast<const char*>(data_.output.data()),
             static_cast<std::streamsize>(data_.output.size() * sizeof(int32_t)));
         return file.good() ? 0 : -1;
     }

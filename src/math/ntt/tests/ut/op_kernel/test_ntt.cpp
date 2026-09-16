@@ -24,8 +24,8 @@
 #include "../../../op_kernel/ntt.cpp"
 
 namespace {
-using cann_crypto::ntt::test::ReadBinary;
 using cann_crypto::ntt::test::PrepackBatMatricesToB1Nz;
+using cann_crypto::ntt::test::ReadBinary;
 
 constexpr char kDataDir[] = "./ntt_data";
 constexpr char kSourceDataDir[] = "../../../../experimental/math/ntt/tests/ut/op_kernel/ntt_data";
@@ -43,10 +43,7 @@ bool WriteBinary(const std::string& path, const T* data, size_t elemCount)
     return file.good();
 }
 
-int RunCommand(const std::string& command)
-{
-    return std::system(command.c_str());
-}
+int RunCommand(const std::string& command) { return std::system(command.c_str()); }
 
 class GmBuffer {
 public:
@@ -71,10 +68,7 @@ public:
     GmBuffer(const GmBuffer&) = delete;
     GmBuffer& operator=(const GmBuffer&) = delete;
 
-    uint8_t* Get() const
-    {
-        return ptr_;
-    }
+    uint8_t* Get() const { return ptr_; }
 
     template <typename T>
     T* As() const
@@ -113,10 +107,7 @@ struct NttCase {
     int32_t logP;
 };
 
-int32_t CaseRnsChannels(const NttCase& testCase)
-{
-    return testCase.rnsChannels > 0 ? testCase.rnsChannels : 1;
-}
+int32_t CaseRnsChannels(const NttCase& testCase) { return testCase.rnsChannels > 0 ? testCase.rnsChannels : 1; }
 
 int32_t CaseChannelBlock(const NttCase& testCase)
 {
@@ -125,10 +116,7 @@ int32_t CaseChannelBlock(const NttCase& testCase)
     return configured < rnsChannels ? configured : rnsChannels;
 }
 
-int32_t CaseLaunchBlockDim(const NttCase& testCase)
-{
-    return testCase.blockDim * CaseChannelBlock(testCase);
-}
+int32_t CaseLaunchBlockDim(const NttCase& testCase) { return testCase.blockDim * CaseChannelBlock(testCase); }
 
 std::string NttCaseName(const NttCase& testCase)
 {
@@ -141,36 +129,19 @@ std::string NttCaseName(const NttCase& testCase)
 std::vector<NttCase> NttCases()
 {
     return {
-        {32, 1, 16, 1, 1, 0, 0},
-        {64, 2, 16, 1, 1, 0, 0},
-        {256, 4, 16, 1, 1, 0, 0},
-        {256, 10, 64, 1, 1, 0, 0},
-        {256, 10, 64, 3, 1, 0, 0},
-        {256, 8, 64, 1, 2, 2, 0},
-        {512, 4, 32, 2, 1, 0, 0},
-        {1024, 4, 64, 1, 4, 4, 112},
-        {4096, 8, 128, 1, 1, 0, 0},
-        {8192, 12, 64, 1, 1, 0, 0},
-        {16384, 16, 64, 1, 1, 1, 28},
-        {32768, 4, 16, 1, 1, 1, 28},
+        {32, 1, 16, 1, 1, 0, 0},      {64, 2, 16, 1, 1, 0, 0},      {256, 4, 16, 1, 1, 0, 0},
+        {256, 10, 64, 1, 1, 0, 0},    {256, 10, 64, 3, 1, 0, 0},    {256, 8, 64, 1, 2, 2, 0},
+        {512, 4, 32, 2, 1, 0, 0},     {1024, 4, 64, 1, 4, 4, 112},  {4096, 8, 128, 1, 1, 0, 0},
+        {8192, 12, 64, 1, 1, 0, 0},   {16384, 16, 64, 1, 1, 1, 28}, {32768, 4, 16, 1, 1, 1, 28},
         {65536, 16, 32, 1, 1, 1, 28},
     };
 }
 
-std::string GetParamName(const testing::TestParamInfo<NttCase>& info)
-{
-    return NttCaseName(info.param);
-}
+std::string GetParamName(const testing::TestParamInfo<NttCase>& info) { return NttCaseName(info.param); }
 
-std::string InputPath(const std::string& filename)
-{
-    return std::string(kDataDir) + "/input/" + filename;
-}
+std::string InputPath(const std::string& filename) { return std::string(kDataDir) + "/input/" + filename; }
 
-std::string OutputPath(const std::string& filename)
-{
-    return std::string(kDataDir) + "/output/" + filename;
-}
+std::string OutputPath(const std::string& filename) { return std::string(kDataDir) + "/output/" + filename; }
 
 std::string BuildGenDataCommand(const NttCase& testCase)
 {
@@ -250,10 +221,7 @@ protected:
         ASSERT_EQ(RunCommand(std::string("chmod -R 755 ") + kDataDir), 0);
     }
 
-    static void TearDownTestCase()
-    {
-        (void)RunCommand(std::string("rm -rf ") + kDataDir);
-    }
+    static void TearDownTestCase() { (void)RunCommand(std::string("rm -rf ") + kDataDir); }
 };
 
 TEST(NttTilingCopy, ValidAndNullSource)
@@ -270,10 +238,7 @@ TEST(NttTilingCopy, ValidAndNullSource)
     EXPECT_FALSE(ReadCpuTiling(destination, nullptr));
 }
 
-TEST_P(NttKernelTest, CpuGolden)
-{
-    RunNttCase(GetParam());
-}
+TEST_P(NttKernelTest, CpuGolden) { RunNttCase(GetParam()); }
 
 INSTANTIATE_TEST_SUITE_P(NttCpuGolden, NttKernelTest, testing::ValuesIn(NttCases()), GetParamName);
 

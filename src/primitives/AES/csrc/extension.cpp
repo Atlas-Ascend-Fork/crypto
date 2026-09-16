@@ -29,20 +29,9 @@
 namespace {
 
 PyModuleDef g_module_def = {
-    PyModuleDef_HEAD_INIT,
-    "_C",
-    nullptr,
-    -1,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
+    PyModuleDef_HEAD_INIT, "_C", nullptr, -1, nullptr, nullptr, nullptr, nullptr, nullptr,
 };
 
-}  // namespace
+} // namespace
 
-PyMODINIT_FUNC PyInit__C()
-{
-    return PyModule_Create(&g_module_def);
-}
+PyMODINIT_FUNC PyInit__C() { return PyModule_Create(&g_module_def); }

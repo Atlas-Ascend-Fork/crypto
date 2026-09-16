@@ -85,13 +85,12 @@ __aicore__ inline void CubeNtt::ProcessActiveChannel(int32_t channel)
 
     if (!tiling_.useFourStep) {
         if (UseParallelDirectBat()) {
-            ProcessParallelDirectBat(
-                xChannelBase, zChannelBase, matrixPhase1);
+            ProcessParallelDirectBat(xChannelBase, zChannelBase, matrixPhase1);
             return;
         }
         SubNTT(
-            xChannelBase, tiling_.n, zChannelBase, tiling_.n, tiling_.phase1KernelN, tiling_.n,
-            tiling_.polyCount, matrixPhase1);
+            xChannelBase, tiling_.n, zChannelBase, tiling_.n, tiling_.phase1KernelN, tiling_.n, tiling_.polyCount,
+            matrixPhase1);
         return;
     }
 
@@ -173,8 +172,7 @@ __aicore__ inline void CubeNtt::SetActiveChannel(int32_t channel)
     activeQ_ = ChannelQ(channel);
     activeBarrettK_ = ComputeBarrettK(activeQ_);
     activeBarrettMu_ = ComputeBarrettMu(activeQ_, activeBarrettK_);
-    activeFold28_ =
-        (activeBarrettK_ == kResidueBits && activeQ_ > (kResidueBase / 2)) ? (kResidueBase - activeQ_) : 0;
+    activeFold28_ = (activeBarrettK_ == kResidueBits && activeQ_ > (kResidueBase / 2)) ? (kResidueBase - activeQ_) : 0;
     activeUseInt10_ = CanUseInt10Fold(activeFold28_);
     activeUseInt10TwoWrap_ = CanSkipInt10FirstWrap(activeFold28_);
     activeUseInt10OneWrap_ = CanSkipInt10SecondWrap(activeFold28_);
@@ -183,10 +181,8 @@ __aicore__ inline void CubeNtt::SetActiveChannel(int32_t channel)
 
 __aicore__ inline bool CubeNtt::UseParallelDirectBat() const
 {
-    return tiling_.n == 256 && tiling_.phase1KernelN == 256 &&
-           tiling_.rnsChannels == 1 && tiling_.channelBlock == 1 &&
-           tiling_.blockDim == kBatTileCount &&
-           tiling_.subBench == 16 && tiling_.polyCount > 0 &&
+    return tiling_.n == 256 && tiling_.phase1KernelN == 256 && tiling_.rnsChannels == 1 && tiling_.channelBlock == 1 &&
+           tiling_.blockDim == kBatTileCount && tiling_.subBench == 16 && tiling_.polyCount > 0 &&
            (activeQ_ == 3329 || activeQ_ == 8380417);
 }
 
@@ -197,22 +193,17 @@ __aicore__ inline int32_t CubeNtt::ParallelBatPaddedPolyCount() const
 
 __aicore__ inline size_t CubeNtt::ParallelBatPartialMatrixBytes() const
 {
-    return static_cast<size_t>(ParallelBatPaddedPolyCount()) *
-           static_cast<size_t>(tiling_.n) * sizeof(int32_t);
+    return static_cast<size_t>(ParallelBatPaddedPolyCount()) * static_cast<size_t>(tiling_.n) * sizeof(int32_t);
 }
 
 __aicore__ inline GM_ADDR CubeNtt::ParallelBatPartialMatrix(int32_t matrixId) const
 {
-    return scratchBase_ +
-           static_cast<size_t>(kDigitCount) *
-               ParallelBatSplitPlaneBytes() +
-           static_cast<size_t>(matrixId) *
-               ParallelBatPartialMatrixBytes();
+    return scratchBase_ + static_cast<size_t>(kDigitCount) * ParallelBatSplitPlaneBytes() +
+           static_cast<size_t>(matrixId) * ParallelBatPartialMatrixBytes();
 }
 
 __aicore__ inline void CubeNtt::ProcessParallelDirectBat(
-    __gm__ int32_t* srcBase, __gm__ int32_t* dstBase,
-    GM_ADDR matrixBase)
+    __gm__ int32_t* srcBase, __gm__ int32_t* dstBase, GM_ADDR matrixBase)
 {
     if (activeQ_ == 3329) {
         ProcessKemTilePipeline(srcBase, dstBase, matrixBase);
@@ -242,8 +233,7 @@ __aicore__ inline void CubeNtt::ProcessParallelDirectBat(
 
 __aicore__ inline int32_t CubeNtt::ParallelPqcTileCount() const
 {
-    return CeilDivInt(
-        ParallelBatPaddedPolyCount(), kParallelAivPolyBatch);
+    return CeilDivInt(ParallelBatPaddedPolyCount(), kParallelAivPolyBatch);
 }
 
 __aicore__ inline int32_t CubeNtt::ParallelPqcRoundCount() const
@@ -251,22 +241,15 @@ __aicore__ inline int32_t CubeNtt::ParallelPqcRoundCount() const
     return CeilDivInt(ParallelPqcTileCount(), logicalBlockCount_);
 }
 
-__aicore__ inline uint16_t CubeNtt::PqcSplitState(int32_t slot) const
-{
-    return static_cast<uint16_t>(2 * slot);
-}
+__aicore__ inline uint16_t CubeNtt::PqcSplitState(int32_t slot) const { return static_cast<uint16_t>(2 * slot); }
 
-__aicore__ inline uint16_t CubeNtt::PqcMergeState(int32_t slot) const
-{
-    return static_cast<uint16_t>(2 * slot + 1);
-}
+__aicore__ inline uint16_t CubeNtt::PqcMergeState(int32_t slot) const { return static_cast<uint16_t>(2 * slot + 1); }
 
 __aicore__ inline void CubeNtt::RunPqcCubePipeline(GM_ADDR matrixBase, int32_t roundCount, bool kem)
 {
     constexpr int32_t pipelineDepth = 2;
     for (int32_t round = 0; round < roundCount; ++round) {
-        const int32_t tileId =
-            round * logicalBlockCount_ + logicalBlockId_;
+        const int32_t tileId = round * logicalBlockCount_ + logicalBlockId_;
         if (tileId >= ParallelPqcTileCount()) {
             continue;
         }
@@ -278,8 +261,7 @@ __aicore__ inline void CubeNtt::RunPqcCubePipeline(GM_ADDR matrixBase, int32_t r
 }
 
 __aicore__ inline void CubeNtt::ProcessPqcTilePipeline(
-    __gm__ int32_t* srcBase, __gm__ int32_t* dstBase,
-    GM_ADDR matrixBase, bool kem)
+    __gm__ int32_t* srcBase, __gm__ int32_t* dstBase, GM_ADDR matrixBase, bool kem)
 {
     constexpr int32_t pipelineDepth = 2;
     const int32_t roundCount = ParallelPqcRoundCount();
@@ -290,8 +272,7 @@ __aicore__ inline void CubeNtt::ProcessPqcTilePipeline(
 
     const int32_t prefill = MinInt(pipelineDepth, roundCount);
     for (int32_t round = 0; round < prefill; ++round) {
-        const int32_t tileId =
-            round * logicalBlockCount_ + logicalBlockId_;
+        const int32_t tileId = round * logicalBlockCount_ + logicalBlockId_;
         if (tileId >= ParallelPqcTileCount()) {
             continue;
         }
@@ -301,8 +282,7 @@ __aicore__ inline void CubeNtt::ProcessPqcTilePipeline(
     }
 
     for (int32_t round = 0; round < roundCount; ++round) {
-        const int32_t tileId =
-            round * logicalBlockCount_ + logicalBlockId_;
+        const int32_t tileId = round * logicalBlockCount_ + logicalBlockId_;
         if (tileId >= ParallelPqcTileCount()) {
             continue;
         }
@@ -311,10 +291,8 @@ __aicore__ inline void CubeNtt::ProcessPqcTilePipeline(
         PqcTileMerge(dstBase, tileId, kem);
 
         const int32_t nextRound = round + pipelineDepth;
-        const int32_t nextTile =
-            nextRound * logicalBlockCount_ + logicalBlockId_;
-        if (nextRound < roundCount &&
-            nextTile < ParallelPqcTileCount()) {
+        const int32_t nextTile = nextRound * logicalBlockCount_ + logicalBlockId_;
+        if (nextRound < roundCount && nextTile < ParallelPqcTileCount()) {
             const int32_t nextSlot = nextRound % pipelineDepth;
             PqcTileSplit(srcBase, nextTile, kem);
             __SET(PqcSplitState(nextSlot), false);
@@ -366,7 +344,4 @@ __aicore__ inline bool CubeNtt::CanRunSubNttPipeline(int32_t roundCount)
     return roundCount > 1 && static_cast<int32_t>(kPipelinedCrossCoreStates) <= kFirstSyncAllReservedFlag;
 }
 
-__aicore__ inline void CubeNtt::SyncAllCores()
-{
-    AscendC::SyncAll<false>();
-}
+__aicore__ inline void CubeNtt::SyncAllCores() { AscendC::SyncAll<false>(); }

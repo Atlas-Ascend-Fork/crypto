@@ -22,7 +22,7 @@ namespace ge {
 using graphStatus = int;
 constexpr graphStatus GRAPH_SUCCESS = 0;
 constexpr graphStatus GRAPH_FAILED = 1;
-}
+} // namespace ge
 
 namespace gert {
 class Shape {
@@ -32,6 +32,7 @@ public:
     int64_t GetDim(size_t index) const { return dims_.at(index); }
     void SetDimNum(size_t count) { dims_.resize(count); }
     void SetDim(size_t index, int64_t value) { dims_.at(index) = value; }
+
 private:
     std::vector<int64_t> dims_;
 };
@@ -41,6 +42,7 @@ public:
     InferShapeContext(const Shape* input, Shape* output) : input_(input), output_(output) {}
     const Shape* GetInputShape(size_t) const { return input_; }
     Shape* GetOutputShape(size_t) const { return output_; }
+
 private:
     const Shape* input_;
     Shape* output_;
@@ -50,6 +52,7 @@ class StorageShape {
 public:
     StorageShape(std::initializer_list<int64_t> dims) : shape_(dims) {}
     const Shape& GetStorageShape() const { return shape_; }
+
 private:
     Shape shape_;
 };
@@ -69,7 +72,8 @@ public:
     const StorageShape* GetInputShape(size_t) const { return input; }
     const StorageShape* GetOutputShape(size_t) const { return output; }
     TestPlatform* GetPlatformInfo() { return platform; }
-    template<typename T> T* GetTilingData()
+    template <typename T>
+    T* GetTilingData()
     {
         static_assert(sizeof(T) <= 128, "Tiling test buffer is too small");
         return hasTiling ? reinterpret_cast<T*>(data.data()) : nullptr;
@@ -90,19 +94,24 @@ public:
     uint64_t tilingKey = UINT64_MAX;
     size_t workspace = SIZE_MAX;
     RawTilingData raw;
+
 private:
     alignas(std::max_align_t) std::array<unsigned char, 128> data{};
 };
-}
+} // namespace gert
 
 struct TestInferRegistration {
-    template<typename Function>
-    TestInferRegistration& InferShape(Function) { return *this; }
-    template<typename Function>
-    TestInferRegistration& Tiling(Function) { return *this; }
+    template <typename Function>
+    TestInferRegistration& InferShape(Function)
+    {
+        return *this;
+    }
+    template <typename Function>
+    TestInferRegistration& Tiling(Function)
+    {
+        return *this;
+    }
 };
-#define IMPL_OP_INFERSHAPE(name) \
-    [[maybe_unused]] static auto test_registration_##name = TestInferRegistration()
-#define IMPL_OP_OPTILING(name) \
-    [[maybe_unused]] static auto test_tiling_registration_##name = TestInferRegistration()
+#define IMPL_OP_INFERSHAPE(name) [[maybe_unused]] static auto test_registration_##name = TestInferRegistration()
+#define IMPL_OP_OPTILING(name) [[maybe_unused]] static auto test_tiling_registration_##name = TestInferRegistration()
 #endif

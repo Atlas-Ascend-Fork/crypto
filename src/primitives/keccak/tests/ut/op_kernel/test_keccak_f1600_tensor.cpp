@@ -20,7 +20,12 @@
 
 namespace {
 struct GmDeleter {
-    void operator()(uint8_t* pointer) const { if (pointer != nullptr) { AscendC::GmFree(pointer); } }
+    void operator()(uint8_t* pointer) const
+    {
+        if (pointer != nullptr) {
+            AscendC::GmFree(pointer);
+        }
+    }
 };
 using GmBuffer = std::unique_ptr<uint8_t, GmDeleter>;
 
@@ -56,7 +61,7 @@ TEST_P(KeccakF1600TensorKernelTest, MatchesIndependentReference)
         uint64_t expected[25];
         for (uint32_t lane = 0; lane < 25; ++lane) {
             expected[lane] = static_cast<uint64_t>(input[(2U * lane) * batch + message]) |
-                (static_cast<uint64_t>(input[(2U * lane + 1U) * batch + message]) << 32U);
+                             (static_cast<uint64_t>(input[(2U * lane + 1U) * batch + message]) << 32U);
         }
         CannCryptoRefKeccakF1600(expected);
         for (uint32_t lane = 0; lane < 25; ++lane) {
@@ -68,4 +73,4 @@ TEST_P(KeccakF1600TensorKernelTest, MatchesIndependentReference)
 
 // 包含单块、对齐尾块和多块调度。
 INSTANTIATE_TEST_SUITE_P(Batches, KeccakF1600TensorKernelTest, testing::Values(64U, 256U, 320U));
-}
+} // namespace

@@ -60,7 +60,10 @@ struct NttPlan {
 };
 
 // Device addresses and byte capacities. The caller owns all buffers and the stream.
-struct NttBuffer { void* data = nullptr; size_t bytes = 0; };
+struct NttBuffer {
+    void* data = nullptr;
+    size_t bytes = 0;
+};
 struct NttBuffers {
     NttBuffer x, matrixPhase1, matrixPhase2, twiddlePhase12, y, workspace;
 };
@@ -69,16 +72,14 @@ struct NttBuffers {
 // ntt kernel in the supplied stream, using the plan's tiling and block count.
 // Device buffers must remain valid until stream completion; this API never syncs.
 // No backend is supplied implicitly and a missing backend is an explicit error.
-using NttEnqueue = NttStatus (*)(void* backendContext, const NttPlan& plan,
-                               const NttBuffers& buffers, void* stream);
+using NttEnqueue = NttStatus (*)(void* backendContext, const NttPlan& plan, const NttBuffers& buffers, void* stream);
 
-NttStatus BuildNttTiling(const NttParams& params, NttTilingData& tiling,
-                       size_t& userWorkspaceBytes, const char** error = nullptr);
-NttStatus PrepareNttLaunch(const NttParams& params, NttPlan& plan,
-                          const char** error = nullptr);
-NttStatus LaunchNtt(const NttParams& params, const NttBuffers& buffers,
-                    NttEnqueue enqueue, void* backendContext, void* stream,
-                    const char** error = nullptr);
+NttStatus BuildNttTiling(
+    const NttParams& params, NttTilingData& tiling, size_t& userWorkspaceBytes, const char** error = nullptr);
+NttStatus PrepareNttLaunch(const NttParams& params, NttPlan& plan, const char** error = nullptr);
+NttStatus LaunchNtt(
+    const NttParams& params, const NttBuffers& buffers, NttEnqueue enqueue, void* backendContext, void* stream,
+    const char** error = nullptr);
 
 } // namespace cann_crypto::ntt
 #endif

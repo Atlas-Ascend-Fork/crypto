@@ -43,8 +43,8 @@ __aicore__ inline uint16_t CubeNtt::SubNttStateId(int32_t slot, uint16_t statesP
 
 __aicore__ inline GM_ADDR CubeNtt::ScratchSlotBase(size_t scratchPerBlock, int32_t slot)
 {
-    const size_t logicalSlot = static_cast<size_t>(logicalBlockId_) * static_cast<size_t>(kSubNttPipelineSlots) +
-                               static_cast<size_t>(slot);
+    const size_t logicalSlot =
+        static_cast<size_t>(logicalBlockId_) * static_cast<size_t>(kSubNttPipelineSlots) + static_cast<size_t>(slot);
     return scratchBase_ + logicalSlot * scratchPerBlock;
 }
 
@@ -80,13 +80,11 @@ __aicore__ inline void CubeNtt::RunSubNTTSerialTask(
     }
 
     RunSubNTTSplitTask(
-        srcBase, srcStride, kernelN, logicalN, totalBench, paddedBenchWidth, scratchPerBlock, roundSpan, round,
-        slot);
+        srcBase, srcStride, kernelN, logicalN, totalBench, paddedBenchWidth, scratchPerBlock, roundSpan, round, slot);
     __SET(stateId, isAic_);
     __WAIT(stateId);
     RunSubNTTMergeTask(
-        dstBase, dstStride, kernelN, logicalN, totalBench, paddedBenchWidth, scratchPerBlock, roundSpan, round,
-        slot);
+        dstBase, dstStride, kernelN, logicalN, totalBench, paddedBenchWidth, scratchPerBlock, roundSpan, round, slot);
 }
 
 __aicore__ inline void CubeNtt::RunSubNTTPipeline(
@@ -157,8 +155,7 @@ __aicore__ inline void CubeNtt::RunSubNTTMmadTask(
     const auto scratch = MakeScratch(kernelN, paddedBenchWidth, scratchPerBlock, slot);
     AicMmad mmol(paddedBenchWidth, kernelN, kernelN);
     mmol.Init();
-    LocalTensor<int32_t> accum[4] = {
-        mmol.AllocAccum(), mmol.AllocAccum(), mmol.AllocAccum(), mmol.AllocAccum()};
+    LocalTensor<int32_t> accum[4] = {mmol.AllocAccum(), mmol.AllocAccum(), mmol.AllocAccum(), mmol.AllocAccum()};
     for (int32_t input = 0; input < kDigitCount; ++input) {
         mmol.LoadA(scratch.Split(input));
         for (int32_t output = 0; output < kDigitCount; ++output) {
@@ -186,8 +183,8 @@ __aicore__ inline void CubeNtt::RunSubNTTSplitTask(
     const auto scratch = MakeScratch(kernelN, paddedBenchWidth, scratchPerBlock, slot);
 
     DirectSplitBlockHalf(
-        scratch.Split(0), scratch.Split(1), scratch.Split(2), scratch.Split(3), srcBase, srcStride,
-        blockBenchOffset, actualBench, logicalN, kernelN, paddedBenchWidth);
+        scratch.Split(0), scratch.Split(1), scratch.Split(2), scratch.Split(3), srcBase, srcStride, blockBenchOffset,
+        actualBench, logicalN, kernelN, paddedBenchWidth);
     AscendC::PipeBarrier<PIPE_ALL>();
 }
 
@@ -257,11 +254,12 @@ __aicore__ inline void CubeNtt::StoreDirectSplit(
     NttSplitBuffers& buffers, GM_ADDR* destinations, const DirectSplitPlan& plan)
 {
     LocalTensor<int8_t> output[4] = {
-        buffers.output[0].DeQue<int8_t>(), buffers.output[1].DeQue<int8_t>(),
-        buffers.output[2].DeQue<int8_t>(), buffers.output[3].DeQue<int8_t>()};
+        buffers.output[0].DeQue<int8_t>(), buffers.output[1].DeQue<int8_t>(), buffers.output[2].DeQue<int8_t>(),
+        buffers.output[3].DeQue<int8_t>()};
     for (int32_t i = 0; i < 4; ++i) {
         AscendC::GlobalTensor<int8_t> dst;
-        dst.SetGlobalBuffer(reinterpret_cast<__gm__ int8_t*>(destinations[i]),
+        dst.SetGlobalBuffer(
+            reinterpret_cast<__gm__ int8_t*>(destinations[i]),
             static_cast<size_t>(plan.kernelN) * plan.paddedBenchWidth);
         AscendC::DataCopy(dst[subBlockId_ * plan.tileLength], output[i], plan.tileLength);
     }
@@ -278,8 +276,9 @@ __aicore__ inline void CubeNtt::DirectSplitBlockHalf(
     const int32_t halfRows = paddedBenchWidth / kMixAivPerAic;
     const int32_t rowStart = subBlockId_ * halfRows;
     const int32_t validRows = actualBench > rowStart ? MinInt(halfRows, actualBench - rowStart) : 0;
-    const DirectSplitPlan plan{srcStride, blockBenchOffset, logicalN, kernelN, paddedBenchWidth,
-        halfRows, rowStart, kernelN * halfRows, validRows, srcStride == logicalN && logicalN == kernelN};
+    const DirectSplitPlan plan{
+        srcStride, blockBenchOffset, logicalN,           kernelN,   paddedBenchWidth,
+        halfRows,  rowStart,         kernelN * halfRows, validRows, srcStride == logicalN && logicalN == kernelN};
     NttSplitBuffers buffers;
     buffers.Init(plan.tileLength, false);
     LoadDirectSplitInput(buffers, srcBase, plan);

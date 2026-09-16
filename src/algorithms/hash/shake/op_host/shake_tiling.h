@@ -39,9 +39,8 @@ inline bool ValidShape(uint64_t batch, uint64_t inputLength, uint64_t outputLeng
     const uint64_t maxWord = std::numeric_limits<uint32_t>::max();
     const uint64_t maxTensor = static_cast<uint64_t>(std::numeric_limits<int64_t>::max());
     // 为内核分组向上取整的加法预留范围，张量总尺寸不得超过 INT64_MAX。
-    return batch > 0U && batch <= MAX_BATCH_SIZE && inputLength <= maxWord &&
-        outputLength > 0U && outputLength <= maxWord &&
-        inputLength <= maxTensor / batch && outputLength <= maxTensor / batch;
+    return batch > 0U && batch <= MAX_BATCH_SIZE && inputLength <= maxWord && outputLength > 0U &&
+           outputLength <= maxWord && inputLength <= maxTensor / batch && outputLength <= maxTensor / batch;
 }
 
 inline ShakeSchedule MakeSchedule(uint32_t batch, uint32_t coreCount)

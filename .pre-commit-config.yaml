@@ -44,14 +44,14 @@ repos:
         exclude: ^build/|tests/third_party/
 
   # Python 代码检查
+  # 不启用 ruff-format：它按 PEP 8 在复杂切片冒号两侧加空格，
+  # 与 CANN 的 G.FMT.04 冲突，会产生 CodeCheck 告警，且该行为不可配置
   # F401：算子包的 __init__.py 通过 import 触发扩展注册，不能按未使用删除
   - repo: https://gitcode.com/gh_mirrors/ru/ruff-pre-commit
     rev: v0.14.14
     hooks:
       - id: ruff-check
         args: ["--output-format", "github", "--fix", "--ignore", "F401"]
-        types: [python]
-      - id: ruff-format
         types: [python]
 
   # 拼写检查，Fo 为 MSVC 编译器目标文件参数 /Fo，非拼写错误

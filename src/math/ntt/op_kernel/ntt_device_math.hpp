@@ -50,10 +50,7 @@ constexpr int32_t kBatTileCount = kDigitCount * kDigitCount; // [out_chunk][in_c
 constexpr int32_t kTransposePanel = 32;
 constexpr int32_t kParallelAivPolyBatch = 16;
 
-__aicore__ inline size_t MaxSize(size_t a, size_t b)
-{
-    return a > b ? a : b;
-}
+__aicore__ inline size_t MaxSize(size_t a, size_t b) { return a > b ? a : b; }
 
 __aicore__ inline int32_t CeilDivInt(int32_t a, int32_t b)
 {
@@ -123,26 +120,19 @@ __aicore__ inline size_t StageScratchBytesInt(int32_t kernelN, int32_t subBench,
            static_cast<size_t>(kSubNttPipelineSlots);
 }
 
-__aicore__ inline size_t DirectPqcScratchBytesInt(
-    const NttTilingData& tiling)
+__aicore__ inline size_t DirectPqcScratchBytesInt(const NttTilingData& tiling)
 {
-    const int32_t paddedPolyCount =
-        AlignUpInt(tiling.polyCount, tiling.subBench);
-    const size_t planeBytes =
-        static_cast<size_t>(paddedPolyCount) * tiling.n;
+    const int32_t paddedPolyCount = AlignUpInt(tiling.polyCount, tiling.subBench);
+    const size_t planeBytes = static_cast<size_t>(paddedPolyCount) * tiling.n;
     return static_cast<size_t>(kDigitCount) * planeBytes +
-           static_cast<size_t>(kBatTileCount) * planeBytes *
-               sizeof(int32_t);
+           static_cast<size_t>(kBatTileCount) * planeBytes * sizeof(int32_t);
 }
 
-__aicore__ inline bool IsDirectPqcTiling(
-    const NttTilingData& tiling)
+__aicore__ inline bool IsDirectPqcTiling(const NttTilingData& tiling)
 {
     const int32_t q = tiling.qList[0] > 0 ? tiling.qList[0] : tiling.q;
-    return tiling.n == 256 && tiling.phase1KernelN == 256 &&
-           tiling.rnsChannels == 1 && tiling.channelBlock == 1 &&
-           tiling.blockDim == kBatTileCount && tiling.subBench == 16 &&
-           (q == 3329 || q == 8380417);
+    return tiling.n == 256 && tiling.phase1KernelN == 256 && tiling.rnsChannels == 1 && tiling.channelBlock == 1 &&
+           tiling.blockDim == kBatTileCount && tiling.subBench == 16 && (q == 3329 || q == 8380417);
 }
 
 __aicore__ inline FourStepWorkspaceLayout MakeWorkspaceLayoutDevice(const NttTilingData& tiling)
@@ -153,9 +143,8 @@ __aicore__ inline FourStepWorkspaceLayout MakeWorkspaceLayoutDevice(const NttTil
     const size_t stageScratchBytes = MaxSize(
         StageScratchBytesInt(tiling.phase1KernelN, tiling.subBench, tiling.blockDim),
         StageScratchBytesInt(tiling.phase2KernelN, tiling.subBench, tiling.blockDim));
-    const size_t scratchBytes = IsDirectPqcTiling(tiling)
-        ? MaxSize(stageScratchBytes, DirectPqcScratchBytesInt(tiling))
-        : stageScratchBytes;
+    const size_t scratchBytes =
+        IsDirectPqcTiling(tiling) ? MaxSize(stageScratchBytes, DirectPqcScratchBytesInt(tiling)) : stageScratchBytes;
     const size_t syncBytes = static_cast<size_t>(tiling.blockDim) * static_cast<size_t>(kMixAivPerAic) *
                              static_cast<size_t>(kSyncIntsPerCore) * sizeof(int32_t);
 
@@ -169,10 +158,7 @@ __aicore__ inline FourStepWorkspaceLayout MakeWorkspaceLayoutDevice(const NttTil
     return layout;
 }
 
-__aicore__ inline void __WAIT(uint16_t stateID)
-{
-    AscendC::CrossCoreWaitFlag<2, PIPE_MTE2>(stateID);
-}
+__aicore__ inline void __WAIT(uint16_t stateID) { AscendC::CrossCoreWaitFlag<2, PIPE_MTE2>(stateID); }
 
 __aicore__ inline void __SET(uint16_t stateID, bool isAic)
 {
@@ -184,10 +170,7 @@ __aicore__ inline void __SET(uint16_t stateID, bool isAic)
     AscendC::CrossCoreSetFlag<2, PIPE_MTE2>(stateID);
 }
 
-__aicore__ inline int32_t MinInt(int32_t a, int32_t b)
-{
-    return a < b ? a : b;
-}
+__aicore__ inline int32_t MinInt(int32_t a, int32_t b) { return a < b ? a : b; }
 
 __aicore__ inline int32_t ComputeBarrettK(int32_t mod)
 {
@@ -218,20 +201,11 @@ __aicore__ inline void ExtractInt7DigitVec(
     AscendC::Sub(digit, digit, tmp, count);
 }
 
-__aicore__ inline bool CanUseInt10Fold(int32_t fold28)
-{
-    return fold28 > 0 && fold28 < kFastFold10Limit;
-}
+__aicore__ inline bool CanUseInt10Fold(int32_t fold28) { return fold28 > 0 && fold28 < kFastFold10Limit; }
 
-__aicore__ inline bool CanSkipInt10FirstWrap(int32_t fold28)
-{
-    return fold28 > 0 && fold28 < kFastFold10TwoWrapLimit;
-}
+__aicore__ inline bool CanSkipInt10FirstWrap(int32_t fold28) { return fold28 > 0 && fold28 < kFastFold10TwoWrapLimit; }
 
-__aicore__ inline bool CanSkipInt10SecondWrap(int32_t fold28)
-{
-    return fold28 > 0 && fold28 < kFastFold10OneWrapLimit;
-}
+__aicore__ inline bool CanSkipInt10SecondWrap(int32_t fold28) { return fold28 > 0 && fold28 < kFastFold10OneWrapLimit; }
 
 __aicore__ inline bool CanUseBase7FoldWithAdd(int32_t fold28, int32_t maxProductTerms)
 {
@@ -407,4 +381,3 @@ __aicore__ inline void MulModVecVecInt10SchoolbookPresplitRhs(
     AscendC::Add(dst, dst, digitSum, count);
     wrap_mod_vec_runtime(dst, dst, q, reduce0, reduce1, count);
 }
-

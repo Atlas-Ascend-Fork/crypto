@@ -15,7 +15,11 @@
 int main()
 {
     int failures = 0;
-    auto check = [&failures](bool value) { if (!value) { ++failures; } };
+    auto check = [&failures](bool value) {
+        if (!value) {
+            ++failures;
+        }
+    };
     check(ops::InferShape(nullptr) == ge::GRAPH_FAILED);
     gert::Shape output;
     gert::InferShapeContext missingInput(nullptr, &output);

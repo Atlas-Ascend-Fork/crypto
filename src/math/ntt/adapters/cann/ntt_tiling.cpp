@@ -95,8 +95,7 @@ bool DecodeParameters(gert::TilingContext* context, NttParams& params)
     params.g = IntAttr(attrs, 4, params.g);
     params.logP = IntAttr(attrs, 5, params.logP);
     params.rnsChannels = IntAttr(attrs, 6, params.rnsChannels);
-    if (!ListAttr(attrs, 7, params.qList, params.qListCount) ||
-        !ListAttr(attrs, 8, params.gList, params.gListCount)) {
+    if (!ListAttr(attrs, 7, params.qList, params.qListCount) || !ListAttr(attrs, 8, params.gList, params.gListCount)) {
         return false;
     }
     return true;
@@ -106,9 +105,9 @@ void TraceTiling(const NttPlan& plan)
 {
     const char* trace = std::getenv("NTT_TRACE_TILING");
     if (trace != nullptr && std::strcmp(trace, "1") == 0) {
-        std::fprintf(stderr, "[crypto Ntt tiling] N=%d q=%d batch=%d blockDim=%u subBench=%d workspace=%zu\n",
-            plan.tiling.n, plan.tiling.q, plan.tiling.polyCount, plan.launchBlockDim,
-            plan.tiling.subBench, plan.workspaceBytes);
+        std::fprintf(
+            stderr, "[crypto Ntt tiling] N=%d q=%d batch=%d blockDim=%u subBench=%d workspace=%zu\n", plan.tiling.n,
+            plan.tiling.q, plan.tiling.polyCount, plan.launchBlockDim, plan.tiling.subBench, plan.workspaceBytes);
     }
 }
 

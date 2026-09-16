@@ -94,7 +94,7 @@ print("Verification successful!")
     ```cmake
     ascend_ops_add_current_op(OP_TARGET)
     ```
-    
+
     这里`NPU_ARCH`会传递给编译器的`--npu-arch`参数，当前支持`dav-2201`和`dav-3510`。获取方法参考[NpuArch说明和使用指导](https://gitcode.com/cann/ops-math/wiki/NpuArch%E8%AF%B4%E6%98%8E%E5%92%8C%E4%BD%BF%E7%94%A8%E6%8C%87%E5%AF%BC.md)。如果算子需要额外依赖，可在同一个`CMakeLists.txt`中为`${OP_TARGET}`显式添加。
 
 3. 在`NPU_ARCH`目录下新建一个`add.asc`(建议使用算子名为文件名)。这个文件包含了开发一个AI Core算子所需要的全部模块。

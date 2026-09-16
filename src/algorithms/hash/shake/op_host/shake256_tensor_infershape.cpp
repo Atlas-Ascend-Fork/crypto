@@ -24,4 +24,4 @@ static graphStatus InferShape(gert::InferShapeContext* context)
 
 IMPL_OP_INFERSHAPE(Shake256Tensor).InferShape(InferShape);
 
-}  // namespace ge
+} // namespace ge

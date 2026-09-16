@@ -17,17 +17,15 @@
 
 namespace optiling {
 inline bool BuildShakeTilingConfig(
-    gert::TilingContext* context, cann_crypto::shake::Algorithm algorithm,
-    cann_crypto::shake::LaunchConfig& config)
+    gert::TilingContext* context, cann_crypto::shake::Algorithm algorithm, cann_crypto::shake::LaunchConfig& config)
 {
     if (context == nullptr || context->GetInputShape(0) == nullptr || context->GetOutputShape(0) == nullptr) {
         return false;
     }
     const auto& input = context->GetInputShape(0)->GetStorageShape();
     const auto& output = context->GetOutputShape(0)->GetStorageShape();
-    if (input.GetDimNum() != 2U || output.GetDimNum() != 2U ||
-        input.GetDim(0) <= 0 || input.GetDim(1) < 0 || output.GetDim(1) <= 0 ||
-        input.GetDim(0) != output.GetDim(0)) {
+    if (input.GetDimNum() != 2U || output.GetDimNum() != 2U || input.GetDim(0) <= 0 || input.GetDim(1) < 0 ||
+        output.GetDim(1) <= 0 || input.GetDim(0) != output.GetDim(0)) {
         return false;
     }
     uint32_t coreCount = 1U;
@@ -35,13 +33,13 @@ inline bool BuildShakeTilingConfig(
         platform_ascendc::PlatformAscendC platform(context->GetPlatformInfo());
         coreCount = static_cast<uint32_t>(platform.GetCoreNumAiv());
     }
-    const cann_crypto::shake::Request request{algorithm,
-        static_cast<uint64_t>(input.GetDim(0)), static_cast<uint64_t>(input.GetDim(1)),
+    const cann_crypto::shake::Request request{
+        algorithm, static_cast<uint64_t>(input.GetDim(0)), static_cast<uint64_t>(input.GetDim(1)),
         static_cast<uint64_t>(output.GetDim(1))};
     return cann_crypto::shake::BuildLaunchConfig(request, coreCount, config);
 }
 
-template<typename TilingData>
+template <typename TilingData>
 ge::graphStatus TilingShakeTensor(
     gert::TilingContext* context, cann_crypto::shake::Algorithm algorithm, uint64_t tilingKey)
 {

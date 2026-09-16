@@ -72,13 +72,10 @@ __aicore__ inline void split_vec_int7x4(
 }
 
 __aicore__ inline void split_vec_int7x2(
-    Tensor_int8x2& dst, LocalTensor<int32_t>& src,
-    LocalTensor<int32_t>& t1, LocalTensor<half>& t2,
-    const int32_t count)
+    Tensor_int8x2& dst, LocalTensor<int32_t>& src, LocalTensor<int32_t>& t1, LocalTensor<half>& t2, const int32_t count)
 {
     AscendC::SetDeqScale((half)1.0f);
-    AscendC::ShiftRight(
-        tr<uint32_t>(t1), tr<uint32_t>(src), (uint32_t)7, count);
+    AscendC::ShiftRight(tr<uint32_t>(t1), tr<uint32_t>(src), (uint32_t)7, count);
     AscendC::Cast(t2, t1, AscendC::RoundMode::CAST_NONE, count);
     AscendC::Cast(dst.x1, t2, AscendC::RoundMode::CAST_NONE, count);
     AscendC::ShiftLeft(t1, t1, 7, count);
@@ -88,8 +85,7 @@ __aicore__ inline void split_vec_int7x2(
 }
 
 __aicore__ inline void split_vec_int8x3_balanced(
-    Tensor_int8x3& dst, LocalTensor<int32_t>& src,
-    LocalTensor<int32_t>& quotient, LocalTensor<int32_t>& tmp,
+    Tensor_int8x3& dst, LocalTensor<int32_t>& src, LocalTensor<int32_t>& quotient, LocalTensor<int32_t>& tmp,
     LocalTensor<half>& castTmp, const int32_t count)
 {
     AscendC::SetDeqScale((half)1.0f);
@@ -160,10 +156,9 @@ __aicore__ inline void barrett_mul_small_vecvec_runtime(
 }
 
 __aicore__ inline void barrett_product_quotient(
-    LocalTensor<int32_t>& src, LocalTensor<int32_t>& w, int32_t k,
-    LocalTensor<int32_t>& t1, LocalTensor<int32_t>& t2,
-    LocalTensor<int32_t>& wLo, LocalTensor<int32_t>& wHi,
-    LocalTensor<int32_t>& t5, LocalTensor<int32_t>& t6, int32_t count)
+    LocalTensor<int32_t>& src, LocalTensor<int32_t>& w, int32_t k, LocalTensor<int32_t>& t1, LocalTensor<int32_t>& t2,
+    LocalTensor<int32_t>& wLo, LocalTensor<int32_t>& wHi, LocalTensor<int32_t>& t5, LocalTensor<int32_t>& t6,
+    int32_t count)
 {
     using AscendC::Add, AscendC::ShiftLeft, AscendC::Sub;
     AscendC::Mul(t6, src, w, count);
@@ -190,7 +185,6 @@ __aicore__ inline void barrett_product_quotient(
         ShiftLeft(t1, t1, 30 - (k - 2), count);
     }
     Add(t5, t5, t1, count);
-
 }
 
 __aicore__ inline void barrett_mul_vecvec_runtime(

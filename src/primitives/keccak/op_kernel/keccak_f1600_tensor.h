@@ -23,40 +23,28 @@ class KernelKeccakF1600Tensor {
 public:
     __aicore__ inline KernelKeccakF1600Tensor() {}
 
-    __aicore__ inline void Init(
-        GM_ADDR x,
-        GM_ADDR y,
-        const KeccakF1600TensorTilingData* tiling)
+    __aicore__ inline void Init(GM_ADDR x, GM_ADDR y, const KeccakF1600TensorTilingData* tiling)
     {
         x_.SetGlobalBuffer(reinterpret_cast<__gm__ uint32_t*>(x));
         y_.SetGlobalBuffer(reinterpret_cast<__gm__ uint32_t*>(y));
         batch_ = tiling->batch;
-        pipe_.InitBuffer(
-            buf_,
-            KeccakF1600U32Vector::SLOT_COUNT *
-                KeccakF1600U32Vector::TILE * sizeof(uint32_t));
+        pipe_.InitBuffer(buf_, KeccakF1600U32Vector::SLOT_COUNT * KeccakF1600U32Vector::TILE * sizeof(uint32_t));
     }
 
     __aicore__ inline void Process()
     {
         AscendC::LocalTensor<uint32_t> base = buf_.Get<uint32_t>();
 
-        const int32_t eventVToMte2 = static_cast<int32_t>(
-            GetTPipePtr()->FetchEventID(AscendC::HardEvent::V_MTE2));
-        const int32_t eventMte2ToV = static_cast<int32_t>(
-            GetTPipePtr()->FetchEventID(AscendC::HardEvent::MTE2_V));
-        const int32_t eventVToMte3 = static_cast<int32_t>(
-            GetTPipePtr()->FetchEventID(AscendC::HardEvent::V_MTE3));
-        const int32_t eventMte3ToV = static_cast<int32_t>(
-            GetTPipePtr()->FetchEventID(AscendC::HardEvent::MTE3_V));
-        const int32_t eventMte3ToMte2 = static_cast<int32_t>(
-            GetTPipePtr()->FetchEventID(AscendC::HardEvent::MTE3_MTE2));
+        const int32_t eventVToMte2 = static_cast<int32_t>(GetTPipePtr()->FetchEventID(AscendC::HardEvent::V_MTE2));
+        const int32_t eventMte2ToV = static_cast<int32_t>(GetTPipePtr()->FetchEventID(AscendC::HardEvent::MTE2_V));
+        const int32_t eventVToMte3 = static_cast<int32_t>(GetTPipePtr()->FetchEventID(AscendC::HardEvent::V_MTE3));
+        const int32_t eventMte3ToV = static_cast<int32_t>(GetTPipePtr()->FetchEventID(AscendC::HardEvent::MTE3_V));
+        const int32_t eventMte3ToMte2 =
+            static_cast<int32_t>(GetTPipePtr()->FetchEventID(AscendC::HardEvent::MTE3_MTE2));
 
         const uint32_t blockIdx = AscendC::GetBlockIdx();
         const uint32_t blockNum = AscendC::GetBlockNum();
-        const uint32_t tileCount =
-            (batch_ + KeccakF1600U32Vector::TILE - 1U) /
-            KeccakF1600U32Vector::TILE;
+        const uint32_t tileCount = (batch_ + KeccakF1600U32Vector::TILE - 1U) / KeccakF1600U32Vector::TILE;
 
         for (uint32_t tileIdx = blockIdx; tileIdx < tileCount; tileIdx += blockNum) {
             const uint32_t offset = tileIdx * KeccakF1600U32Vector::TILE;
@@ -75,9 +63,7 @@ public:
 
             for (uint32_t w = 0; w < KeccakF1600U32Vector::STATE_WORDS; ++w) {
                 AscendC::Duplicate(
-                    permutation_.Slot(base, KeccakF1600U32Vector::STATE_BASE + w),
-                    static_cast<uint32_t>(0),
-                    calcN);
+                    permutation_.Slot(base, KeccakF1600U32Vector::STATE_BASE + w), static_cast<uint32_t>(0), calcN);
             }
             AscendC::PipeBarrier<PIPE_V>();
             AscendC::SetFlag<AscendC::HardEvent::V_MTE2>(eventVToMte2);
@@ -85,9 +71,7 @@ public:
 
             for (uint32_t w = 0; w < KeccakF1600U32Vector::STATE_WORDS; ++w) {
                 AscendC::DataCopy(
-                    permutation_.Slot(base, KeccakF1600U32Vector::STATE_BASE + w),
-                    x_[w * batch_ + offset],
-                    validN);
+                    permutation_.Slot(base, KeccakF1600U32Vector::STATE_BASE + w), x_[w * batch_ + offset], validN);
             }
             AscendC::PipeBarrier<PIPE_ALL>();
             AscendC::SetFlag<AscendC::HardEvent::MTE2_V>(eventMte2ToV);
@@ -101,9 +85,7 @@ public:
 
             for (uint32_t w = 0; w < KeccakF1600U32Vector::STATE_WORDS; ++w) {
                 AscendC::DataCopy(
-                    y_[w * batch_ + offset],
-                    permutation_.Slot(base, KeccakF1600U32Vector::STATE_BASE + w),
-                    validN);
+                    y_[w * batch_ + offset], permutation_.Slot(base, KeccakF1600U32Vector::STATE_BASE + w), validN);
             }
             AscendC::PipeBarrier<PIPE_ALL>();
             AscendC::SetFlag<AscendC::HardEvent::MTE3_V>(eventMte3ToV);
@@ -122,6 +104,6 @@ private:
     uint32_t batch_ = 1;
 };
 
-}  // namespace KeccakF1600TensorKernel
+} // namespace KeccakF1600TensorKernel
 
 #endif

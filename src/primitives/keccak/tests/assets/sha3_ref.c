@@ -17,37 +17,22 @@
 
 #include <string.h>
 
-
-
 static const uint64_t RC[24] = {
-    0x0000000000000001ULL, 0x0000000000008082ULL,
-    0x800000000000808aULL, 0x8000000080008000ULL,
-    0x000000000000808bULL, 0x0000000080000001ULL,
-    0x8000000080008081ULL, 0x8000000000008009ULL,
-    0x000000000000008aULL, 0x0000000000000088ULL,
-    0x0000000080008009ULL, 0x000000008000000aULL,
-    0x000000008000808bULL, 0x800000000000008bULL,
-    0x8000000000008089ULL, 0x8000000000008003ULL,
-    0x8000000000008002ULL, 0x8000000000000080ULL,
-    0x000000000000800aULL, 0x800000008000000aULL,
-    0x8000000080008081ULL, 0x8000000000008080ULL,
-    0x0000000080000001ULL, 0x8000000080008008ULL,
+    0x0000000000000001ULL, 0x0000000000008082ULL, 0x800000000000808aULL, 0x8000000080008000ULL, 0x000000000000808bULL,
+    0x0000000080000001ULL, 0x8000000080008081ULL, 0x8000000000008009ULL, 0x000000000000008aULL, 0x0000000000000088ULL,
+    0x0000000080008009ULL, 0x000000008000000aULL, 0x000000008000808bULL, 0x800000000000008bULL, 0x8000000000008089ULL,
+    0x8000000000008003ULL, 0x8000000000008002ULL, 0x8000000000000080ULL, 0x000000000000800aULL, 0x800000008000000aULL,
+    0x8000000080008081ULL, 0x8000000000008080ULL, 0x0000000080000001ULL, 0x8000000080008008ULL,
 };
 
 static const int RHO[25] = {
-     0,  1, 62, 28, 27,
-    36, 44,  6, 55, 20,
-     3, 10, 43, 25, 39,
-    41, 45, 15, 21,  8,
-    18,  2, 61, 56, 14,
+    0, 1, 62, 28, 27, 36, 44, 6, 55, 20, 3, 10, 43, 25, 39, 41, 45, 15, 21, 8, 18, 2, 61, 56, 14,
 };
 
-static uint64_t rotl64(uint64_t x, int n) {
-    return n == 0 ? x : ((x << n) | (x >> (64 - n)));
-}
+static uint64_t rotl64(uint64_t x, int n) { return n == 0 ? x : ((x << n) | (x >> (64 - n))); }
 
-
-uint64_t CannCryptoRefLoad64Le(const uint8_t* p) {
+uint64_t CannCryptoRefLoad64Le(const uint8_t* p)
+{
     uint64_t v = 0;
     for (int i = 0; i < 8; ++i) {
         v |= (uint64_t)p[i] << (8 * i);
@@ -55,13 +40,15 @@ uint64_t CannCryptoRefLoad64Le(const uint8_t* p) {
     return v;
 }
 
-void CannCryptoRefStore64Le(uint8_t* p, uint64_t v) {
+void CannCryptoRefStore64Le(uint8_t* p, uint64_t v)
+{
     for (int i = 0; i < 8; ++i) {
         p[i] = (uint8_t)((v >> (8 * i)) & 0xffU);
     }
 }
 
-void CannCryptoRefKeccakF1600(uint64_t a[25]) {
+void CannCryptoRefKeccakF1600(uint64_t a[25])
+{
     for (int round = 0; round < 24; ++round) {
         uint64_t c[5];
         uint64_t d[5];
@@ -89,9 +76,7 @@ void CannCryptoRefKeccakF1600(uint64_t a[25]) {
 
         for (int y = 0; y < 5; ++y) {
             for (int x = 0; x < 5; ++x) {
-                a[x + 5 * y] =
-                    b[x + 5 * y] ^
-                    ((~b[((x + 1) % 5) + 5 * y]) & b[((x + 2) % 5) + 5 * y]);
+                a[x + 5 * y] = b[x + 5 * y] ^ ((~b[((x + 1) % 5) + 5 * y]) & b[((x + 2) % 5) + 5 * y]);
             }
         }
 
@@ -100,18 +85,18 @@ void CannCryptoRefKeccakF1600(uint64_t a[25]) {
 }
 
 /* 按小端字节异或到状态，避免未对齐访问和宿主端序依赖。 */
-static void XorBytes(uint64_t state[25], const uint8_t *bytes, size_t count)
+static void XorBytes(uint64_t state[25], const uint8_t* bytes, size_t count)
 {
     for (size_t i = 0; i < count; ++i) {
         state[i / 8U] ^= (uint64_t)bytes[i] << (8U * (i % 8U));
     }
 }
 
-int CannCryptoRefShake(uint32_t algorithm, const uint8_t *input, size_t inputLength,
-    uint8_t *output, size_t outputLength)
+int CannCryptoRefShake(
+    uint32_t algorithm, const uint8_t* input, size_t inputLength, uint8_t* output, size_t outputLength)
 {
-    if ((algorithm != 128U && algorithm != 256U) ||
-        (inputLength != 0U && input == NULL) || output == NULL || outputLength == 0U) {
+    if ((algorithm != 128U && algorithm != 256U) || (inputLength != 0U && input == NULL) || output == NULL ||
+        outputLength == 0U) {
         return -1;
     }
     const size_t rate = algorithm == 128U ? 168U : 136U;

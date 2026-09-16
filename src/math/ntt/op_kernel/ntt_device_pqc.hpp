@@ -14,14 +14,12 @@
 
 __aicore__ inline size_t CubeNtt::ParallelBatSplitPlaneBytes() const
 {
-    return static_cast<size_t>(ParallelBatPaddedPolyCount()) *
-           static_cast<size_t>(tiling_.n) * sizeof(int8_t);
+    return static_cast<size_t>(ParallelBatPaddedPolyCount()) * static_cast<size_t>(tiling_.n) * sizeof(int8_t);
 }
 
 __aicore__ inline GM_ADDR CubeNtt::ParallelBatSplitPlane(int32_t digit) const
 {
-    return scratchBase_ +
-           static_cast<size_t>(digit) * ParallelBatSplitPlaneBytes();
+    return scratchBase_ + static_cast<size_t>(digit) * ParallelBatSplitPlaneBytes();
 }
 
 __aicore__ inline void CubeNtt::StoreKemParityDigits(
@@ -32,29 +30,24 @@ __aicore__ inline void CubeNtt::StoreKemParityDigits(
     constexpr int32_t tileRows = kParallelAivPolyBatch;
     const size_t tileOffset = static_cast<size_t>(polyStart) * n;
     AscendC::DataCopyParams copyOut{
-        static_cast<uint16_t>(tileRows),
-        static_cast<uint16_t>(halfN * sizeof(int8_t) / 32), 0,
+        static_cast<uint16_t>(tileRows), static_cast<uint16_t>(halfN * sizeof(int8_t) / 32), 0,
         static_cast<uint16_t>(halfN * sizeof(int8_t) / 32)};
     AscendC::GlobalTensor<int8_t> evenPlane;
     evenPlane.SetGlobalBuffer(
-        reinterpret_cast<__gm__ int8_t*>(ParallelBatSplitPlane(subBlockId_)) + tileOffset,
-        tileRows * n);
+        reinterpret_cast<__gm__ int8_t*>(ParallelBatSplitPlane(subBlockId_)) + tileOffset, tileRows * n);
     AscendC::DataCopy(evenPlane, digit0, copyOut);
     AscendC::DataCopy(evenPlane[halfN], digit1, copyOut);
     AscendC::PipeBarrier<PIPE_ALL>();
 }
 
-__aicore__ inline void CubeNtt::ParallelKemParitySplit(
-    __gm__ int32_t* srcBase, int32_t tileId)
+__aicore__ inline void CubeNtt::ParallelKemParitySplit(__gm__ int32_t* srcBase, int32_t tileId)
 {
     constexpr int32_t tileRows = kParallelAivPolyBatch;
     constexpr int32_t n = 256;
     constexpr int32_t halfN = n / 2;
     constexpr int32_t parityLength = tileRows * halfN;
     const int32_t polyStart = tileId * tileRows;
-    const int32_t validRows = polyStart < tiling_.polyCount
-        ? MinInt(tileRows, tiling_.polyCount - polyStart)
-        : 0;
+    const int32_t validRows = polyStart < tiling_.polyCount ? MinInt(tileRows, tiling_.polyCount - polyStart) : 0;
     if (validRows <= 0) {
         return;
     }
@@ -69,32 +62,27 @@ __aicore__ inline void CubeNtt::ParallelKemParitySplit(
 
     LocalTensor<int32_t> evenInput = buffers.input.AllocTensor<int32_t>();
     if (validRows < tileRows) {
-        AscendC::Duplicate(
-            evenInput, static_cast<int32_t>(0), parityLength);
+        AscendC::Duplicate(evenInput, static_cast<int32_t>(0), parityLength);
     }
     AscendC::GlobalTensor<int32_t> evenSrcGm;
     evenSrcGm.SetGlobalBuffer(
-        srcBase + static_cast<size_t>(subBlockId_) * tiling_.polyCount * halfN +
-            static_cast<size_t>(polyStart) * halfN,
+        srcBase + static_cast<size_t>(subBlockId_) * tiling_.polyCount * halfN + static_cast<size_t>(polyStart) * halfN,
         static_cast<size_t>(validRows) * halfN);
     AscendC::DataCopy(evenInput, evenSrcGm, validRows * halfN);
     buffers.input.EnQue(evenInput);
     LocalTensor<int32_t> even = buffers.input.DeQue<int32_t>();
     Tensor_int8x2 evenSplit{digit0, digit1};
-    split_vec_int7x2(
-        evenSplit, even, tmp0, tmp1, parityLength);
+    split_vec_int7x2(evenSplit, even, tmp0, tmp1, parityLength);
     AscendC::PipeBarrier<PIPE_ALL>();
     StoreKemParityDigits(digit0, digit1, polyStart);
     buffers.input.FreeTensor(even);
 }
 
-__aicore__ inline void CubeNtt::ParallelKemParityMmad(
-    GM_ADDR matrixBase, int32_t tileId)
+__aicore__ inline void CubeNtt::ParallelKemParityMmad(GM_ADDR matrixBase, int32_t tileId)
 {
     constexpr int32_t n = 256;
     constexpr int32_t tileRows = kParallelAivPolyBatch;
-    const int32_t tileCount = CeilDivInt(
-        ParallelBatPaddedPolyCount(), tileRows);
+    const int32_t tileCount = CeilDivInt(ParallelBatPaddedPolyCount(), tileRows);
     if (tileId >= tileCount) {
         return;
     }
@@ -102,51 +90,39 @@ __aicore__ inline void CubeNtt::ParallelKemParityMmad(
     const size_t matrixBytes = static_cast<size_t>(n) * n;
     AicMmad mm(tileRows, n, 128);
     mm.Init();
-    const size_t inputTileOffset =
-        static_cast<size_t>(tileId) * tileRows * n;
-    const size_t outputTileOffset =
-        static_cast<size_t>(tileId) * tileRows * 128;
+    const size_t inputTileOffset = static_cast<size_t>(tileId) * tileRows * n;
+    const size_t outputTileOffset = static_cast<size_t>(tileId) * tileRows * 128;
     for (int32_t matrixId = 0; matrixId < 4; ++matrixId) {
         const int32_t parity = matrixId / 2;
-        mm.LoadA(
-            ParallelBatSplitPlane(parity) + inputTileOffset);
-        mm.LoadB(
-            matrixBase + static_cast<size_t>(matrixId) * matrixBytes);
+        mm.LoadA(ParallelBatSplitPlane(parity) + inputTileOffset);
+        mm.LoadB(matrixBase + static_cast<size_t>(matrixId) * matrixBytes);
         LocalTensor<int32_t> partial = mm.AllocAccum();
         mm.ComputeAccum(partial, true);
         mm.EnqueAccum(partial);
         mm.FreeA();
         mm.FreeB();
-        mm.CopyOutQueued(
-            ParallelBatPartialMatrix(matrixId) +
-            outputTileOffset * sizeof(int32_t));
+        mm.CopyOutQueued(ParallelBatPartialMatrix(matrixId) + outputTileOffset * sizeof(int32_t));
     }
 }
 
-__aicore__ inline void CubeNtt::ParallelDsaTileMmad(
-    GM_ADDR matrixBase, int32_t tileId)
+__aicore__ inline void CubeNtt::ParallelDsaTileMmad(GM_ADDR matrixBase, int32_t tileId)
 {
     constexpr int32_t n = 256;
     constexpr int32_t tileRows = kParallelAivPolyBatch;
     constexpr int32_t matrixCount = 9;
     const size_t matrixBytes = static_cast<size_t>(n) * n;
-    const size_t tileOffset =
-        static_cast<size_t>(tileId) * tileRows * n;
+    const size_t tileOffset = static_cast<size_t>(tileId) * tileRows * n;
     AicMmad mm(tileRows, n, n);
     mm.Init();
     for (int32_t matrixId = 0; matrixId < matrixCount; ++matrixId) {
-        mm.LoadA(
-            ParallelBatSplitPlane(matrixId % 3) + tileOffset);
-        mm.LoadB(
-            matrixBase + static_cast<size_t>(matrixId) * matrixBytes);
+        mm.LoadA(ParallelBatSplitPlane(matrixId % 3) + tileOffset);
+        mm.LoadB(matrixBase + static_cast<size_t>(matrixId) * matrixBytes);
         LocalTensor<int32_t> partial = mm.AllocAccum();
         mm.ComputeAccum(partial, true);
         mm.EnqueAccum(partial);
         mm.FreeA();
         mm.FreeB();
-        mm.CopyOutQueued(
-            ParallelBatPartialMatrix(matrixId) +
-            tileOffset * sizeof(int32_t));
+        mm.CopyOutQueued(ParallelBatPartialMatrix(matrixId) + tileOffset * sizeof(int32_t));
     }
 }
 
@@ -172,20 +148,18 @@ __aicore__ inline PqcPanel CubeNtt::MakePqcPanel(int32_t forcedTile) const
     panel.panelWidth = panel.n / panelsPerTile;
     panel.coeffStart = panelId * panel.panelWidth;
     panel.polyStart = panel.tileId * kParallelAivPolyBatch;
-    panel.validRows = panel.polyStart < tiling_.polyCount ?
-        MinInt(kParallelAivPolyBatch, tiling_.polyCount - panel.polyStart) : 0;
+    panel.validRows =
+        panel.polyStart < tiling_.polyCount ? MinInt(kParallelAivPolyBatch, tiling_.polyCount - panel.polyStart) : 0;
     panel.tileLength = panel.panelWidth * kParallelAivPolyBatch;
     panel.valid = true;
     return panel;
 }
 
-__aicore__ inline void CubeNtt::LoadPqcInput(
-    NttSplitBuffers& buffers, __gm__ int32_t* srcBase, const PqcPanel& panel)
+__aicore__ inline void CubeNtt::LoadPqcInput(NttSplitBuffers& buffers, __gm__ int32_t* srcBase, const PqcPanel& panel)
 {
     LocalTensor<int32_t> localSrc = buffers.input.AllocTensor<int32_t>();
     if (panel.validRows < kParallelAivPolyBatch) {
-        AscendC::Duplicate(
-            localSrc, static_cast<int32_t>(0), panel.tileLength);
+        AscendC::Duplicate(localSrc, static_cast<int32_t>(0), panel.tileLength);
     }
     if (panel.validRows > 0) {
         AscendC::GlobalTensor<int32_t> srcGm;
@@ -193,14 +167,11 @@ __aicore__ inline void CubeNtt::LoadPqcInput(
             srcBase + static_cast<size_t>(panel.polyStart) * panel.n + panel.coeffStart,
             static_cast<size_t>(panel.validRows) * panel.n);
         AscendC::DataCopyParams copyIn{
-            static_cast<uint16_t>(panel.validRows),
-            static_cast<uint16_t>(panel.panelWidth * sizeof(int32_t) / 32),
-            static_cast<uint16_t>((panel.n - panel.panelWidth) * sizeof(int32_t) / 32),
-            0};
+            static_cast<uint16_t>(panel.validRows), static_cast<uint16_t>(panel.panelWidth * sizeof(int32_t) / 32),
+            static_cast<uint16_t>((panel.n - panel.panelWidth) * sizeof(int32_t) / 32), 0};
         AscendC::DataCopy(localSrc, srcGm, copyIn);
     }
     buffers.input.EnQue(localSrc);
-
 }
 
 __aicore__ inline void CubeNtt::ComputePqcSplit(NttSplitBuffers& buffers, int32_t tileLength)
@@ -217,14 +188,12 @@ __aicore__ inline void CubeNtt::ComputePqcSplit(NttSplitBuffers& buffers, int32_
     } else {
         LocalTensor<int8_t> digit2 = buffers.output[2].AllocTensor<int8_t>();
         Tensor_int8x3 digits{digit0, digit1, digit2};
-        split_vec_int8x3_balanced(
-            digits, src, t0, t2, t1, tileLength);
+        split_vec_int8x3_balanced(digits, src, t0, t2, t1, tileLength);
         buffers.output[2].EnQue(digit2);
     }
     buffers.output[0].EnQue(digit0);
     buffers.output[1].EnQue(digit1);
     buffers.input.FreeTensor(src);
-
 }
 
 __aicore__ inline void CubeNtt::StorePqcSplit(NttSplitBuffers& buffers, const PqcPanel& panel)
@@ -234,16 +203,13 @@ __aicore__ inline void CubeNtt::StorePqcSplit(NttSplitBuffers& buffers, const Pq
     const size_t polyOffset = static_cast<size_t>(panel.polyStart) * panel.n;
     AscendC::GlobalTensor<int8_t> dst0, dst1;
     dst0.SetGlobalBuffer(
-        reinterpret_cast<__gm__ int8_t*>(ParallelBatSplitPlane(0)) +
-            polyOffset + panel.coeffStart,
+        reinterpret_cast<__gm__ int8_t*>(ParallelBatSplitPlane(0)) + polyOffset + panel.coeffStart,
         static_cast<size_t>(kParallelAivPolyBatch) * panel.n);
     dst1.SetGlobalBuffer(
-        reinterpret_cast<__gm__ int8_t*>(ParallelBatSplitPlane(1)) +
-            polyOffset + panel.coeffStart,
+        reinterpret_cast<__gm__ int8_t*>(ParallelBatSplitPlane(1)) + polyOffset + panel.coeffStart,
         static_cast<size_t>(kParallelAivPolyBatch) * panel.n);
     AscendC::DataCopyParams copyOut{
-        static_cast<uint16_t>(kParallelAivPolyBatch),
-        static_cast<uint16_t>(panel.panelWidth * sizeof(int8_t) / 32), 0,
+        static_cast<uint16_t>(kParallelAivPolyBatch), static_cast<uint16_t>(panel.panelWidth * sizeof(int8_t) / 32), 0,
         static_cast<uint16_t>((panel.n - panel.panelWidth) * sizeof(int8_t) / 32)};
     AscendC::DataCopy(dst0, result0, copyOut);
     AscendC::DataCopy(dst1, result1, copyOut);
@@ -251,8 +217,7 @@ __aicore__ inline void CubeNtt::StorePqcSplit(NttSplitBuffers& buffers, const Pq
         LocalTensor<int8_t> result2 = buffers.output[2].DeQue<int8_t>();
         AscendC::GlobalTensor<int8_t> dst2;
         dst2.SetGlobalBuffer(
-            reinterpret_cast<__gm__ int8_t*>(ParallelBatSplitPlane(2)) +
-                polyOffset + panel.coeffStart,
+            reinterpret_cast<__gm__ int8_t*>(ParallelBatSplitPlane(2)) + polyOffset + panel.coeffStart,
             static_cast<size_t>(kParallelAivPolyBatch) * panel.n);
         AscendC::DataCopy(dst2, result2, copyOut);
         buffers.output[2].FreeTensor(result2);
