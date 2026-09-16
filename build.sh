@@ -38,20 +38,28 @@ usage() {
 
 测试选项:
     -u                     运行单元测试，未指定层时运行全部
-    --ophost               仅运行 op_host 层用例，无需昇腾设备
+    --ophost               仅运行 op_host 层用例，无需昇腾设备。CMake 组件以
+                           Host 配置构建后，执行未打 device、kernel_ut 标签的用例
     --opapi                仅运行 op_api 层用例，无需昇腾设备
     --opgraph              仅运行 op_graph 层用例，无需昇腾设备
-    --opkernel             仅运行 op_kernel 层用例，需要昇腾设备
+    --opkernel             仅运行 op_kernel 层用例，需要昇腾设备与 CANN 环境。
+                           未设置 ASCEND_HOME_PATH 时跳过设备用例
     --ut_timeout=<N>       单用例超时秒数，默认 120
     --allow_empty          指定层次下未发现用例时仅告警并返回成功，默认报错
 
 其他:
     -h, --help             显示本帮助
 
+环境变量:
+    ASCEND_HOME_PATH       CANN 安装路径。已设置时构建设备算子包并可运行设备用例，
+                           未设置时仅构建 Host 侧，便于无卡环境开发自检
+    ASCEND_COMPUTE_UNIT    设备编译目标，默认 ascend910b（Atlas A2），
+                           Atlas A3 取 ascend910_93
+
 示例:
     bash build.sh --pkg                 # 编译全部组件
     bash build.sh -u --ophost           # 门禁：只跑 op_host 层，无需设备
-    bash build.sh -u --opkernel         # 每日构建：需要昇腾设备
+    bash build.sh -u --opkernel         # 冒烟：需要昇腾设备
     bash build.sh --pkg -u              # 编译并运行全部用例
     bash build.sh --components=primitives/AES --pkg
 USAGE
@@ -82,19 +90,49 @@ checkopts() {
   fi
 }
 
-# 列出待处理组件。组件为 src 下的二级目录，需自带构建文件。
+# 列出待处理组件。组件为 src 下自带构建文件、且其祖先目录均无构建文件的目录，
+# 因此层级不限：primitives/AES、primitives/keccak、math/ntt 为两级，
+# algorithms/hash/shake 为三级，而 tests、examples、cmake 等子目录不会被误判为组件。
 list_components() {
   if [ -n "${COMPONENTS}" ]; then
     echo "${COMPONENTS}" | tr ',' '\n'
     return
   fi
-  for dir in "${SCRIPT_DIR}"/src/*/*/; do
-    [ -d "${dir}" ] || continue
-    if [ -f "${dir}/setup.py" ] || [ -f "${dir}/CMakeLists.txt" ]; then
-      local n="${dir#"${SCRIPT_DIR}/src/"}"
-      echo "${n%/}"
-    fi
-  done
+  local file dir rel parent is_nested
+  while IFS= read -r file; do
+    dir="$(dirname "${file}")"
+    rel="${dir#"${SCRIPT_DIR}/src/"}"
+    is_nested=0
+    parent="$(dirname "${dir}")"
+    while [ "${parent}" != "${SCRIPT_DIR}/src" ] && [ "${parent}" != "/" ]; do
+      if [ -f "${parent}/CMakeLists.txt" ] || [ -f "${parent}/setup.py" ]; then
+        is_nested=1
+        break
+      fi
+      parent="$(dirname "${parent}")"
+    done
+    [ "${is_nested}" -eq 0 ] && echo "${rel}"
+  done < <(find "${SCRIPT_DIR}/src" \( -name CMakeLists.txt -o -name setup.py \) -type f 2>/dev/null | sort) | sort -u
+}
+
+# CANN 算子框架型组件（keccak、shake）的构建开关。
+# 有 CANN 环境时构建设备算子包，否则只构建 Host 侧，便于本地开发与无卡环境自检。
+cann_cmake_args() {
+  local build_tests="$1"
+  local args=(-DCMAKE_BUILD_TYPE=Release "-DCANN_BUILD_TESTS=${build_tests}" -DCANN_BUILD_CPU_DEBUG_TESTS=OFF)
+  if [ -n "${ASCEND_HOME_PATH}" ]; then
+    args+=(-DCANN_BUILD_DEVICE=ON "-DASCEND_COMPUTE_UNIT=${ASCEND_COMPUTE_UNIT:-ascend910b}"
+           "-DASCEND_CANN_PACKAGE_PATH=${ASCEND_HOME_PATH}"
+           "-DPython3_EXECUTABLE=$(command -v python3)" "-DCANN_BUILD_JOBS=${THREAD_NUM}")
+  else
+    args+=(-DCANN_BUILD_DEVICE=OFF)
+  fi
+  printf '%s\n' "${args[@]}"
+}
+
+# 组件是否使用 CANN 算子框架，以顶层 CMakeLists.txt 中的 CANN_BUILD_TESTS 开关判定。
+is_cann_component() {
+  [ -f "$1/CMakeLists.txt" ] && grep -q 'CANN_BUILD_TESTS' "$1/CMakeLists.txt"
 }
 
 build_component() {
@@ -107,6 +145,16 @@ build_component() {
       [ -f requirements.txt ] && pip install -r requirements.txt
       python3 -m build --wheel --no-isolation
       python3 -m pip install dist/*.whl --force-reinstall --no-deps )
+  elif is_cann_component "${dir}"; then
+    local args=()
+    mapfile -t args < <(cann_cmake_args OFF)
+    if [ -n "${ASCEND_HOME_PATH}" ]; then
+      log "构建 ${name}（CANN 算子包，${ASCEND_COMPUTE_UNIT:-ascend910b}）"
+    else
+      log "构建 ${name}（CMake，未检测到 CANN，仅构建 Host 侧）"
+    fi
+    cmake -S "${dir}" -B "${dir}/build" "${args[@]}"
+    cmake --build "${dir}/build" -j "${THREAD_NUM}"
   elif [ -f "${dir}/CMakeLists.txt" ]; then
     log "构建 ${name}（CMake）"
     cmake -S "${dir}" -B "${dir}/build" -DCMAKE_BUILD_TYPE=Release
@@ -147,53 +195,94 @@ build_ut() {
 
   local ran=0 failed=()
 
-  run_layer() {
+  # 只执行一次 pytest。超时参数依赖 pytest-timeout，事先探测其是否可用，
+  # 不能靠「失败后去掉参数重跑」，那样会把真实的用例失败掩盖成通过。
+  run_pytest() {
     local dir="$1" label="$2"
     has_tests "${dir}" || return 0
     ran=$((ran + 1))
-    log "测试 ${label}"
-    if [ -f "${dir}/CMakeLists.txt" ]; then
-      ctest --test-dir "${dir}" --output-on-failure --timeout "${UT_TIMEOUT}" \
-        || failed+=("${label}")
-    else
-      # 只执行一次 pytest。超时参数依赖 pytest-timeout，事先探测其是否可用，
-      # 不能靠「失败后去掉参数重跑」，那样会把真实的用例失败掩盖成通过。
-      pytest "${dir}" -v ${PYTEST_TIMEOUT_ARG} || failed+=("${label}")
+    log "测试 ${label}（pytest）"
+    pytest "${dir}" -v ${PYTEST_TIMEOUT_ARG} || failed+=("${label}")
+  }
+
+  # 配置并构建组件，随后按标签筛选用例执行。
+  # ctest 必须对构建目录执行：对源码目录执行时没有 CTestTestfile.cmake，
+  # ctest 会打印 No tests were found 并返回 0，门禁将在零覆盖下亮绿灯。
+  run_ctest() {
+    local comp="$1" label="$2" build_dir="$3" select="$4"; shift 4
+    local component_dir="${SCRIPT_DIR}/src/${comp}"
+    ran=$((ran + 1))
+    log "测试 ${label}（CTest）"
+    if ! (
+      cmake -S "${component_dir}" -B "${build_dir}" "$@" &&
+      cmake --build "${build_dir}" -j "${THREAD_NUM}" &&
+      # shellcheck disable=SC2086
+      ctest --test-dir "${build_dir}" ${select} --output-on-failure \
+        --no-tests=error --timeout "${UT_TIMEOUT}"
+    ); then
+      failed+=("${label}")
     fi
   }
 
   # 仓库级用例：tests/ut/<layer>
   for l in ${layers}; do
-    run_layer "${SCRIPT_DIR}/tests/ut/${l}" "tests/ut/${l}"
+    run_pytest "${SCRIPT_DIR}/tests/ut/${l}" "tests/ut/${l}"
   done
 
-  # 组件自带用例：src/<组件>/tests/ut/<layer>
+  local soc="${ASCEND_COMPUTE_UNIT:-ascend910b}"
   for c in $(list_components); do
-    local base="${SCRIPT_DIR}/src/${c}/tests"
-    # CMake components may keep their device-independent tests in tests/host.
-    # Configure the component and run its generated CTest suite from the build tree.
-    if echo "${layers}" | grep -qw op_host && has_tests "${base}/host" \
-        && [ -f "${SCRIPT_DIR}/src/${c}/CMakeLists.txt" ]; then
-      local component_dir="${SCRIPT_DIR}/src/${c}"
-      ran=$((ran + 1))
-      log "测试 ${c}/host（CMake）"
-      if ! (
-        cmake -S "${component_dir}" -B "${component_dir}/build" \
-          -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON &&
-        cmake --build "${component_dir}/build" -j "${THREAD_NUM}" &&
-        ctest --test-dir "${component_dir}/build" --output-on-failure \
-          --no-tests=error --timeout "${UT_TIMEOUT}"
-      ); then
-        failed+=("${c}/host")
+    local comp_dir="${SCRIPT_DIR}/src/${c}" base="${SCRIPT_DIR}/src/${c}/tests"
+
+    # op_host 层：不依赖昇腾设备，构建 Host 侧后执行未打 device、kernel_ut 标签的用例。
+    # 以 tests/CMakeLists.txt 为准：仅 CTest 组织的测试走此分支，
+    # 测试为 pytest 的组件（如 AES）不在此层，其用例需要设备，归入 op_kernel。
+    if echo "${layers}" | grep -qw op_host && [ -f "${base}/CMakeLists.txt" ] \
+        && [ -f "${comp_dir}/CMakeLists.txt" ]; then
+      if is_cann_component "${comp_dir}"; then
+        local host_args=()
+        mapfile -t host_args < <(cann_cmake_args ON)
+        # Host 用例不依赖设备，固定关闭设备构建，避免无 CANN 环境时失败
+        host_args=("${host_args[@]/-DCANN_BUILD_DEVICE=ON/-DCANN_BUILD_DEVICE=OFF}")
+        run_ctest "${c}" "${c}/op_host" "${comp_dir}/build/host" \
+          "-LE device|kernel_ut" "${host_args[@]}"
+      else
+        run_ctest "${c}" "${c}/op_host" "${comp_dir}/build/host" \
+          "-LE device|kernel_ut" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
       fi
     fi
-    for l in ${layers}; do
-      run_layer "${base}/ut/${l}" "${c}/ut/${l}"
-    done
-    # 未按层拆分的组件，其 tests 目录归入 op_kernel（通常需要设备）
-    if [ ! -d "${base}/ut" ] && echo "${layers}" | grep -qw op_kernel; then
-      run_layer "${base}" "${c}"
+
+    # op_kernel 层：需要昇腾设备
+    if echo "${layers}" | grep -qw op_kernel; then
+      if is_cann_component "${comp_dir}"; then
+        if [ -z "${ASCEND_HOME_PATH}" ]; then
+          log "跳过 ${c}/op_kernel：未设置 ASCEND_HOME_PATH，设备用例需要 CANN 环境"
+        else
+          local dev_args=()
+          mapfile -t dev_args < <(cann_cmake_args ON)
+          run_ctest "${c}" "${c}/op_kernel" "${comp_dir}/build/device-${soc}" \
+            "-L device" "${dev_args[@]}"
+        fi
+      elif [ -f "${comp_dir}/scripts/run_npu_server.sh" ]; then
+        if [ -z "${ASCEND_HOME_PATH}" ]; then
+          log "跳过 ${c}/op_kernel：未设置 ASCEND_HOME_PATH，设备用例需要 CANN 环境"
+        else
+          # ntt 的设备验证由组件自带脚本完成：构建设备包并与标准答案比对
+          ran=$((ran + 1))
+          log "测试 ${c}/op_kernel（run_npu_server.sh npu-test）"
+          bash "${comp_dir}/scripts/run_npu_server.sh" npu-test --soc "${soc}" \
+            --jobs "${THREAD_NUM}" || failed+=("${c}/op_kernel")
+        fi
+      fi
+      # 未按层拆分的组件（如 AES），其 tests 目录整体归入 op_kernel
+      [ -d "${base}/ut" ] || run_pytest "${base}" "${c}"
     fi
+
+    # 其余层次沿用目录约定：src/<组件>/tests/ut/<layer>
+    for l in ${layers}; do
+      [ "${l}" = "op_host" ] && continue
+      [ "${l}" = "op_kernel" ] && continue
+      run_pytest "${base}/ut/${l}" "${c}/ut/${l}"
+    done
   done
 
   if [ "${ran}" -eq 0 ]; then
