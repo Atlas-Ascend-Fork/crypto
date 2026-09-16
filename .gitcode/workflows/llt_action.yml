@@ -1,0 +1,58 @@
+# ----------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------
+name: llt_action
+
+on:
+  workflow_call:
+    inputs:
+      ut_type:
+        required: true
+        type: string
+      image_version:
+        required: true
+        type: string
+
+jobs:
+  JOB_ut:
+    name: ut
+    steps:
+      -
+        name: Checkout
+        identifier: process_checkout
+        uses: checkout
+        with:
+          ref: ${{ atomgit.event.pull_request.merge_commit_sha || atomgit.sha }}
+          allow-unsafe-pr-checkout: true
+      -
+        name: download
+        uses: obs-download
+        with:
+          endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+          bucket: "ascend-ci"
+          access-key: ${{ secrets.AK }}
+          secret-key: ${{ secrets.SK }}
+          key: |
+            ${{ env.obs_path }}/pr_filelist.txt
+            ${{ env.obs_path }}/pr_filelist_mod.txt
+            ${{ env.obs_path }}/update_file_detail.txt
+          path: ${{ steps.process_checkout.outputs.path }}
+      -
+        name: ut_acc
+        identifier: ut
+        run: |
+          export WORKSPACE=${{ steps.process_checkout.outputs.path }}
+          cd ${{ steps.process_checkout.outputs.path }}
+          export ut_type=${{ inputs.ut_type }}
+          export TARGET_BRANCH=${{ env.TARGET_BRANCH }}
+          bash scripts/ci/ut.sh ${ut_type}
+    if: "${{ default() }}"
+    runs-on: [self-hosted, arch=x64, spec=xlarge]
+    container:
+      image: swr.cn-north-4.myhuaweicloud.com/ci_cann/${{ inputs.image_version }}

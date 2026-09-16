@@ -51,7 +51,7 @@ stages:
     - type: auto
     fail-fast: true
   stage2:
-    name: CodeCheck
+    name: Compile
     jobs:
       JOB_codecheck:
         name: CodeCheck
@@ -59,6 +59,67 @@ stages:
         with:
           precommit_image_version: ${{ jobs.JOB_image.outputs.precommit }}
           codecheck_image_version: ${{ jobs.JOB_image.outputs.codecheck }}
+      JOB_Compile_X86:
+        name: Compile_X86
+        uses: .gitcode/workflows/compile_action.yml
+        with:
+          task_name: 'x86_compile'
+          arch: 'x64'
+          size: 'large'
+          image_version: ${{ jobs.JOB_image.outputs.Compile_Ascend_X86 }}
+      JOB_staticcheck_md_check:
+        name: staticcheck_md_check
+        uses: .gitcode/workflows/staticcheck_action.yml
+        with:
+          check_type: 'md_check'
+          image_version: ${{ jobs.JOB_image.outputs.staticcheck }}
+    pre:
+    - type: auto
+    fail-fast: false
+  stage3:
+    name: UT
+    jobs:
+      JOB_UT_Test_ophost:
+        name: UT_Test_ophost
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'ophost'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test }}
+      # JOB_PreSmoke_A2:
+      #   name: PreSmoke_A2
+      #   steps:
+      #     -
+      #       name: Checkout
+      #       identifier: process_checkout
+      #       uses: checkout
+      #       with:
+      #         ref: ${{ atomgit.event.pull_request.merge_commit_sha || atomgit.sha }}
+      #         allow-unsafe-pr-checkout: true
+      #     -
+      #       name: download
+      #       uses: obs-download
+      #       with:
+      #         endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+      #         bucket: "ascend-ci"
+      #         access-key: ${{ secrets.AK }}
+      #         secret-key: ${{ secrets.SK }}
+      #         key: |
+      #           ${{ env.obs_path }}/pr_filelist.txt
+      #           ${{ env.obs_path }}/pr_filelist_mod.txt
+      #           ${{ env.obs_path }}/update_file_detail.txt
+      #         path: ${{ steps.process_checkout.outputs.path }}
+      #     -
+      #       name: smoke executor
+      #       timeout-minutes: 15
+      #       run: |
+      #         export WORKSPACE=${{ steps.process_checkout.outputs.path }}
+      #         cd ${{ steps.process_checkout.outputs.path }}
+      #         export TARGET_BRANCH=${{ env.TARGET_BRANCH }}
+      #         bash scripts/ci/smoke.sh
+      #   if: "${{ default() }}"
+      #   runs-on: ['self-hosted','npu=1','smoke=204']
+      #   container:
+      #     image: swr.cn-south-1.myhuaweicloud.com/pre_smoke/${{ jobs.JOB_image.outputs.PreSmoke_A900 }}
     pre:
     - type: auto
     fail-fast: false
