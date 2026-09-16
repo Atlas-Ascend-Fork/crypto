@@ -26,53 +26,72 @@ NttStatus Fail(NttStatus status, const char* message, const char** error)
 
 bool FitsInt32(int64_t value)
 {
-    return value >= std::numeric_limits<int32_t>::min() &&
-           value <= std::numeric_limits<int32_t>::max();
+    return value >= std::numeric_limits<int32_t>::min() && value <= std::numeric_limits<int32_t>::max();
 }
 
-bool IsPowerOfTwo(int64_t value)
+bool IsPowerOfTwo(int64_t value) { return value > 0 && (value & (value - 1)) == 0; }
+
+// 常用长度的固定分解表，命中时直接返回
+bool ChooseTabulatedFactors(int32_t n, int32_t& n1, int32_t& n2)
 {
-    return value > 0 && (value & (value - 1)) == 0;
+    switch (n) {
+        case 4096:
+            n1 = 64;
+            n2 = 64;
+            return true;
+        case 8192:
+            n1 = 128;
+            n2 = 64;
+            return true;
+        case 16384:
+            n1 = 128;
+            n2 = 128;
+            return true;
+        case 32768:
+            n1 = 128;
+            n2 = 256;
+            return true;
+        case 65536:
+            n1 = 256;
+            n2 = 256;
+            return true;
+        default:
+            return false;
+    }
+}
+
+int32_t FloorSqrt(int32_t n)
+{
+    int32_t root = 1;
+    while ((root + 1) * (root + 1) <= n) {
+        ++root;
+    }
+    return root;
+}
+
+// 从 sqrt(n) 向下寻找因子；blocks 非 0 时还要求某一侧因子是 blocks 的整数倍
+bool SearchFactors(int32_t n, int32_t blocks, int32_t& n1, int32_t& n2)
+{
+    for (int32_t i = FloorSqrt(n); i > 1; --i) {
+        if (n % i != 0) {
+            continue;
+        }
+        if (blocks != 0 && i % blocks != 0 && (n / i) % blocks != 0) {
+            continue;
+        }
+        n1 = i;
+        n2 = n / i;
+        return true;
+    }
+    return false;
 }
 
 // Retain the original four-step decomposition and direct PQC routing.
 void ChooseFactors(int32_t n, int32_t blocks, int32_t& n1, int32_t& n2)
 {
-    if (blocks == 0) {
-        n1 = 1;
-        n2 = n;
+    if (blocks > 0 &&
+        (ChooseTabulatedFactors(n, n1, n2) || SearchFactors(n, blocks, n1, n2) || SearchFactors(n, 0, n1, n2))) {
         return;
-    }
-    if (blocks < 0) {
-        n1 = 1;
-        n2 = n;
-        return;
-    }
-    switch (n) {
-        case 4096: n1 = 64; n2 = 64; return;
-        case 8192: n1 = 128; n2 = 64; return;
-        case 16384: n1 = 128; n2 = 128; return;
-        case 32768: n1 = 128; n2 = 256; return;
-        case 65536: n1 = 256; n2 = 256; return;
-        default: break;
-    }
-    int32_t root = 1;
-    while ((root + 1) * (root + 1) <= n) {
-        ++root;
-    }
-    for (int32_t i = root; i > 1; --i) {
-        if (n % i == 0 && (i % blocks == 0 || (n / i) % blocks == 0)) {
-            n1 = i;
-            n2 = n / i;
-            return;
-        }
-    }
-    for (int32_t i = root; i > 1; --i) {
-        if (n % i == 0) {
-            n1 = i;
-            n2 = n / i;
-            return;
-        }
     }
     n1 = 1;
     n2 = n;
@@ -87,8 +106,8 @@ size_t WorkspaceBytes(const NttTilingData& t)
         return (4 * padded * kernelN + 4 * padded * kernelN * sizeof(int32_t)) * t.blockDim * 8;
     };
     size_t scratch = std::max(stageBytes(t.phase1KernelN), stageBytes(t.phase2KernelN));
-    const bool directPqc = t.n == 256 && t.rnsChannels == 1 && t.channelBlock == 1 &&
-        t.blockDim == 16 && t.subBench == 16 && (t.q == 3329 || t.q == 8380417);
+    const bool directPqc = t.n == 256 && t.rnsChannels == 1 && t.channelBlock == 1 && t.blockDim == 16 &&
+                           t.subBench == 16 && (t.q == 3329 || t.q == 8380417);
     if (directPqc) {
         const size_t padded = ((static_cast<size_t>(t.polyCount) + t.subBench - 1) / t.subBench) * t.subBench;
         const size_t planeBytes = padded * t.n;
@@ -103,12 +122,13 @@ NttStatus ValidateAttributes(const NttParams& p, const char** error)
     if (!IsPowerOfTwo(p.n) || p.n > 65536 || p.xElements <= 0) {
         return Fail(NttStatus::InvalidShape, "N must be a power of two in 1..65536 and x must be nonempty", error);
     }
-    if (p.qListCount > 16 || p.gListCount > 16 ||
-        (p.gListCount != 0 && p.gListCount != p.qListCount)) {
-        return Fail(NttStatus::InvalidArgument, "q_list/g_list must contain at most 16 entries and their lengths must match", error);
+    if (p.qListCount > 16 || p.gListCount > 16 || (p.gListCount != 0 && p.gListCount != p.qListCount)) {
+        return Fail(
+            NttStatus::InvalidArgument, "q_list/g_list must contain at most 16 entries and their lengths must match",
+            error);
     }
-    if (!FitsInt32(p.q) || !FitsInt32(p.g) || !FitsInt32(p.logP) ||
-        !FitsInt32(p.rnsChannels) || !FitsInt32(p.shapeRnsChannels)) {
+    if (!FitsInt32(p.q) || !FitsInt32(p.g) || !FitsInt32(p.logP) || !FitsInt32(p.rnsChannels) ||
+        !FitsInt32(p.shapeRnsChannels)) {
         return Fail(NttStatus::InvalidArgument, "integer attribute exceeds the 32-bit kernel representation", error);
     }
     return NttStatus::Success;
@@ -128,7 +148,9 @@ NttStatus ValidateLaunchShape(const NttParams& p, int64_t channels, const char**
     if (channels > 16 || p.blockDim <= 0 || p.blockDim > 16 ||
         (p.channelBlock != 1 && p.channelBlock != 2 && p.channelBlock != 4) ||
         p.blockDim * std::min(p.channelBlock, channels) > 16) {
-        return Fail(NttStatus::InvalidArgument, "RNS channels must be 1..16 and block_dim * active channel_block must be <=16", error);
+        return Fail(
+            NttStatus::InvalidArgument, "RNS channels must be 1..16 and block_dim * active channel_block must be <=16",
+            error);
     }
     if (p.subBench != 16 && p.subBench != 32 && p.subBench != 64 && p.subBench != 128) {
         return Fail(NttStatus::InvalidArgument, "sub_bench must be 16, 32, 64, or 128", error);
@@ -157,7 +179,8 @@ NttStatus CopyModuli(const NttParams& p, NttTilingData& t, const char** error)
     }
     for (size_t i = 0; i < p.qListCount; ++i) {
         if (p.qList[i] <= 1 || p.qList[i] >= (1 << 28) || (p.qList[i] - 1) % p.n != 0) {
-            return Fail(NttStatus::InvalidArgument, "each q_list entry must be in (1, 2^28) and satisfy q = 1 mod N", error);
+            return Fail(
+                NttStatus::InvalidArgument, "each q_list entry must be in (1, 2^28) and satisfy q = 1 mod N", error);
         }
         t.qList[i] = static_cast<int32_t>(p.qList[i]);
     }
@@ -190,8 +213,7 @@ NttStatus SetPolynomialCount(const NttParams& p, NttTilingData& t, const char** 
     // Device phase counters and polynomial indices use int32_t. Check before narrowing.
     const int64_t perChannel = p.xElements / channels;
     const int64_t polys = perChannel / p.n;
-    if (perChannel > std::numeric_limits<int32_t>::max() ||
-        polys > std::numeric_limits<int32_t>::max() - p.subBench) {
+    if (perChannel > std::numeric_limits<int32_t>::max() || polys > std::numeric_limits<int32_t>::max() - p.subBench) {
         return Fail(NttStatus::InvalidShape, "per-channel input exceeds the 32-bit device indexing range", error);
     }
     t.polyCount = static_cast<int32_t>(polys);
@@ -200,8 +222,8 @@ NttStatus SetPolynomialCount(const NttParams& p, NttTilingData& t, const char** 
 
 NttStatus SetKernelShape(NttTilingData& t, const char** error)
 {
-    t.useFourStep = (t.n > 256 || (t.n >= 64 && t.blockDim > 1 &&
-        !(t.n == 256 && (t.q == 3329 || t.q == 8380417)))) ? 1 : 0;
+    t.useFourStep =
+        (t.n > 256 || (t.n >= 64 && t.blockDim > 1 && !(t.n == 256 && (t.q == 3329 || t.q == 8380417)))) ? 1 : 0;
     if (t.useFourStep != 0) {
         ChooseFactors(t.n, t.blockDim, t.n1, t.n2);
     } else {
@@ -230,8 +252,7 @@ NttStatus ValidateBufferShapes(const NttParams& p, const NttTilingData& t, const
 
 } // namespace
 
-NttStatus BuildNttTiling(const NttParams& p, NttTilingData& tiling,
-                       size_t& userWorkspaceBytes, const char** error)
+NttStatus BuildNttTiling(const NttParams& p, NttTilingData& tiling, size_t& userWorkspaceBytes, const char** error)
 {
     static_assert(sizeof(size_t) >= 8, "NTT host requires a 64-bit address space");
     tiling = {};

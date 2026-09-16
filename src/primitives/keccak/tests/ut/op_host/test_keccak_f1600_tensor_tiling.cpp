@@ -12,12 +12,17 @@
 
 #include <iostream>
 
-#define CHECK(condition) do { if (!(condition)) { \
-    std::cerr << "Tiling check failed at line " << __LINE__ << '\n'; return 1; } } while (false)
+#define CHECK(condition)                                                     \
+    do {                                                                     \
+        if (!(condition)) {                                                  \
+            std::cerr << "Tiling check failed at line " << __LINE__ << '\n'; \
+            return 1;                                                        \
+        }                                                                    \
+    } while (false)
 
-int main()
+// 合法形状：遍历 batch 与核数，校验 tiling 结果
+int CheckValidShapes()
 {
-    CHECK(optiling::TilingFunc(nullptr) == ge::GRAPH_FAILED);
     for (const int64_t batch : {1, 63, 64, 65, 255, 256, 257, 8191, 8192}) {
         gert::StorageShape shape{50, batch};
         gert::TilingContext context(&shape, &shape);
@@ -34,24 +39,59 @@ int main()
             CHECK(context.raw.size == sizeof(KeccakF1600TensorTilingData));
         }
     }
-    const gert::StorageShape good{50, 64};
-    for (const auto& shape : {gert::StorageShape{50}, gert::StorageShape{49, 64},
-            gert::StorageShape{50, 0}, gert::StorageShape{50, -1}, gert::StorageShape{50, 8193}}) {
+    return 0;
+}
+
+// 非法形状，以及输入输出形状不一致
+int CheckInvalidShapes()
+{
+    for (const auto& shape :
+         {gert::StorageShape{50}, gert::StorageShape{49, 64}, gert::StorageShape{50, 0}, gert::StorageShape{50, -1},
+          gert::StorageShape{50, 8193}}) {
         gert::TilingContext context(&shape, &shape);
         CHECK(optiling::TilingFunc(&context) == ge::GRAPH_FAILED);
     }
+    const gert::StorageShape good{50, 64};
     const gert::StorageShape wrongOutput{50, 65};
     gert::TilingContext mismatch(&good, &wrongOutput);
     CHECK(optiling::TilingFunc(&mismatch) == ge::GRAPH_FAILED);
+    return 0;
+}
+
+// 逐个置空 context 字段
+int CheckMissingContextFields()
+{
+    const gert::StorageShape good{50, 64};
     for (int missing = 0; missing < 6; ++missing) {
         gert::TilingContext context(&good, &good);
-        if (missing == 0) { context.input = nullptr; }
-        if (missing == 1) { context.output = nullptr; }
-        if (missing == 2) { context.platform = nullptr; }
-        if (missing == 3) { context.hasTiling = false; }
-        if (missing == 4) { context.hasRaw = false; }
-        if (missing == 5) { context.hasWorkspace = false; }
+        if (missing == 0) {
+            context.input = nullptr;
+        }
+        if (missing == 1) {
+            context.output = nullptr;
+        }
+        if (missing == 2) {
+            context.platform = nullptr;
+        }
+        if (missing == 3) {
+            context.hasTiling = false;
+        }
+        if (missing == 4) {
+            context.hasRaw = false;
+        }
+        if (missing == 5) {
+            context.hasWorkspace = false;
+        }
         CHECK(optiling::TilingFunc(&context) == ge::GRAPH_FAILED);
+    }
+    return 0;
+}
+
+int main()
+{
+    CHECK(optiling::TilingFunc(nullptr) == ge::GRAPH_FAILED);
+    if (CheckValidShapes() != 0 || CheckInvalidShapes() != 0 || CheckMissingContextFields() != 0) {
+        return 1;
     }
     return 0;
 }

@@ -19,13 +19,19 @@ using TilingData = Shake256TensorTilingData;
 
 #include <iostream>
 
-#define CHECK(condition) do { if (!(condition)) { \
-    std::cerr << "Tiling check failed at line " << __LINE__ << '\n'; return 1; } } while (false)
+#define CHECK(condition)                                                     \
+    do {                                                                     \
+        if (!(condition)) {                                                  \
+            std::cerr << "Tiling check failed at line " << __LINE__ << '\n'; \
+            return 1;                                                        \
+        }                                                                    \
+    } while (false)
 
-int main()
+using cann_crypto::shake::MAX_BATCH_SIZE;
+
+// 合法形状：遍历 batch 与核数，校验 tiling 结果
+int CheckValidShapes()
 {
-    using cann_crypto::shake::MAX_BATCH_SIZE;
-    CHECK(optiling::TilingFunc(nullptr) == ge::GRAPH_FAILED);
     for (const uint32_t batch : {1U, 16U, 33U, 64U, 207U, 208U, 209U, 257U, MAX_BATCH_SIZE}) {
         const gert::StorageShape x{batch, 0};
         const gert::StorageShape y{batch, 339};
@@ -43,29 +49,61 @@ int main()
             CHECK(context.raw.size == sizeof(TilingData));
         }
     }
-    const gert::StorageShape good{64, 32};
-    for (const auto& shape : {gert::StorageShape{64}, gert::StorageShape{64, -1},
-            gert::StorageShape{0, 32}, gert::StorageShape{64, 32, 1},
-            gert::StorageShape{static_cast<int64_t>(MAX_BATCH_SIZE) + 1, 32}}) {
+    return 0;
+}
+
+// 非法形状，以及输入合法但输出形状不匹配
+int CheckInvalidShapes()
+{
+    for (const auto& shape :
+         {gert::StorageShape{64}, gert::StorageShape{64, -1}, gert::StorageShape{0, 32}, gert::StorageShape{64, 32, 1},
+          gert::StorageShape{static_cast<int64_t>(MAX_BATCH_SIZE) + 1, 32}}) {
         gert::TilingContext context(&shape, &shape);
         CHECK(optiling::TilingFunc(&context) == ge::GRAPH_FAILED);
     }
+    const gert::StorageShape good{64, 32};
     for (const auto& shape : {gert::StorageShape{63, 32}, gert::StorageShape{64, 0}}) {
         gert::TilingContext context(&good, &shape);
         CHECK(optiling::TilingFunc(&context) == ge::GRAPH_FAILED);
     }
+    return 0;
+}
+
+// 逐个置空 context 字段；platform 缺失属于可降级场景，应成功并回退为单核
+int CheckMissingContextFields()
+{
+    const gert::StorageShape good{64, 32};
     for (int missing = 0; missing < 5; ++missing) {
         gert::TilingContext context(&good, &good);
-        if (missing == 0) { context.input = nullptr; }
-        if (missing == 1) { context.output = nullptr; }
-        if (missing == 2) { context.hasTiling = false; }
-        if (missing == 3) { context.hasRaw = false; }
-        if (missing == 4) { context.hasWorkspace = false; }
+        if (missing == 0) {
+            context.input = nullptr;
+        }
+        if (missing == 1) {
+            context.output = nullptr;
+        }
+        if (missing == 2) {
+            context.hasTiling = false;
+        }
+        if (missing == 3) {
+            context.hasRaw = false;
+        }
+        if (missing == 4) {
+            context.hasWorkspace = false;
+        }
         CHECK(optiling::TilingFunc(&context) == ge::GRAPH_FAILED);
     }
     gert::TilingContext noPlatform(&good, &good);
     noPlatform.platform = nullptr;
     CHECK(optiling::TilingFunc(&noPlatform) == ge::GRAPH_SUCCESS);
     CHECK(noPlatform.blockDim == 1);
+    return 0;
+}
+
+int main()
+{
+    CHECK(optiling::TilingFunc(nullptr) == ge::GRAPH_FAILED);
+    if (CheckValidShapes() != 0 || CheckInvalidShapes() != 0 || CheckMissingContextFields() != 0) {
+        return 1;
+    }
     return 0;
 }
