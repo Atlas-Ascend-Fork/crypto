@@ -105,3 +105,37 @@ def test_aes128ctr_operator(length):
         f"but got: {result_valid[:16].tolist()}"
 
     logging.info("Test passed: length=%s", length)
+
+
+@pytest.mark.skipif(not torch.npu.is_available(), reason="NPU device not found")
+def test_aes128ctr_noncontiguous_512_byte_view():
+    """A valid ND view with a two-byte stride is encrypted in logical element order."""
+    key16 = torch.tensor(
+        [0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+         0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c],
+        dtype=torch.uint8,
+    )
+    nonce = torch.tensor(
+        [0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb],
+        dtype=torch.uint8,
+    )
+    storage = torch.arange(1024, dtype=torch.int64).remainder(251).to(torch.uint8)
+    plaintext = storage[::2]
+    reference = torch.tensor(
+        list(_aes128_ctr_reference(plaintext.numpy().tobytes(), key16.numpy().tobytes(), nonce.numpy().tobytes())),
+        dtype=torch.uint8,
+    )
+
+    key_npu = _prepare_key_tensor(key16.numpy()).npu()
+    nonce_npu = nonce.npu()
+    plaintext_storage_npu = storage.npu()
+    plaintext_npu = plaintext_storage_npu[::2]
+    assert plaintext_npu.numel() == 512
+    assert plaintext_npu.stride() == (2,)
+    assert not plaintext_npu.is_contiguous()
+
+    result = torch.ops.ascend_ops.aes128ctr(plaintext_npu, key_npu, nonce_npu).cpu()
+    control = torch.ops.ascend_ops.aes128ctr(plaintext_npu.contiguous(), key_npu, nonce_npu).cpu()
+
+    assert torch.equal(result[:512], reference)
+    assert torch.equal(control[:512], reference)
