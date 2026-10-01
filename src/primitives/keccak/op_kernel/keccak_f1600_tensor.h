@@ -70,8 +70,12 @@ public:
             AscendC::WaitFlag<AscendC::HardEvent::V_MTE2>(eventVToMte2);
 
             for (uint32_t w = 0; w < KeccakF1600U32Vector::STATE_WORDS; ++w) {
-                AscendC::DataCopy(
-                    permutation_.Slot(base, KeccakF1600U32Vector::STATE_BASE + w), x_[w * batch_ + offset], validN);
+                AscendC::DataCopyExtParams copyParams{
+                    1, static_cast<uint32_t>(validN * sizeof(uint32_t)), 0, 0, 0};
+                AscendC::DataCopyPadExtParams<uint32_t> padParams{false, 0, 0, 0};
+                AscendC::DataCopyPad(
+                    permutation_.Slot(base, KeccakF1600U32Vector::STATE_BASE + w), x_[w * batch_ + offset],
+                    copyParams, padParams);
             }
             AscendC::PipeBarrier<PIPE_ALL>();
             AscendC::SetFlag<AscendC::HardEvent::MTE2_V>(eventMte2ToV);
@@ -84,8 +88,11 @@ public:
             AscendC::WaitFlag<AscendC::HardEvent::V_MTE3>(eventVToMte3);
 
             for (uint32_t w = 0; w < KeccakF1600U32Vector::STATE_WORDS; ++w) {
-                AscendC::DataCopy(
-                    y_[w * batch_ + offset], permutation_.Slot(base, KeccakF1600U32Vector::STATE_BASE + w), validN);
+                AscendC::DataCopyExtParams copyParams{
+                    1, static_cast<uint32_t>(validN * sizeof(uint32_t)), 0, 0, 0};
+                AscendC::DataCopyPad(
+                    y_[w * batch_ + offset], permutation_.Slot(base, KeccakF1600U32Vector::STATE_BASE + w),
+                    copyParams);
             }
             AscendC::PipeBarrier<PIPE_ALL>();
             AscendC::SetFlag<AscendC::HardEvent::MTE3_V>(eventMte3ToV);

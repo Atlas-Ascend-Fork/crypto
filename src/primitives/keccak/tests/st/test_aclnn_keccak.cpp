@@ -29,7 +29,7 @@ int main(int argc, char** argv)
         RequireAcl(aclrtSetDevice(deviceId), "aclrtSetDevice");
         example::CheckDeviceTarget();
         RequireAcl(aclrtCreateStream(&stream), "aclrtCreateStream");
-        for (const size_t batch : {64U, 256U, 1024U, 4096U, 8192U}) {
+        for (const size_t batch : {1U, 7U, 8U, 64U, 255U, 256U, 257U, 1024U, 4096U, 8192U}) {
             passed = RunKeccakCase(batch, stream) && passed;
         }
         RequireAcl(aclrtDestroyStream(stream), "aclrtDestroyStream");
