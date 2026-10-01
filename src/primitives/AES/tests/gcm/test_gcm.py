@@ -12,6 +12,7 @@
 
 import logging
 
+import numpy as np
 import torch
 import torch_npu
 import ascend_ops
@@ -54,6 +55,23 @@ def test_aes128gcm_interface_exist():
     logging.debug("Operator binding: %s", torch.ops.ascend_ops.aes_gcm)
     assert hasattr(torch.ops.ascend_ops, "aes_gcm"), \
         "The 'aes_gcm' operator is not registered in the 'torch.ops.ascend_ops' namespace."
+
+
+@pytest.mark.skipif(not torch.npu.is_available(), reason="NPU device not found")
+def test_aes128gcm_empty_plaintext():
+    """AES-GCM accepts an empty plaintext and returns the NIST authentication tag."""
+    key16 = np.zeros(16, dtype=np.uint8)
+    key = _prepare_key_tensor(key16).npu()
+    nonce = torch.zeros(12, dtype=torch.uint8).npu()
+    aad = torch.empty(0, dtype=torch.uint8).npu()
+    plaintext = torch.empty(0, dtype=torch.uint8).npu()
+
+    result = torch.ops.ascend_ops.aes_gcm(plaintext, key, nonce, aad).cpu()
+    expected_tag = torch.tensor(
+        list(bytes.fromhex("58e2fccefa7e3061367f1d57a4e7455a")), dtype=torch.uint8
+    )
+
+    assert torch.equal(result, expected_tag)
 
 
 PLAINTEXT_LENGTHS = [
