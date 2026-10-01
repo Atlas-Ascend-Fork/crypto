@@ -16,7 +16,7 @@ crypto 是 [CANN](https://hiascend.com/software/cann)（Compute Architecture for
 
 项目聚焦两类 CPU 难以覆盖的场景：让已位于 NPU 上的数据不必回到主机即可被保护，以及把 CPU 难以承担的密码计算放到 NPU 上完成。
 
-- 覆盖国密算法（SM2、SM3、SM4、SM9、ZUC）与国际主流算法（AES、ChaCha20、SHA-2/3、X25519、Ed25519、ML-KEM、ML-DSA）。
+- 项目规划覆盖国密算法（SM2、SM3、SM4、SM9、ZUC）与国际主流算法（AES、ChaCha20、SHA-2/3、X25519、Ed25519、ML-KEM、ML-DSA）。当前仓库已包含 AES、Keccak-f、SHAKE 和 NTT 组件；其余算法仍应以对应源码与组件文档为准，不应视为已交付能力。
 - 面向批处理与设备驻留数据设计，Device Kernel 使用 Ascend C 实现。
 - 按数学引擎、密码原语、算法服务三层组织，下层能力可被多个算法族复用。
 
