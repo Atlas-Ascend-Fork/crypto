@@ -62,7 +62,7 @@ bash build.sh -u               # 全部层次
 bash build.sh -h
 ```
 
-组件通过 `src` 下的二级目录自动发现，新增组件无需修改构建脚本。
+构建脚本在 `src/` 下递归查找带有 `CMakeLists.txt` 或 `setup.py` 的组件目录，并跳过已归属上层组件的嵌套构建目录；组件可以位于不同深度，例如 `src/algorithms/hash/shake/`。新增组件无需修改构建脚本。
 
 ## 📂目录结构
 
