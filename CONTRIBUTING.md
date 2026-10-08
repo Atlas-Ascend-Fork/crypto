@@ -1,5 +1,7 @@
 # 贡献指南
 
+简体中文 | [English](docs/en/CONTRIBUTING.md)
+
 本项目欢迎广大开发者体验并参与贡献。在参与社区贡献之前，请参见 [cann-community](https://gitcode.com/cann/community) 了解行为准则，完成 CLA 协议签署，并熟悉源码仓的贡献流程。
 
 > 首次使用 GitCode 贡献时，Fork、克隆、SSH 公钥和创建 PR 的图文操作请参阅 [GitCode 工作流说明](https://gitcode.com/cann/community/blob/master/contributor/gitcode-workflow.md)。crypto 项目的具体要求见本文档。

@@ -1,14 +1,20 @@
-<div align="center">
-
 # crypto
+
+简体中文 | [English](docs/en/README.md)
 
 [![license](https://img.shields.io/badge/license-CANN_Open_2.0-blue.svg)](LICENSE)
 [![contributing](https://img.shields.io/badge/贡献指南-teal)](CONTRIBUTING.md)
 [![SIG](https://img.shields.io/badge/SIG-crypto-yellow)](https://gitcode.com/cann/community/blob/master/CANN/sigs/crypto/README.md)
 
-</div>
-
 ---
+
+## 🔥 Latest News
+
+- [2026/09/15] 合入 `NTT` 实现，覆盖通用 RNS 及 ML-KEM、ML-DSA 的数论变换路径。
+- [2026/09/15] 合入 `Keccak-f[1600]`，支持批量 1600 位状态的 24 轮置换。
+- [2026/09/15] 合入 `SHAKE128/256`，支持对批量等长消息生成指定长度的输出。
+- [2026/09/11] 合入 `AES-CTR` 和 `AES-GCM` 加密实现。
+- [2026/07/27] crypto 仓库初始化。
 
 ## 🚀概述
 
@@ -109,4 +115,4 @@ crypto/
 PS：本项目功能和文档正在持续更新和完善中，欢迎您关注最新版本。
 
 - **问题反馈**：通过 GitCode [【Issues】](https://gitcode.com/cann/crypto/issues)提交问题。
-- **社区互动**：通过 crypto SIG [月度例会](https://gitcode.com/cann/community/tree/master/CANN/sigs/crypto)与[邮件列表](https://mailweb.cann.osinfra.cn/mailman3/lists/crypto.cann.osinfra.cn/)参与交流。
+- **社区互动**：通过 crypto SIG [月度例会](https://gitcode.com/cann/community/tree/master/CANN/sigs/crypto)或在 [Issues](https://gitcode.com/cann/crypto/issues) 中参与讨论。
