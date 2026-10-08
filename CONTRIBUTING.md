@@ -2,7 +2,7 @@
 
 本项目欢迎广大开发者体验并参与贡献。在参与社区贡献之前，请参见 [cann-community](https://gitcode.com/cann/community) 了解行为准则，完成 CLA 协议签署，并熟悉源码仓的贡献流程。
 
-> 首次贡献的完整图文步骤（CLA 签署、提交邮箱配置、SSH 公钥、开发资源申请、PR 评审与 CI 门禁）请参阅 [docs/contributing-guide.md](docs/contributing-guide.md)。本文档只描述流程与要求。
+> 首次使用 GitCode 贡献时，Fork、克隆、SSH 公钥和创建 PR 的图文操作请参阅 [GitCode 工作流说明](https://gitcode.com/cann/community/blob/master/contributor/gitcode-workflow.md)。crypto 项目的具体要求见本文档。
 
 ## 准备工作
 
@@ -166,7 +166,7 @@ PR 集齐 `cann-cla/yes`、`lgtm`、`approved`、`ci-pipeline-passed` 后由机�
 
 | 内容 | 链接 |
 | --- | --- |
-| 首次贡献图文指引 | [docs/contributing-guide.md](docs/contributing-guide.md) |
+| GitCode 工作流图文说明 | [gitcode-workflow.md](https://gitcode.com/cann/community/blob/master/contributor/gitcode-workflow.md) |
 | 行为准则 | [code-of-conduct.md](https://gitcode.com/cann/community/blob/master/contributor/code-of-conduct.md) |
 | CLA 使用指南 | [cla 使用指南](https://gitcode.com/cann/infrastructure/blob/master/docs/cla/cla%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97.md) |
 | PR 操作指南 | [pull_request_operation.md](https://gitcode.com/cann/community/blob/master/contributor/pull_request_operation.md) |
