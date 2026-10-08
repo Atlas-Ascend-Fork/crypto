@@ -99,6 +99,12 @@ crypto/
 - [所属 SIG](https://gitcode.com/cann/community/tree/master/CANN/sigs/crypto)
 - [committer 列表](https://gitcode.com/cann/community/blob/master/CANN/sigs/crypto/README.md#committer%E5%88%97%E8%A1%A8)
 
+### Crypto SIG 交流群
+
+扫码联系群管理员，申请加入 Crypto SIG 交流群，参与社区讨论与共建。
+
+<img src="docs/images/wechat-group.png" alt="Crypto SIG 微信群管理员二维码" width="260" />
+
 -----
 PS：本项目功能和文档正在持续更新和完善中，欢迎您关注最新版本。
 
