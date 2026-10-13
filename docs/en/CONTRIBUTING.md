@@ -123,7 +123,7 @@ Comment `/compile` on the PR to start the gate, then address its results. Curren
 - Open-source compliance scans (SCA, Antipoison).
 - PR checks (empty files, binary files, etc.).
 
-The gate has a 15-minute time limit. Cases under `tests/host/` that do not require Ascend hardware belong in the gate; full device matrices and performance regressions under `tests/device/` belong in daily builds.
+The gate has a 15-minute time limit. Device-independent repository-level tests under `tests/ut/common/`, `tests/ut/op_api/`, and `tests/ut/op_host/` belong in the gate; the `tests/ut/op_kernel/` layer requires Ascend hardware, so its full matrix and performance regressions belong in daily builds.
 
 ### 1.6 Committer Review
 

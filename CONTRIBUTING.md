@@ -123,7 +123,7 @@ Licensed under CANN Open Software License Agreement Version 2.0.
 - 开源合规扫描（SCA、Antipoison）
 - PR 检查（空文件、二进制文件等）
 
-门禁执行时间限制为 15 分钟。因此 `tests/host/` 下无需昇腾设备的用例放入门禁，`tests/device/` 下需要真实设备的完整矩阵与性能回归放入每日构建。
+门禁执行时间限制为 15 分钟。因此 `tests/ut/common/`、`tests/ut/op_api/` 和 `tests/ut/op_host/` 下无需昇腾设备的仓库级用例放入门禁，`tests/ut/op_kernel/` 下需要真实设备的完整矩阵与性能回归放入每日构建。
 
 ### 6. Committer 检视
 
