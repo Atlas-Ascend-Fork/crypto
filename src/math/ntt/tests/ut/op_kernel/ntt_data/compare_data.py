@@ -10,6 +10,7 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 
 import logging
+from pathlib import Path
 import sys
 
 import numpy as np
@@ -28,6 +29,12 @@ def log_mismatches(output, golden, indexes):
 
 
 def compare_result(output, golden):
+    element_size = np.dtype(np.int32).itemsize
+    for path in (output, golden):
+        byte_count = Path(path).stat().st_size
+        if byte_count % element_size:
+            LOGGER.error("invalid int32 byte count: %s has %d bytes", path, byte_count)
+            return False
     actual = np.fromfile(output, dtype=np.int32).reshape(-1)
     expected = np.fromfile(golden, dtype=np.int32).reshape(-1)
     if actual.size == 0 or actual.size != expected.size:

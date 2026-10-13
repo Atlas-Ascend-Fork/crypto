@@ -75,6 +75,24 @@ class NttDataTest(unittest.TestCase):
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
                     self.assertNotEqual(result.returncode, 0)
 
+    def test_regular_comparison_rejects_trailing_partial_elements(self):
+        import itertools
+        import struct
+        compare = load_module("ntt_regular_compare_test", "compare_data.py")
+        with tempfile.TemporaryDirectory() as work:
+            output, golden = Path(work) / "output.bin", Path(work) / "golden.bin"
+            aligned = struct.pack("<i", 17)
+            for invalid_side, trailing in itertools.product((output, golden), (b"x", b"xy", b"xyz")):
+                with self.subTest(side=invalid_side.name, trailing=trailing):
+                    output.write_bytes(aligned)
+                    golden.write_bytes(aligned)
+                    invalid_side.write_bytes(aligned + trailing)
+                    self.assertFalse(compare.compare_result(output, golden))
+            output.write_bytes(aligned)
+            golden.write_bytes(aligned)
+            self.assertTrue(compare.compare_result(output, golden))
+
+
 
 if __name__ == "__main__":
     unittest.main()
