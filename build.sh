@@ -67,6 +67,19 @@ USAGE
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 
+# 显式组件选择必须完整有效；先验证全部条目，再开始构建，避免部分编译后误报成功。
+validate_components() {
+  [ -z "${COMPONENTS}" ] && return 0
+  local component
+  while IFS= read -r component; do
+    if [ -z "${component}" ] || { [ ! -f "${SCRIPT_DIR}/src/${component}/setup.py" ] &&
+      [ ! -f "${SCRIPT_DIR}/src/${component}/CMakeLists.txt" ]; }; then
+      echo "无效组件，未找到构建入口: ${component}" >&2
+      return 1
+    fi
+  done < <(printf '%s\n' "${COMPONENTS}" | tr ',' '\n')
+}
+
 checkopts() {
   while [ -n "$1" ]; do
     case "$1" in
@@ -78,7 +91,12 @@ checkopts() {
       --opkernel)       UT_LAYERS="${UT_LAYERS} op_kernel" ;;
       --ut_timeout=*)   UT_TIMEOUT="${1#*=}" ;;
       --allow_empty)    ALLOW_EMPTY="TRUE" ;;
-      --components=*)   COMPONENTS="${1#*=}" ;;
+      --components=*)
+        COMPONENTS="${1#*=}"
+        if [ -z "${COMPONENTS}" ]; then
+          echo "组件列表不能为空" >&2
+          exit 1
+        fi ;;
       -j*)              THREAD_NUM="${1#-j}" ;;
       -h|--help)        usage; exit 0 ;;
       *)                echo "未知选项: $1"; usage; exit 1 ;;
@@ -88,6 +106,7 @@ checkopts() {
   if [ "${ENABLE_PACKAGE}" == "FALSE" ] && [ "${ENABLE_TEST}" == "FALSE" ]; then
     usage; exit 1
   fi
+  validate_components
 }
 
 # 列出待处理组件。组件为 src 下自带构建文件、且其祖先目录均无构建文件的目录，
