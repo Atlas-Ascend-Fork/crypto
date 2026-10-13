@@ -152,3 +152,43 @@ def test_aes128ctr_noncontiguous_512_byte_view():
 
     assert torch.equal(result[:512], reference)
     assert torch.equal(control[:512], reference)
+
+
+@pytest.mark.skipif(not torch.npu.is_available(), reason="NPU device not found")
+@pytest.mark.parametrize("strided_argument", ["key", "nonce"])
+def test_aes128ctr_noncontiguous_key_or_nonce(strided_argument):
+    """Key and nonce views are read in logical byte order by the host entry point."""
+    plaintext = torch.arange(512, dtype=torch.int64).remainder(251).to(torch.uint8)
+    key16 = torch.tensor(
+        [0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+         0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c],
+        dtype=torch.uint8,
+    )
+    nonce = torch.tensor(
+        [0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb],
+        dtype=torch.uint8,
+    )
+    expanded_key = _prepare_key_tensor(key16.numpy())
+    plaintext_npu = plaintext.npu()
+    key_control_npu = expanded_key.npu()
+    nonce_control_npu = nonce.npu()
+
+    if strided_argument == "key":
+        key_storage = torch.full((expanded_key.numel() * 2,), 0xa5, dtype=torch.uint8)
+        key_storage[::2].copy_(expanded_key)
+        expanded_key = key_storage[::2]
+    else:
+        nonce_storage = torch.full((nonce.numel() * 2,), 0x5a, dtype=torch.uint8)
+        nonce_storage[::2].copy_(nonce)
+        nonce = nonce_storage[::2]
+
+    key_storage_npu = key_storage.npu() if strided_argument == "key" else None
+    nonce_storage_npu = nonce_storage.npu() if strided_argument == "nonce" else None
+    key_npu = key_storage_npu[::2] if key_storage_npu is not None else key_control_npu
+    nonce_npu = nonce_storage_npu[::2] if nonce_storage_npu is not None else nonce_control_npu
+    assert (key_npu if strided_argument == "key" else nonce_npu).stride() == (2,)
+
+    result = torch.ops.ascend_ops.aes128ctr(plaintext_npu, key_npu, nonce_npu).cpu()
+    control = torch.ops.ascend_ops.aes128ctr(plaintext_npu, key_control_npu, nonce_control_npu).cpu()
+
+    assert torch.equal(result[:512], control[:512])
