@@ -68,7 +68,7 @@ bash build.sh -u               # All layers
 bash build.sh -h
 ```
 
-Components are discovered automatically from the second-level directories under `src`; adding a component does not require changing the build script.
+Components are discovered automatically by recursively searching `src/` for component directories containing `CMakeLists.txt` or `setup.py`. Nested build directories already belonging to an upper-level component are skipped; components may be located at different depths, such as `src/algorithms/hash/shake/`. Adding a component does not require changing the build script.
 
 ## 📂 Repository Layout
 
