@@ -48,13 +48,26 @@ def _aes128_gcm_reference(
     return ciphertext, tag
 
 
+def test_aes128gcm_meta_rejects_length_past_kernel_limit():
+    """Do not wrap a valid 20 KiB multiple into the uint32 kernel field."""
+    maximum = 20480 * 209715
+    key = torch.empty((176,), dtype=torch.uint8, device="meta")
+    nonce = torch.empty((12,), dtype=torch.uint8, device="meta")
+    aad = torch.empty((0,), dtype=torch.uint8, device="meta")
+    maximum_input = torch.empty((maximum,), dtype=torch.uint8, device="meta")
+    assert torch.ops.ascend_ops.aes_gcm(maximum_input, key, nonce, aad).numel() == maximum + 16
+
+    too_large = torch.empty((20480 * 209716,), dtype=torch.uint8, device="meta")
+    with pytest.raises(RuntimeError, match="maximum representable"):
+        torch.ops.ascend_ops.aes_gcm(too_large, key, nonce, aad)
 
 
 def test_aes128gcm_interface_exist():
     """Check whether the AES-128-GCM custom operator is registered."""
     logging.debug("Operator binding: %s", torch.ops.ascend_ops.aes_gcm)
-    assert hasattr(torch.ops.ascend_ops, "aes_gcm"), \
+    assert hasattr(torch.ops.ascend_ops, "aes_gcm"), (
         "The 'aes_gcm' operator is not registered in the 'torch.ops.ascend_ops' namespace."
+    )
 
 
 @pytest.mark.skipif(not torch.npu.is_available(), reason="NPU device not found")
@@ -103,7 +116,8 @@ def test_aes128gcm_operator(length):
     pt_bytes = plaintext.numpy().tobytes()
     aad_bytes = aad.numpy().tobytes()
     ref_ciphertext, ref_tag = _aes128_gcm_reference(
-        pt_bytes, key16.numpy().tobytes(), nonce.numpy().tobytes(), aad_bytes)
+        pt_bytes, key16.numpy().tobytes(), nonce.numpy().tobytes(), aad_bytes
+    )
     expected_ciphertext = torch.frombuffer(ref_ciphertext, dtype=torch.uint8)
     expected_tag = torch.frombuffer(ref_tag, dtype=torch.uint8)
 
@@ -122,16 +136,18 @@ def test_aes128gcm_operator(length):
         aligned_size = (aligned_size + 15) // 16 * 16
 
     result_ciphertext = result[:length]
-    result_tag = result[aligned_size:aligned_size + 16]
+    result_tag = result[aligned_size : aligned_size + 16]
 
-    assert torch.equal(result_ciphertext, expected_ciphertext), \
-        f"AES-128-GCM ciphertext failed for length={length}. " \
-        f"Expected first 16 bytes: {expected_ciphertext[:16].tolist()}, " \
+    assert torch.equal(result_ciphertext, expected_ciphertext), (
+        f"AES-128-GCM ciphertext failed for length={length}. "
+        f"Expected first 16 bytes: {expected_ciphertext[:16].tolist()}, "
         f"but got: {result_ciphertext[:16].tolist()}"
+    )
 
-    assert torch.equal(result_tag, expected_tag), \
-        f"AES-128-GCM tag failed for length={length}. " \
-        f"Expected tag: {expected_tag.tolist()}, " \
+    assert torch.equal(result_tag, expected_tag), (
+        f"AES-128-GCM tag failed for length={length}. "
+        f"Expected tag: {expected_tag.tolist()}, "
         f"but got: {result_tag.tolist()}"
+    )
 
     logging.info("Test passed: length=%s", length)

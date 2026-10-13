@@ -38,13 +38,25 @@ def _aes128_ctr_reference(plaintext_bytes: bytes, key16: bytes, nonce12: bytes) 
     return cipher.encrypt(plaintext_bytes)
 
 
+def test_aes128ctr_meta_rejects_length_past_kernel_limit():
+    """Do not wrap a valid int64 tensor length into the uint32 kernel field."""
+    maximum = (1 << 32) - 512
+    key = torch.empty((176,), dtype=torch.uint8, device="meta")
+    nonce = torch.empty((12,), dtype=torch.uint8, device="meta")
+    maximum_input = torch.empty((maximum,), dtype=torch.uint8, device="meta")
+    assert torch.ops.ascend_ops.aes128ctr(maximum_input, key, nonce).numel() == maximum
+
+    too_large = torch.empty((maximum + 256,), dtype=torch.uint8, device="meta")
+    with pytest.raises(RuntimeError, match="maximum representable"):
+        torch.ops.ascend_ops.aes128ctr(too_large, key, nonce)
 
 
 def test_aes128ctr_interface_exist():
     """Check whether the AES-128-CTR custom operator is registered."""
     logging.debug("Operator binding: %s", torch.ops.ascend_ops.aes128ctr)
-    assert hasattr(torch.ops.ascend_ops, "aes128ctr"), \
+    assert hasattr(torch.ops.ascend_ops, "aes128ctr"), (
         "The 'aes128ctr' operator is not registered in the 'torch.ops.ascend_ops' namespace."
+    )
 
 
 PLAINTEXT_LENGTHS = [
@@ -99,10 +111,11 @@ def test_aes128ctr_operator(length):
 
     result_valid = result.flatten()[:length]
 
-    assert torch.equal(result_valid, expected), \
-        f"AES-128-CTR failed for length={length}. " \
-        f"Expected first 16 bytes: {expected[:16].tolist()}, " \
+    assert torch.equal(result_valid, expected), (
+        f"AES-128-CTR failed for length={length}. "
+        f"Expected first 16 bytes: {expected[:16].tolist()}, "
         f"but got: {result_valid[:16].tolist()}"
+    )
 
     logging.info("Test passed: length=%s", length)
 
