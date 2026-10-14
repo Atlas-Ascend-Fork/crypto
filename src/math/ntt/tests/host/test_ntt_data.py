@@ -92,6 +92,21 @@ class NttDataTest(unittest.TestCase):
             golden.write_bytes(aligned)
             self.assertTrue(compare.compare_result(output, golden))
 
+    def test_u32_primality_rejects_four_base_pseudoprime(self):
+        generator = load_module("ntt_regular_generator_test", "gen_data.py")
+        composite = 151 * 751 * 28351
+        self.assertEqual(composite, 3215031751)
+        self.assertLess(composite, 2**32)
+        self.assertFalse(generator.is_prime_u32(composite))
+        self.assertTrue(generator.is_prime_u32(4294967291))
+
+    def test_u32_primality_matches_small_trial_division(self):
+        import math
+        generator = load_module("ntt_regular_generator_small_test", "gen_data.py")
+        for number in range(10000):
+            expected = number >= 2 and all(number % d for d in range(2, math.isqrt(number) + 1))
+            self.assertEqual(generator.is_prime_u32(number), expected, number)
+
 
 
 if __name__ == "__main__":

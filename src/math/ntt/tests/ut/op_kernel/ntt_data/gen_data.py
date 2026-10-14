@@ -122,8 +122,8 @@ def is_prime_u32(n: int) -> bool:
         s += 1
         d //= 2
 
-    # Deterministic for 32-bit integers.
-    for a in (2, 3, 5, 7):
+    # Bases 2, 7 and 61 are deterministic for n < 4759123141, covering u32.
+    for a in (2, 7, 61):
         if a >= n:
             continue
         x = pow(a, d, n)
