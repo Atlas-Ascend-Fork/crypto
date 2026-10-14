@@ -47,7 +47,8 @@ def stage(output, modules):
         for old in (output / folder).glob("*"):
             if old.suffix in (".cpp", ".h") and old not in targets:
                 raise ValueError("生成目录中存在过期文件，请指定新的构建目录")
-    if any(target.is_symlink() or target.parent.is_symlink() for target in targets):
+    guarded = [marker, output / "CMakeLists.txt", *targets]
+    if any(target.is_symlink() or target.parent.is_symlink() for target in guarded):
         raise ValueError("生成路径不能为符号链接")
     output.mkdir(parents=True, exist_ok=True)
     marker.write_text("cann-crypto-sdk\n", encoding="utf-8")
