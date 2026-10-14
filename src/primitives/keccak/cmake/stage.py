@@ -27,6 +27,8 @@ def rewrite_includes(source, owned):
 def stage(output, modules):
     output = output.resolve()
     roots = [module.resolve() for module in modules]
+    if any(not module.is_dir() for module in roots):
+        raise ValueError("指定的算子模块目录不存在")
     if any(output == root or output in root.parents for root in roots):
         raise ValueError("生成目录不能覆盖源码目录")
     marker = output / ".cann-generated"
@@ -39,6 +41,8 @@ def stage(output, modules):
                            if source.suffix in (".cpp", ".h"))
         sources.extend((source, "op_host") for source in sorted(module.glob("*_internal.h")))
         sources.extend((source, "op_host") for source in sorted(module.glob("*_launch.cpp")))
+    if not sources:
+        raise ValueError("指定模块中未找到算子源文件")
     owned = {source.resolve() for source, _ in sources}
     targets = [output / folder / source.name for source, folder in sources]
     if len(targets) != len(set(targets)):
