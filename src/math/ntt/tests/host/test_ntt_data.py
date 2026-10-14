@@ -17,6 +17,7 @@ import json
 import os
 from pathlib import Path
 import random
+import struct
 import subprocess
 import sys
 import tempfile
@@ -107,6 +108,82 @@ class NttDataTest(unittest.TestCase):
             expected = number >= 2 and all(number % d for d in range(2, math.isqrt(number) + 1))
             self.assertEqual(generator.is_prime_u32(number), expected, number)
 
+
+
+
+class NttGeneratorBoundsTest(unittest.TestCase):
+    def setUp(self):
+        self.work = tempfile.TemporaryDirectory(prefix="ntt-g-bounds-")
+        self.addCleanup(self.work.cleanup)
+        self.root = Path(self.work.name)
+
+    def run_generator(self, values):
+        env = {key: value for key, value in os.environ.items()
+               if not key.startswith("NTT_")}
+        env.update({"NTT_N": "32", "NTT_Q": "97", "NTT_G": "5",
+                    "NTT_W": "16", "NTT_BLOCK_DIM": "1",
+                    "NTT_BENCH": "1", "NTT_SEED": "99"})
+        env.update(values)
+        return subprocess.run(
+            [sys.executable, str(DATA_DIR / "gen_data.py")],
+            cwd=self.root, env=env, capture_output=True, text=True,
+            timeout=60, check=False)
+
+    def reject_generator(self, values, channel):
+        result = self.run_generator(values)
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"g[{channel}]", result.stderr)
+        self.assertFalse((self.root / "input").exists())
+        self.assertFalse((self.root / "output").exists())
+
+    def accept_generator(self, values, moduli, generators):
+        result = self.run_generator(values)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        raw = (self.root / "input/input_tiling.bin").read_bytes()
+        fields = struct.unpack("<46i", raw)
+        self.assertEqual(fields[11], len(moduli))
+        self.assertEqual(list(fields[13:13 + len(moduli)]), moduli)
+        self.assertEqual(list(fields[29:29 + len(generators)]), generators)
+        self.assertEqual(fields[2], generators[0])
+        expected_bytes = 32 * 4 * len(moduli)
+        self.assertEqual((self.root / "input/input_x.bin").stat().st_size, expected_bytes)
+        self.assertEqual((self.root / "output/golden.bin").stat().st_size, expected_bytes)
+
+    def test_reject_negative_generator(self):
+        self.reject_generator({"NTT_G": "-1"}, 0)
+
+    def test_reject_zero_generator(self):
+        self.reject_generator({"NTT_G": "0"}, 0)
+
+    def test_reject_one_generator(self):
+        self.reject_generator({"NTT_G": "1"}, 0)
+
+    def test_reject_generator_equal_to_modulus(self):
+        self.reject_generator({"NTT_G": "97"}, 0)
+
+    def test_reject_generator_above_modulus(self):
+        self.reject_generator({"NTT_G": "98"}, 0)
+
+    def test_reject_invalid_second_rns_generator(self):
+        self.reject_generator(
+            {"NTT_Q_LIST": "97,193", "NTT_G_LIST": "5,1"}, 1)
+
+    def test_accept_single_generator(self):
+        self.accept_generator({}, [97], [5])
+        golden = struct.unpack("<32i", (self.root / "output/golden.bin").read_bytes())
+        self.assertEqual(golden, (
+            36, 22, 43, 74, 43, 70, 47, 38, 12, 85, 75, 68, 90, 85, 23, 41,
+            52, 96, 91, 18, 35, 69, 55, 57, 51, 89, 94, 90, 4, 19, 16, 92))
+
+    def test_accept_lower_in_range_generator(self):
+        self.accept_generator({"NTT_G": "2"}, [97], [2])
+
+    def test_accept_upper_in_range_generator(self):
+        self.accept_generator({"NTT_G": "96"}, [97], [96])
+
+    def test_accept_rns_generators(self):
+        self.accept_generator(
+            {"NTT_Q_LIST": "97,193", "NTT_G_LIST": "5,19"}, [97, 193], [5, 19])
 
 
 if __name__ == "__main__":

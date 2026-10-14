@@ -421,6 +421,9 @@ def validate_case_moduli(config):
             raise ValueError(f"q[{channel}] must be < 2^{RNS_CHANNEL_BITS}, got {q}")
         if (q - 1) % n != 0:
             raise ValueError(f"q[{channel}]={q} does not satisfy q = 1 mod N={n}")
+        g = g_list[channel]
+        if g <= 1 or g >= q:
+            raise ValueError(f"g[{channel}] must be in (1, q[{channel}]), got {g}")
 
 
 
