@@ -11,4 +11,4 @@
 - `micro/`：单个算子或原语
 - `end_to_end/`：完整场景
 
-CI 门禁只跑性能回归集，全矩阵放每日构建。
+CI 范围以[仓内 PR 流水线配置](../.gitcode/workflows/crypto-actions.yml)为准。当前配置显式列有代码检查、x86 编译、Markdown 检查和 op_host 单元测试，没有基准性能回归任务或每日定时触发。全矩阵及性能回归的调度需另行配置。
