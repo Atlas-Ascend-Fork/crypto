@@ -22,4 +22,4 @@ bash build.sh -u --opkernel     # 仅 op_kernel 层
 门禁单次执行限时 15 分钟，因此只运行不需要设备的层次；`op_kernel` 层的完整
 矩阵与性能回归放入每日构建。
 
-测试向量由 `../scripts/` 下的脚本获取并校验，不随仓库分发。
+NIST ACVP、Wycheproof 与 GM/T 标准向量的获取及哈希校验脚本仍在规划中，见[辅助脚本说明](../scripts/README.md)。当前已实现的组件测试使用随源码提供的参考实现与已知答案，例如[Keccak 测试](../src/primitives/keccak/tests/README.md)和[SHAKE 测试](../src/algorithms/hash/shake/tests/README.md)。
