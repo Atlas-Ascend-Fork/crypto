@@ -51,8 +51,10 @@ usage() {
     -h, --help             显示本帮助
 
 环境变量:
-    ASCEND_HOME_PATH       CANN 安装路径。已设置时构建设备算子包并可运行设备用例，
-                           未设置时仅构建 Host 侧，便于无卡环境开发自检
+    ASCEND_HOME_PATH       CANN 安装路径。对 keccak、shake 等 CANN 框架型组件，
+                           未设置时仅构建 Host 侧；设置后可构建设备包与设备用例。
+                           AES 的 setup.py 构建仍需配套 CANN、PyTorch 和 torch_npu，
+                           不提供此无 CANN 的 Host-only 构建模式。
     ASCEND_COMPUTE_UNIT    设备编译目标，默认 ascend910b（Atlas A2），
                            Atlas A3 取 ascend910_93
 
