@@ -84,6 +84,7 @@ run_pqc_acceptance()
     fasterntt=$(baseline_value "${profile}" fasterntt-avx2-reference)
     python3 - "${profile}" "${duration}" "${ACCEPT_BATCH}" \
         "${liboqs}" "${fasterntt}" "${toml}" "${ACCEPT_ENFORCE_PERFORMANCE:-1}" <<'PY'
+import math
 import sys
 
 profile, duration, batch, liboqs, fasterntt, toml, enforce = sys.argv[1:]
@@ -91,6 +92,11 @@ duration = int(duration)
 batch = int(batch)
 liboqs = float(liboqs)
 fasterntt = float(fasterntt)
+for baseline in (liboqs, fasterntt):
+    if not math.isfinite(baseline):
+        raise SystemExit("[FAIL] baseline cycles_per_poly must be finite and positive")
+    if baseline <= 0:
+        raise SystemExit("[FAIL] baseline cycles_per_poly must be finite and positive")
 npu = duration / batch
 speed_libo = liboqs / npu
 speed_fntt = fasterntt / npu
