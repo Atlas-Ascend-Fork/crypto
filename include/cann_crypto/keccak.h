@@ -8,13 +8,23 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#include "shake_tensor_def.h"
+#ifndef CANN_CRYPTO_KECCAK_H
+#define CANN_CRYPTO_KECCAK_H
 
-namespace ops {
-class Shake256Tensor : public ShakeTensorBase {
-public:
-    explicit Shake256Tensor(const char* name) : ShakeTensorBase(name) {}
-};
+#include <stdint.h>
 
-OP_ADD(Shake256Tensor);
-} // namespace ops
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Device buffers contain contiguous UINT32 states in [50, batch] layout.
+ * batch must be in [1, 8192]. Input and output must not overlap.
+ * The current ACL device and stream must match. NULL selects the default stream.
+ * Returns an ACL error code; on success the stream has completed.
+ */
+int32_t CannCryptoKeccakF1600(const uint32_t* input, uint32_t* output, uint64_t batch, void* stream);
+
+#ifdef __cplusplus
+}
+#endif
+#endif

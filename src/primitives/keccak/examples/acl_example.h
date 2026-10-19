@@ -44,7 +44,7 @@ inline void CheckDeviceTarget()
     const bool matches = (expected == "ascend910b" && soc.rfind("Ascend910B", 0) == 0) ||
                          (expected == "ascend910_93" && soc.rfind("Ascend910_93", 0) == 0);
     if (!matches) {
-        throw std::runtime_error("Operator package target " + expected + " does not match device " + soc);
+        throw std::runtime_error("Kernel target " + expected + " does not match device " + soc);
     }
 }
 
@@ -108,33 +108,5 @@ private:
     size_t bytes_;
 };
 
-class Tensor {
-public:
-    Tensor(const Buffer& buffer, const std::vector<int64_t>& shape, aclDataType type)
-    {
-        std::vector<int64_t> strides(shape.size(), 1);
-        for (size_t index = shape.size(); index > 1; --index) {
-            strides[index - 2] = strides[index - 1] * shape[index - 1];
-        }
-        tensor_ = aclCreateTensor(
-            shape.data(), shape.size(), type, strides.data(), 0, ACL_FORMAT_ND, shape.data(), shape.size(),
-            buffer.data());
-        if (tensor_ == nullptr) {
-            throw std::runtime_error("aclCreateTensor");
-        }
-    }
-    ~Tensor()
-    {
-        if (tensor_ != nullptr) {
-            aclDestroyTensor(tensor_);
-        }
-    }
-    Tensor(const Tensor&) = delete;
-    Tensor& operator=(const Tensor&) = delete;
-    aclTensor* get() const { return tensor_; }
-
-private:
-    aclTensor* tensor_ = nullptr;
-};
 } // namespace example
 #endif

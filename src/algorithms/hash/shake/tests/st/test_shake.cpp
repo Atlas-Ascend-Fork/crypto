@@ -9,8 +9,7 @@
  */
 
 #include <acl/acl.h>
-#include <aclnn_shake128_tensor.h>
-#include <aclnn_shake256_tensor.h>
+#include "cann_crypto/shake.h"
 #include <openssl/evp.h>
 
 #include "../../../../../primitives/keccak/tests/st/keccak_test_utils.h"
@@ -30,20 +29,15 @@ namespace {
 
 using cann_crypto::test::Checksum;
 using cann_crypto::test::DeviceBuffer;
-using cann_crypto::test::GetWorkspaceFn;
-using cann_crypto::test::LaunchFn;
-using cann_crypto::test::LaunchTensor;
 using cann_crypto::test::RequireAcl;
-using cann_crypto::test::RequireAclnn;
 using cann_crypto::test::RunKeccakCase;
-using cann_crypto::test::TensorHandle;
+using LaunchFn = int32_t (*)(const uint8_t*, uint8_t*, uint64_t, uint64_t, uint64_t, void*);
 using EvpFn = const EVP_MD* (*)();
 
 struct Algorithm {
     const char* name;
     size_t rate;
     size_t fastOutputLength;
-    GetWorkspaceFn getWorkspace;
     LaunchFn launch;
     EvpFn evp;
 };
@@ -55,11 +49,8 @@ struct TestCase {
     uint32_t seed;
 };
 
-const Algorithm SHAKE128 = {"SHAKE128",          168,         32, aclnnShake128TensorGetWorkspaceSize,
-                            aclnnShake128Tensor, EVP_shake128};
-
-const Algorithm SHAKE256 = {"SHAKE256",          136,         64, aclnnShake256TensorGetWorkspaceSize,
-                            aclnnShake256Tensor, EVP_shake256};
+const Algorithm SHAKE128 = {"SHAKE128", 168, 32, CannCryptoShake128, EVP_shake128};
+const Algorithm SHAKE256 = {"SHAKE256", 136, 64, CannCryptoShake256, EVP_shake256};
 
 void OpenSslShake(
     const Algorithm& algorithm, const uint8_t* input, size_t inputLength, uint8_t* output, size_t outputLength)
@@ -127,12 +118,11 @@ void RunShakeDevice(
     }
     RequireAcl(aclrtMemset(deviceOutput.get(), deviceOutput.size(), 0, deviceOutput.size()), "output memset");
 
-    TensorHandle inputTensor(
-        deviceInput.get(), {static_cast<int64_t>(testCase.batch), static_cast<int64_t>(testCase.inputLength)});
-    TensorHandle outputTensor(
-        deviceOutput.get(), {static_cast<int64_t>(testCase.batch), static_cast<int64_t>(testCase.outputLength)});
-
-    LaunchTensor(inputTensor, outputTensor, algorithm.getWorkspace, algorithm.launch, stream);
+    RequireAcl(
+        algorithm.launch(
+            static_cast<const uint8_t*>(deviceInput.get()), static_cast<uint8_t*>(deviceOutput.get()), testCase.batch,
+            testCase.inputLength, testCase.outputLength, stream),
+        "SHAKE kernel launch");
     RequireAcl(
         aclrtMemcpy(actual.data(), actual.size(), deviceOutput.get(), deviceOutput.size(), ACL_MEMCPY_DEVICE_TO_HOST),
         "输出由设备复制到主机");
@@ -204,7 +194,7 @@ bool RunAllCases(bool stressOnly, aclrtStream stream)
 {
     bool passed = true;
     if (!stressOnly) {
-        for (size_t batch : {64U, 256U, 1024U, 4096U, 8192U}) {
+        for (size_t batch : {1U, 7U, 8U, 9U, 64U, 255U, 256U, 257U, 1024U, 4096U, 8191U, 8192U}) {
             passed = RunKeccakCase(batch, stream) && passed;
         }
     }

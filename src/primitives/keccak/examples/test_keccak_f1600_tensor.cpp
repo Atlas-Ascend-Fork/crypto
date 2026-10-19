@@ -8,7 +8,7 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#include <aclnn_keccak_f1600_tensor.h>
+#include "cann_crypto/keccak.h"
 #include "acl_example.h"
 
 #include <iostream>
@@ -25,20 +25,10 @@ int main(int argc, char** argv)
         example::Buffer y(output.size() * sizeof(uint32_t));
         example::Check(
             aclrtMemcpy(x.data(), x.size(), input.data(), x.size(), ACL_MEMCPY_HOST_TO_DEVICE), "copy input");
-        example::Tensor inputTensor(x, {50, batch}, ACL_UINT32);
-        example::Tensor outputTensor(y, {50, batch}, ACL_UINT32);
-
-        uint64_t workspaceSize = 0;
-        aclOpExecutor* executor = nullptr;
         example::Check(
-            aclnnKeccakF1600TensorGetWorkspaceSize(inputTensor.get(), outputTensor.get(), &workspaceSize, &executor),
-            "workspace query");
-        example::Buffer workspace(workspaceSize);
-        example::Check(
-            aclnnKeccakF1600Tensor(
-                workspaceSize == 0 ? nullptr : workspace.data(), workspaceSize, executor, session.stream()),
-            "KeccakF1600Tensor");
-        example::Check(aclrtSynchronizeStream(session.stream()), "stream synchronize");
+            CannCryptoKeccakF1600(
+                static_cast<const uint32_t*>(x.data()), static_cast<uint32_t*>(y.data()), batch, session.stream()),
+            "Keccak kernel launch");
         example::Check(
             aclrtMemcpy(output.data(), y.size(), y.data(), y.size(), ACL_MEMCPY_DEVICE_TO_HOST), "copy output");
 

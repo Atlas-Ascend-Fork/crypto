@@ -12,7 +12,7 @@
 #define CANN_CRYPTO_KECCAK_TEST_UTILS_H
 
 #include <acl/acl.h>
-#include <aclnn_keccak_f1600_tensor.h>
+#include "cann_crypto/keccak.h"
 #include "../assets/sha3_ref.h"
 
 #include <algorithm>
@@ -26,24 +26,12 @@
 
 namespace cann_crypto::test {
 
-using GetWorkspaceFn = aclnnStatus (*)(const aclTensor*, const aclTensor*, uint64_t*, aclOpExecutor**);
-using LaunchFn = aclnnStatus (*)(void*, uint64_t, aclOpExecutor*, aclrtStream);
 inline void RequireAcl(aclError status, const char* expression)
 {
     if (status != ACL_SUCCESS) {
         const char* detail = aclGetRecentErrMsg();
         throw std::runtime_error(
             std::string("ACL 调用失败：") + expression + "，返回值=" + std::to_string(status) +
-            (detail == nullptr ? "" : std::string("\n") + detail));
-    }
-}
-
-inline void RequireAclnn(aclnnStatus status, const char* expression)
-{
-    if (status != 0) {
-        const char* detail = aclGetRecentErrMsg();
-        throw std::runtime_error(
-            std::string("ACLNN 调用失败：") + expression + "，返回值=" + std::to_string(status) +
             (detail == nullptr ? "" : std::string("\n") + detail));
     }
 }
@@ -71,40 +59,6 @@ public:
 private:
     void* data_ = nullptr;
     size_t logicalBytes_ = 0;
-};
-
-class TensorHandle {
-public:
-    TensorHandle(void* deviceData, const std::vector<int64_t>& shape, aclDataType dataType = ACL_UINT8)
-    {
-        std::vector<int64_t> strides(shape.size());
-        int64_t stride = 1;
-        for (int index = static_cast<int>(shape.size()) - 1; index >= 0; --index) {
-            strides[static_cast<size_t>(index)] = stride;
-            stride *= shape[static_cast<size_t>(index)];
-        }
-
-        tensor_ = aclCreateTensor(
-            shape.data(), shape.size(), dataType, strides.data(), 0, ACL_FORMAT_ND, shape.data(), shape.size(),
-            deviceData);
-        if (tensor_ == nullptr) {
-            throw std::runtime_error("aclCreateTensor returned nullptr");
-        }
-    }
-
-    ~TensorHandle()
-    {
-        if (tensor_ != nullptr) {
-            aclDestroyTensor(tensor_);
-        }
-    }
-
-    TensorHandle(const TensorHandle&) = delete;
-    TensorHandle& operator=(const TensorHandle&) = delete;
-    aclTensor* get() const { return tensor_; }
-
-private:
-    aclTensor* tensor_ = nullptr;
 };
 
 inline uint64_t Checksum(const std::vector<uint8_t>& bytes)
@@ -143,18 +97,6 @@ inline void UnpackKeccakStates(const std::vector<uint32_t>& packed, size_t batch
     }
 }
 
-inline void LaunchTensor(
-    const TensorHandle& input, const TensorHandle& output, GetWorkspaceFn getWorkspace, LaunchFn launch,
-    aclrtStream stream)
-{
-    uint64_t workspaceSize = 0;
-    aclOpExecutor* executor = nullptr;
-    RequireAclnn(getWorkspace(input.get(), output.get(), &workspaceSize, &executor), "GetWorkspaceSize");
-    DeviceBuffer workspace(workspaceSize);
-    RequireAclnn(launch(workspaceSize == 0 ? nullptr : workspace.get(), workspaceSize, executor, stream), "算子执行");
-    RequireAcl(aclrtSynchronizeStream(stream), "aclrtSynchronizeStream");
-}
-
 inline std::vector<uint8_t> KeccakReference(const std::vector<uint8_t>& inputStates, size_t batch)
 {
     std::vector<uint8_t> expected = inputStates;
@@ -184,10 +126,10 @@ inline void RunKeccakDevice(
         "Keccak 输入由主机复制到设备");
     RequireAcl(aclrtMemset(deviceOutput.get(), deviceOutput.size(), 0, deviceOutput.size()), "Keccak 输出清零");
 
-    TensorHandle inputTensor(deviceInput.get(), {50, static_cast<int64_t>(batch)}, ACL_UINT32);
-    TensorHandle outputTensor(deviceOutput.get(), {50, static_cast<int64_t>(batch)}, ACL_UINT32);
-
-    LaunchTensor(inputTensor, outputTensor, aclnnKeccakF1600TensorGetWorkspaceSize, aclnnKeccakF1600Tensor, stream);
+    RequireAcl(
+        CannCryptoKeccakF1600(
+            static_cast<const uint32_t*>(deviceInput.get()), static_cast<uint32_t*>(deviceOutput.get()), batch, stream),
+        "Keccak kernel launch");
     RequireAcl(
         aclrtMemcpy(
             outputPacked.data(), outputPacked.size() * sizeof(uint32_t), deviceOutput.get(), deviceOutput.size(),

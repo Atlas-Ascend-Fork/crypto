@@ -8,13 +8,26 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#include "shake_tensor_def.h"
+#ifndef CANN_CRYPTO_KECCAK_INTERNAL_H
+#define CANN_CRYPTO_KECCAK_INTERNAL_H
 
-namespace ops {
-class Shake128Tensor : public ShakeTensorBase {
-public:
-    explicit Shake128Tensor(const char* name) : ShakeTensorBase(name) {}
+#include <cstdint>
+
+namespace cann_crypto::keccak {
+struct LaunchConfig {
+    uint32_t batch;
+    uint32_t blockDim;
 };
 
-OP_ADD(Shake128Tensor);
-} // namespace ops
+inline bool BuildLaunchConfig(uint64_t batch, uint32_t coreCount, LaunchConfig& config)
+{
+    if (batch == 0U || batch > 8192U || coreCount == 0U) {
+        return false;
+    }
+    const auto count = static_cast<uint32_t>(batch);
+    const uint32_t tiles = (count + 255U) / 256U;
+    config = {count, tiles < coreCount ? tiles : coreCount};
+    return true;
+}
+} // namespace cann_crypto::keccak
+#endif

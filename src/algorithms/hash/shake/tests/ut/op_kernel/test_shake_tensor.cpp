@@ -11,18 +11,14 @@
 #include <gtest/gtest.h>
 #include "tikicpulib.h"
 #include "kernel_operator.h"
-#include "../../../../../../primitives/keccak/tests/ut/op_kernel/tiling_test_compat.h"
 #if SHAKE_TEST_BITS == 128
 #include "../../../op_kernel/shake128_tensor.cpp"
-using TilingData = Shake128TensorTilingData;
 #else
 #include "../../../op_kernel/shake256_tensor.cpp"
-using TilingData = Shake256TensorTilingData;
 #endif
 #include "sha3_ref.h"
 
 #include <algorithm>
-#include <new>
 #include <memory>
 #include <vector>
 
@@ -51,33 +47,21 @@ TEST_P(ShakeTensorKernelTest, MatchesIndependentReference)
     const size_t outputBytes = static_cast<size_t>(shape.batch) * shape.outputLength;
     GmBuffer x(static_cast<uint8_t*>(AscendC::GmAlloc(std::max(inputBytes, size_t{32}))));
     GmBuffer y(static_cast<uint8_t*>(AscendC::GmAlloc(outputBytes)));
-    GmBuffer workspace(static_cast<uint8_t*>(AscendC::GmAlloc(32)));
-    std::unique_ptr<TilingData, GmDeleter> tiling(reinterpret_cast<TilingData*>(AscendC::GmAlloc(sizeof(TilingData))));
     ASSERT_NE(x.get(), nullptr);
     ASSERT_NE(y.get(), nullptr);
-    ASSERT_NE(workspace.get(), nullptr);
-    ASSERT_NE(tiling.get(), nullptr);
     for (size_t i = 0; i < inputBytes; ++i) {
         x.get()[i] = static_cast<uint8_t>(i * 37U + 11U);
     }
     std::fill_n(y.get(), outputBytes, 0);
-    TilingData data{};
-    data.batch = shape.batch;
-    data.inputLength = shape.inputLength;
-    data.outputLength = shape.outputLength;
-    data.groupSize = 64U;
-    data.blockDim = (shape.batch + 63U) / 64U;
-    // 在 GM 原始存储中建立对象生命周期，再按类型赋值。
-    ::new (static_cast<void*>(tiling.get())) TilingData{};
-    *tiling.get() = data;
-    ICPU_SET_TILING_KEY(0);
+    constexpr uint32_t groupSize = 64U;
+    const uint32_t blockDim = (shape.batch + groupSize - 1U) / groupSize;
     AscendC::SetKernelMode(KernelMode::AIV_MODE);
 #if SHAKE_TEST_BITS == 128
     ICPU_RUN_KF(
-        shake128_tensor, data.blockDim, x.get(), y.get(), workspace.get(), reinterpret_cast<uint8_t*>(tiling.get()));
+        shake128_tensor, blockDim, x.get(), y.get(), shape.batch, shape.inputLength, shape.outputLength, groupSize);
 #else
     ICPU_RUN_KF(
-        shake256_tensor, data.blockDim, x.get(), y.get(), workspace.get(), reinterpret_cast<uint8_t*>(tiling.get()));
+        shake256_tensor, blockDim, x.get(), y.get(), shape.batch, shape.inputLength, shape.outputLength, groupSize);
 #endif
     std::vector<uint8_t> expected(shape.outputLength);
     for (uint32_t message = 0; message < shape.batch; ++message) {

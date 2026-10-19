@@ -8,9 +8,9 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # ----------------------------------------------------------------------------
 
-add_executable(example_shake_tensor test_aclnn_shake_tensor.cpp)
+add_executable(example_shake_tensor test_shake_tensor.cpp)
 target_include_directories(example_shake_tensor PRIVATE "${KECCAK_DIR}/examples")
-target_link_libraries(example_shake_tensor PRIVATE shake_runtime)
+target_link_libraries(example_shake_tensor PRIVATE cann_crypto_shake)
 cann_warnings(example_shake_tensor)
 if(CANN_BUILD_TESTS)
     cann_device_test(example_shake_tensor shake 128)

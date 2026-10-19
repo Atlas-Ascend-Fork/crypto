@@ -8,16 +8,17 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#include "shake256_tensor_tiling_data.h"
 #include "shake_uniform_u32_tensor.h"
 
-extern "C" __global__ __aicore__ void shake256_tensor(GM_ADDR x, GM_ADDR y, GM_ADDR workspace, GM_ADDR tiling)
+#if defined(CANN_CRYPTO_KERNEL_UT)
+extern "C" __global__ __aicore__ void shake256_tensor(
+    GM_ADDR x, GM_ADDR y, uint32_t batch, uint32_t inputLength, uint32_t outputLength, uint32_t groupSize)
+#else
+extern "C" __global__ __vector__ void shake256_tensor(
+    GM_ADDR x, GM_ADDR y, uint32_t batch, uint32_t inputLength, uint32_t outputLength, uint32_t groupSize)
+#endif
 {
-    (void)workspace;
-    REGISTER_TILING_DEFAULT(Shake256TensorTilingData);
-    GET_TILING_DATA_WITH_STRUCT(Shake256TensorTilingData, tilingData, tiling);
-
     ShakeUniformU32Tensor::KernelShakeUniformU32Tensor<136U> op;
-    op.Init(x, y, tilingData.batch, tilingData.inputLength, tilingData.outputLength, tilingData.groupSize);
+    op.Init(x, y, batch, inputLength, outputLength, groupSize);
     op.Process();
 }

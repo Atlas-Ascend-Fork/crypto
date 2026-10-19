@@ -51,8 +51,8 @@ usage() {
     -h, --help             显示本帮助
 
 环境变量:
-    ASCEND_HOME_PATH       CANN 安装路径。对 keccak、shake 等 CANN 框架型组件，
-                           未设置时仅构建 Host 侧；设置后可构建设备包与设备用例。
+    ASCEND_HOME_PATH       CANN 安装路径。对 keccak、shake 等 CANN 直调组件，
+                           未设置时仅构建 Host 侧；设置后可构建直调库与设备用例。
                            AES 的 setup.py 构建仍需配套 CANN、PyTorch 和 torch_npu，
                            不提供此无 CANN 的 Host-only 构建模式。
     ASCEND_COMPUTE_UNIT    设备编译目标，默认 ascend910b（Atlas A2），
@@ -136,22 +136,22 @@ list_components() {
   done < <(find "${SCRIPT_DIR}/src" \( -name CMakeLists.txt -o -name setup.py \) -type f 2>/dev/null | sort) | sort -u
 }
 
-# CANN 算子框架型组件（keccak、shake）的构建开关。
-# 有 CANN 环境时构建设备算子包，否则只构建 Host 侧，便于本地开发与无卡环境自检。
+# CANN kernel 直调组件（keccak、shake）的构建开关。
+# 有 CANN 环境时构建 kernel 直调库，否则只构建 Host 侧，便于本地开发与无卡环境自检。
 cann_cmake_args() {
   local build_tests="$1"
   local args=(-DCMAKE_BUILD_TYPE=Release "-DCANN_BUILD_TESTS=${build_tests}" -DCANN_BUILD_CPU_DEBUG_TESTS=OFF)
   if [ -n "${ASCEND_HOME_PATH}" ]; then
     args+=(-DCANN_BUILD_DEVICE=ON "-DASCEND_COMPUTE_UNIT=${ASCEND_COMPUTE_UNIT:-ascend910b}"
            "-DASCEND_CANN_PACKAGE_PATH=${ASCEND_HOME_PATH}"
-           "-DPython3_EXECUTABLE=$(command -v python3)" "-DCANN_BUILD_JOBS=${THREAD_NUM}")
+           "-DPython3_EXECUTABLE=$(command -v python3)")
   else
     args+=(-DCANN_BUILD_DEVICE=OFF)
   fi
   printf '%s\n' "${args[@]}"
 }
 
-# 组件是否使用 CANN 算子框架，以顶层 CMakeLists.txt 中的 CANN_BUILD_TESTS 开关判定。
+# 组件是否使用 CANN kernel 直调构建，以顶层 CMakeLists.txt 中的 CANN_BUILD_TESTS 开关判定。
 is_cann_component() {
   [ -f "$1/CMakeLists.txt" ] && grep -q 'CANN_BUILD_TESTS' "$1/CMakeLists.txt"
 }
@@ -170,7 +170,7 @@ build_component() {
     local args=()
     mapfile -t args < <(cann_cmake_args OFF)
     if [ -n "${ASCEND_HOME_PATH}" ]; then
-      log "构建 ${name}（CANN 算子包，${ASCEND_COMPUTE_UNIT:-ascend910b}）"
+      log "构建 ${name}（CANN kernel 直调，${ASCEND_COMPUTE_UNIT:-ascend910b}）"
     else
       log "构建 ${name}（CMake，未检测到 CANN，仅构建 Host 侧）"
     fi

@@ -13,11 +13,12 @@ target_link_libraries(shake_launch_config_test PRIVATE cann_crypto_shake_host)
 cann_warnings(shake_launch_config_test)
 add_test(NAME shake_launch_config_test COMMAND shake_launch_config_test)
 
-foreach(bits 128 256)
-    add_executable(shake${bits}_tiling_test test_shake_tensor_tiling.cpp)
-    target_compile_definitions(shake${bits}_tiling_test PRIVATE SHAKE_TEST_BITS=${bits})
-    target_include_directories(shake${bits}_tiling_test PRIVATE "${KECCAK_DIR}/tests/ut/op_host/stubs")
-    target_link_libraries(shake${bits}_tiling_test PRIVATE cann_crypto_shake_host)
-    cann_warnings(shake${bits}_tiling_test)
-    add_test(NAME shake${bits}_tiling_test COMMAND shake${bits}_tiling_test)
-endforeach()
+add_executable(shake_direct_launch_test
+    "${KECCAK_DIR}/tests/ut/op_host/test_direct_launch.cpp"
+    "${KECCAK_DIR}/keccak_launch.cpp" ../../../shake_runtime.cpp)
+target_compile_definitions(shake_direct_launch_test PRIVATE CANN_CRYPTO_TEST_SHAKE=1)
+target_include_directories(shake_direct_launch_test PRIVATE
+    "${KECCAK_DIR}/tests/ut/op_host/stubs" "${CANN_CRYPTO_INCLUDE_DIR}")
+target_link_libraries(shake_direct_launch_test PRIVATE cann_crypto_shake_host)
+cann_warnings(shake_direct_launch_test)
+add_test(NAME shake_direct_launch_test COMMAND shake_direct_launch_test)

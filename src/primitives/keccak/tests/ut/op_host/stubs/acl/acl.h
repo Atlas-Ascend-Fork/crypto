@@ -8,6 +8,23 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#pragma once
+#ifndef CANN_CRYPTO_TEST_ACL_H
+#define CANN_CRYPTO_TEST_ACL_H
 
-#define SHAKE128_TENSOR_TILING_KEY_DEFAULT 0UL
+#include <stdint.h>
+
+typedef int32_t aclError;
+typedef void* aclrtStream;
+enum aclrtDevAttr { ACL_DEV_ATTR_VECTOR_CORE_NUM };
+enum { ACL_SUCCESS = 0, ACL_ERROR_INVALID_PARAM = 100000 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+aclError aclrtGetDevice(int32_t* device);
+aclError aclrtGetDeviceInfo(uint32_t device, aclrtDevAttr attr, int64_t* value);
+aclError aclrtSynchronizeStream(aclrtStream stream);
+#ifdef __cplusplus
+}
+#endif
+#endif

@@ -8,17 +8,8 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#pragma once
+#include "cann_crypto/keccak.h"
+#include "cann_crypto/shake.h"
 
-#include <stdint.h>
-
-struct Shake128TensorTilingData {
-    uint32_t batch;
-    uint32_t inputLength;
-    uint32_t outputLength;
-    uint32_t blockDim;
-    uint32_t groupSize;
-    uint32_t useFastPath;
-    uint32_t reserved0;
-    uint32_t reserved1;
-};
+/* Compile as C to guard the public interface against C++-only declarations. */
+int main(void) { return 0; }

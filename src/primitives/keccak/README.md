@@ -11,30 +11,31 @@
 | Atlas 推理系列产品 | × |
 | Atlas 训练系列产品 | × |
 
-Atlas A2 使用 `ascend910b`，Atlas A3 使用 `ascend910_93`。设备验证使用 CANN 9.1.0。
+目标环境为 CANN 9.1.0、Atlas A2 / A3，使用 `dav-2201` 架构。直调版本的设备结果以重新执行设备测试为准。
 
 ## 功能说明
 
-- 算子功能：对批量 1600 位状态执行 Keccak-f[1600] 的 24 轮置换，不包含消息填充、吸收和输出扩展。
+对批量 1600 位状态执行 Keccak-f[1600] 的 24 轮置换，不包含消息填充、吸收和输出扩展。
 
 ## 参数说明
 
-| 参数名 | 输入/输出/属性 | 描述 | 数据类型 | 数据格式 |
-| --- | --- | --- | --- | --- |
-| x | 输入 | 初始状态，形状为 `[50, B]` | UINT32 | ND |
-| y | 输出 | 置换结果，形状为 `[50, B]` | UINT32 | ND |
+| 参数 | 描述 |
+| --- | --- |
+| input | 连续 UINT32 设备缓冲区，布局为 `[50, B]` |
+| output | 相同布局的 UINT32 设备缓冲区 |
+| batch | 状态数量，`1 <= B <= 8192` |
+| stream | 当前设备的 ACL stream；空指针表示默认 stream |
 
-每个状态包含 25 个 64 位 lane。第 `lane` 个值的低、高 32 位分别放在
-第 `2*lane`、`2*lane+1` 行；`lane=x+5*y`，行内沿 batch 维连续存放。
+每个状态包含 25 个 64 位 lane。第 `lane` 个值的低、高 32 位分别放在第 `2*lane`、`2*lane+1` 行；行内沿 batch 维连续存放。
 
 ## 约束说明
 
-- 输入、输出为连续张量，形状一致，缓冲区不重叠。
-- `1 <= B <= 8192`；已覆盖的设备测试 batch 为 64、256、1024、4096、8192。
-- 调用方在流同步完成前保留输入、输出和工作空间。
+- 输入、输出缓冲区不得重叠，调用方负责提供足够的设备内存。
+- 保留非对齐尾块的 `DataCopyPad` 修复；设备测试包括 batch 1、7、8、9、255、256、257、8191 等边界。
+- 接口在指定 stream 上启动 kernel 并同步，成功返回时计算已经完成；返回值为 ACL 错误码。
 
 ## 调用说明
 
-| 调用方式 | 样例代码 | 说明 |
-| --- | --- | --- |
-| aclnn接口 | [test_aclnn_keccak_f1600_tensor.cpp](examples/test_aclnn_keccak_f1600_tensor.cpp) | 通过 [aclnnKeccakF1600Tensor](docs/aclnnKeccakF1600Tensor.md) 接口调用 KeccakF1600Tensor 算子。 |
+通过 [CannCryptoKeccakF1600](docs/kernelLaunch.md) 直接启动 kernel，示例见 [test_keccak_f1600_tensor.cpp](examples/test_keccak_f1600_tensor.cpp)。
+
+构建生成 `libcann_crypto_keccak.so`，参见[构建与测试](docs/build.md)。

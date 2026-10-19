@@ -8,8 +8,7 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#include <aclnn_shake128_tensor.h>
-#include <aclnn_shake256_tensor.h>
+#include "cann_crypto/shake.h"
 #include "acl_example.h"
 
 #include <array>
@@ -26,22 +25,11 @@ int main(int argc, char** argv)
         example::Session session(device);
         constexpr int64_t batch = 2;
         constexpr int64_t outputLength = 32;
-        example::Buffer x(0);
         example::Buffer y(batch * outputLength);
-        example::Tensor inputTensor(x, {batch, 0}, ACL_UINT8);
-        example::Tensor outputTensor(y, {batch, outputLength}, ACL_UINT8);
-        uint64_t workspaceSize = 0;
-        aclOpExecutor* executor = nullptr;
-        const auto getWorkspace =
-            bits == 128 ? aclnnShake128TensorGetWorkspaceSize : aclnnShake256TensorGetWorkspaceSize;
-        const auto launch = bits == 128 ? aclnnShake128Tensor : aclnnShake256Tensor;
+        const auto launch = bits == 128 ? CannCryptoShake128 : CannCryptoShake256;
         example::Check(
-            getWorkspace(inputTensor.get(), outputTensor.get(), &workspaceSize, &executor), "workspace query");
-        example::Buffer workspace(workspaceSize);
-        example::Check(
-            launch(workspaceSize == 0 ? nullptr : workspace.data(), workspaceSize, executor, session.stream()),
-            "SHAKE");
-        example::Check(aclrtSynchronizeStream(session.stream()), "stream synchronize");
+            launch(nullptr, static_cast<uint8_t*>(y.data()), batch, 0, outputLength, session.stream()),
+            "SHAKE kernel launch");
         std::vector<uint8_t> output(y.size());
         example::Check(
             aclrtMemcpy(output.data(), output.size(), y.data(), y.size(), ACL_MEMCPY_DEVICE_TO_HOST), "copy output");

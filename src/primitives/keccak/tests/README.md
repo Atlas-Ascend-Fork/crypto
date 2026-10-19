@@ -1,38 +1,17 @@
 # Keccak 测试
 
-| 测试 | 内容 | 运行环境 |
+| 测试 | 内容 | 依赖 |
 | --- | --- | --- |
-| assets/golden.py | 独立 Python 置换、全零初态已知答案、非法输入 | Python |
-| test_build.py | 源码准备、CANN 框架路径查找、构建接口配置、ACLNN 包符号检查 | Python、CMake，使用框架替身 |
-| ut/op_host | 生产 InferShape 和 Tiling：形状、分核、tilingKey、workspace、空指针 | C++17，轻量上下文替身 |
-| ut/op_kernel/test_reference.c | 纯 C 参考实现的已知答案和负面用例 | C11 |
-| ut/op_kernel/test_permutation.cpp | 生产置换头的 Host 算术模型，928 个状态 | C++17 |
-| ut/op_kernel/test_keccak_f1600_tensor.cpp | 通过 ICPU_RUN_KF 调用实际 Kernel，与纯 C 参考比较 | Linux、GTest、CANN tikicpulib |
-| st/test_aclnn_keccak.cpp | ACLNN 设备结果与纯 C 参考逐字节对比 | CANN、匹配编译目标的昇腾设备 |
+| keccak_launch_config_test | batch 边界和分核调度 | C++17 |
+| crypto_direct_launch_test | 实际 Host 入口的参数校验、标量转发、运行时与同步错误传播 | ACL mock，无设备依赖 |
+| crypto_public_headers_test | 公共接口可作为纯 C 编译 | C11 |
+| keccak_golden / keccak_reference_kat | 已知答案及纯 C 参考实现 | Python / C11 |
+| keccak_permutation_model | 向量置换算术模型与纯 C 参考比较 | C++17 |
+| keccak_build_tools | Host-only 配置、Kernel UT 超时与 GTest ABI 检查 | CMake / Python |
+| keccak_kernel_ut | 实际 Kernel 的 CPU 模拟与独立参考比较 | GTest、tikicpulib |
+| st/test_keccak.cpp | kernel 直调与纯 C 参考逐字节比较 | CANN、A2 或 A3 |
 
-Host 模型检查算术结果，不模拟 DMA、流水线同步或设备编译器。
-设备测试覆盖 batch 为 64、256、1024、4096、8192。
+设备用例 batch：1、7、8、9、64、255、256、257、1024、4096、8191、8192，保留非对齐 DMA 尾块回归。
+CPU Kernel UT batch：1、7、8、64、255、256、257、320。
 
-在模块目录执行：
-
-```bash
-ctest --test-dir build/host --output-on-failure --no-tests=error
-ctest --test-dir build/cann-9.1.0-a2-sdk -L device --output-on-failure --no-tests=error
-```
-
-设备测试示例使用 A2 构建目录；A3 使用 `build/cann-9.1.0-a3-sdk`。
-编译配置见[编译与运行](../docs/build.md)。参考实现仅参与测试，不链接到生产算子包。
-
-## Kernel UT
-
-按[Kernel UT 编译说明](../docs/build.md#kernel-ut)准备 ABI=0 的 GTest，
-指定 `GTest_DIR` 并编译到 `build/cpu-debug`。该配置默认关闭，不参与普通 Host 测试。
-编译完成后在模块目录执行：
-
-```bash
-ctest --test-dir build/cpu-debug -L kernel_ut --output-on-failure --no-tests=error
-```
-
-`CANN_CPU_DEBUG_SOC` 使用 tikicpulib 提供的完整 SoC 名称，不是 `ascend910b` 等编译目标缩写。
-每个 Kernel UT 程序默认限时 1800 秒，可通过 `CANN_KERNEL_UT_TIMEOUT` 调整。
-CPU 调试不需要 NPU，但不替代设备验证。Host 上下文替身测试不替代目标仓库的 GTest/faker 集成测试。
+构建命令见 [build.md](../docs/build.md)。Host mock 不执行设备 kernel，设备正确性需在 Linux CANN 环境另行验证。
