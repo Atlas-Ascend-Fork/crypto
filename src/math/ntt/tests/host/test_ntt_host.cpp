@@ -79,6 +79,15 @@ void CheckFormalPqc()
         CHECK(PrepareNttLaunch(p, plan) == NttStatus::Success);
         CHECK(plan.tiling.qList[0] == q && plan.tiling.gList[0] == p.g);
         CHECK(plan.userWorkspaceBytes == 79692800);
+
+        // The same N/q also supports generic cyclic NTT with four-step tables.
+        p.matrixPhase1Elements = 16 * 32 * 32;
+        p.matrixPhase2Elements = p.matrixPhase1Elements;
+        p.twiddleElements = 256;
+        CHECK(PrepareNttLaunch(p, plan) == NttStatus::Success);
+        CHECK(plan.tiling.useFourStep == 1);
+        CHECK(plan.tiling.n1 == 16 && plan.tiling.n2 == 16);
+        CHECK(plan.variant == NttVariant::FourStepBat4);
     }
 }
 

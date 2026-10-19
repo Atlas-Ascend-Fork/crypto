@@ -27,8 +27,8 @@ NttStatus PrepareNttLaunch(const NttParams& params, NttPlan& plan, const char** 
     result.workspaceBytes = result.userWorkspaceBytes;
     result.launchBlockDim = static_cast<uint32_t>(t.blockDim * std::min(t.channelBlock, t.rnsChannels));
     // All variants share the same directly launched mixed AIC:AIV=1:2 kernel.
-    const bool directPqc =
-        t.n == 256 && t.rnsChannels == 1 && t.channelBlock == 1 && t.blockDim == 16 && t.subBench == 16;
+    const bool directPqc = t.useFourStep == 0 && t.n == 256 && t.rnsChannels == 1 && t.channelBlock == 1 &&
+                           t.blockDim == 16 && t.subBench == 16;
     if (directPqc && t.q == 3329) {
         result.variant = NttVariant::KemBat2;
     } else if (directPqc && t.q == 8380417) {

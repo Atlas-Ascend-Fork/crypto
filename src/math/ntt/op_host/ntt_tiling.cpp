@@ -106,8 +106,8 @@ size_t WorkspaceBytes(const NttTilingData& t)
         return (4 * padded * kernelN + 4 * padded * kernelN * sizeof(int32_t)) * t.blockDim * 8;
     };
     size_t scratch = std::max(stageBytes(t.phase1KernelN), stageBytes(t.phase2KernelN));
-    const bool directPqc = t.n == 256 && t.rnsChannels == 1 && t.channelBlock == 1 && t.blockDim == 16 &&
-                           t.subBench == 16 && (t.q == 3329 || t.q == 8380417);
+    const bool directPqc = t.useFourStep == 0 && t.n == 256 && t.rnsChannels == 1 && t.channelBlock == 1 &&
+                           t.blockDim == 16 && t.subBench == 16 && (t.q == 3329 || t.q == 8380417);
     if (directPqc) {
         const size_t padded = ((static_cast<size_t>(t.polyCount) + t.subBench - 1) / t.subBench) * t.subBench;
         const size_t planeBytes = padded * t.n;
@@ -220,10 +220,12 @@ NttStatus SetPolynomialCount(const NttParams& p, NttTilingData& t, const char** 
     return NttStatus::Success;
 }
 
-NttStatus SetKernelShape(NttTilingData& t, const char** error)
+NttStatus SetKernelShape(const NttParams& p, NttTilingData& t, const char** error)
 {
-    t.useFourStep =
-        (t.n > 256 || (t.n >= 64 && t.blockDim > 1 && !(t.n == 256 && (t.q == 3329 || t.q == 8380417)))) ? 1 : 0;
+    // Generic cyclic NTT tables carry N twiddles per channel. Direct PQC tables
+    // carry one; a shared N/modulus alone does not identify their packing.
+    const bool directPqc = t.n == 256 && (t.q == 3329 || t.q == 8380417) && p.twiddleElements == t.rnsChannels;
+    t.useFourStep = (t.n > 256 || (t.n >= 64 && t.blockDim > 1 && !directPqc)) ? 1 : 0;
     if (t.useFourStep != 0) {
         ChooseFactors(t.n, t.blockDim, t.n1, t.n2);
     } else {
@@ -274,7 +276,7 @@ NttStatus BuildNttTiling(const NttParams& p, NttTilingData& tiling, size_t& user
     if (const auto status = SetPolynomialCount(p, t, error); status != NttStatus::Success) {
         return status;
     }
-    if (const auto status = SetKernelShape(t, error); status != NttStatus::Success) {
+    if (const auto status = SetKernelShape(p, t, error); status != NttStatus::Success) {
         return status;
     }
     if (const auto status = ValidateBufferShapes(p, t, error); status != NttStatus::Success) {

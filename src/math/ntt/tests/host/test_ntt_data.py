@@ -17,6 +17,7 @@ import json
 import os
 from pathlib import Path
 import random
+import shutil
 import struct
 import subprocess
 import sys
@@ -184,6 +185,75 @@ class NttGeneratorBoundsTest(unittest.TestCase):
     def test_accept_rns_generators(self):
         self.accept_generator(
             {"NTT_Q_LIST": "97,193", "NTT_G_LIST": "5,19"}, [97, 193], [5, 19])
+
+
+class NttGeneratorLayoutTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.work = tempfile.TemporaryDirectory(prefix="ntt-layout-host-")
+        cls.addClassCleanup(cls.work.cleanup)
+        cls.binary = Path(cls.work.name) / "check_ntt_generator_layout"
+        compiler = shutil.which("c++")
+        if compiler is None:
+            raise unittest.SkipTest("a C++ compiler is required to check the production Host tiling")
+        ntt_root = Path(__file__).resolve().parents[2]
+        subprocess.run([
+            compiler, "-std=c++17", "-Wall", "-Wextra", "-Werror",
+            f"-I{ntt_root}", str(ntt_root / "op_host/ntt_tiling.cpp"),
+            str(Path(__file__).with_name("test_ntt_generator_layout.cpp")),
+            "-o", str(cls.binary),
+        ], check=True, capture_output=True, text=True)
+
+    def check_generated_case(self, settings, script="gen_data.py"):
+        env = {key: value for key, value in os.environ.items() if not key.startswith(("NTT_", "PQC_"))}
+        env.update({"NTT_N": "256", "NTT_Q": "3329", "NTT_G": "17",
+                    "NTT_BLOCK_DIM": "16", "NTT_W": "16", "NTT_BENCH": "1",
+                    "NTT_CHANNEL_BLOCK": "1", "NTT_RNS_CHANNELS": "1", "NTT_SEED": "99"})
+        env.update(settings)
+        with tempfile.TemporaryDirectory(prefix="ntt-layout-case-") as directory:
+            result = subprocess.run(
+                [sys.executable, str(DATA_DIR / script)], cwd=directory,
+                env=env, capture_output=True, text=True, timeout=60, check=False)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            host = subprocess.run(
+                [str(self.binary), directory], capture_output=True, text=True, timeout=15, check=False)
+            self.assertEqual(host.returncode, 0, host.stdout + host.stderr)
+
+    def test_generic_ntt_with_pqc_moduli_matches_production_host(self):
+        cases = [
+            {},
+            {"NTT_Q": "8380417", "NTT_G": "1753"},
+            {"NTT_BLOCK_DIM": "8"},
+            {"NTT_W": "32"},
+            {"NTT_CHANNEL_BLOCK": "2"},
+            {"NTT_Q_LIST": "3329,8380417", "NTT_G_LIST": "17,1753",
+             "NTT_RNS_CHANNELS": "2", "NTT_CHANNEL_BLOCK": "2", "NTT_BLOCK_DIM": "8"},
+        ]
+        for settings in cases:
+            with self.subTest(settings=settings):
+                self.check_generated_case(settings)
+
+    def test_other_layouts_match_production_host(self):
+        cases = [
+            {"NTT_Q": "7681"},
+            {"NTT_Q": "7681", "NTT_BLOCK_DIM": "1"},
+            {"NTT_N": "128"},
+            {"NTT_N": "512", "NTT_Q": "12289", "NTT_G": "11"},
+            {"NTT_N": "32"},
+            {"NTT_Q_LIST": "7681,3329", "NTT_G_LIST": "17,17",
+             "NTT_RNS_CHANNELS": "2", "NTT_CHANNEL_BLOCK": "2", "NTT_BLOCK_DIM": "8"},
+        ]
+        for settings in cases:
+            with self.subTest(settings=settings):
+                self.check_generated_case(settings)
+
+    def test_dedicated_pqc_layouts_match_production_host(self):
+        for kernel in ("mlkem-poly", "mldsa-poly"):
+            with self.subTest(kernel=kernel):
+                self.check_generated_case({
+                    "PQC_KERNEL": kernel, "PQC_OPERATION": "ntt", "PQC_BATCH": "1",
+                    "NTT_DATA_DIR": ".",
+                }, script="gen_pqc_data.py")
 
 
 if __name__ == "__main__":
