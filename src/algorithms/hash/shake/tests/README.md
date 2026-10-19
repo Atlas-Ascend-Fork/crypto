@@ -1,5 +1,7 @@
 # SHAKE 测试
 
+简体中文 | [English](README_en.md)
+
 - Host 测试覆盖启动参数、除零保护、尺寸溢出、分组调度、海绵模型及独立纯 C 参考实现。
 - `shake_direct_launch_test` 验证公共直调入口的空指针、缓冲区重叠、标量传参及 ACL 错误传播。
 - CPU Kernel UT 使用实际 SHAKE128、SHAKE256 Kernel，各包含四个参数化用例。

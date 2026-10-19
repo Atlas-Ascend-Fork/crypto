@@ -11,8 +11,8 @@ This component provides two AES-128 NPU operators implemented with Ascend C and 
 
 The operator schemas above are registered by the implementation files. The operator-specific READMEs document their input constraints and output layout:
 
-- [AES-128-CTR](csrc/ctr/dav-2201/README.md)
-- [AES-128-GCM](csrc/gcm/dav-2201/README.md)
+- [AES-128-CTR](csrc/ctr/dav-2201/README_en.md)
+- [AES-128-GCM](csrc/gcm/dav-2201/README_en.md)
 
 ## Component layout
 
@@ -54,7 +54,7 @@ The component entry point runs `pytest tests/ -v` after building and installing 
 
 ## Examples
 
-After building and installing the extension, run the examples from their directory:
+After building and installing the extension, run the examples from the [examples directory](examples/README_en.md):
 
 ```bash
 cd src/primitives/AES/examples

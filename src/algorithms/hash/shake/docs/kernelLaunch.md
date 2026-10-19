@@ -1,5 +1,7 @@
 # CannCryptoShake128 / CannCryptoShake256
 
+简体中文 | [English](kernelLaunch_en.md)
+
 ## 接口原型
 
 公共头文件：`include/cann_crypto/shake.h`。

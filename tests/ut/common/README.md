@@ -1,5 +1,7 @@
 # common —— 跨算法的公共用例
 
+简体中文 | [English](README_en.md)
+
 不属于任何单个算子的测试放在此处：
 
 - **KAT**：NIST ACVP、Wycheproof 与 GM/T 标准向量比对

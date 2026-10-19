@@ -1,6 +1,6 @@
 # 安全声明
 
-简体中文 | [English](docs/en/SECURITY.md)
+简体中文 | [English](SECURITY_en.md)
 
 ## 运行用户建议
 

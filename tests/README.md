@@ -1,15 +1,17 @@
 # 测试
 
+简体中文 | [English](README_en.md)
+
 目录结构与 `ops-math`、`ops-nn`、`ops-transformer` 保持一致：仓库级用例放在
 `ut/` 下，按算子代码层划分；组件自带用例放在各组件的 `tests/ut/` 下，采用
 相同的层次划分。
 
 | 目录 | 内容 | 是否需要昇腾设备 |
 | --- | --- | --- |
-| `ut/common/` | 跨算法的公共用例：KAT 向量比对、与 `reference/` 的差分测试、ABI 兼容性检查 | 否 |
-| `ut/op_api/` | aclnn 接口层 | 否 |
-| `ut/op_host/` | tiling、infershape 等 Host 侧逻辑 | 否 |
-| `ut/op_kernel/` | Ascend C 核函数 | 是 |
+| [`ut/common/`](ut/common/README.md) | 跨算法的公共用例：KAT 向量比对、与 `reference/` 的差分测试、ABI 兼容性检查 | 否 |
+| [`ut/op_api/`](ut/op_api/README.md) | aclnn 接口层 | 否 |
+| [`ut/op_host/`](ut/op_host/README.md) | tiling、infershape 等 Host 侧逻辑 | 否 |
+| [`ut/op_kernel/`](ut/op_kernel/README.md) | Ascend C 核函数 | 是 |
 
 运行方式：
 

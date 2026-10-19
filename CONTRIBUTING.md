@@ -1,6 +1,6 @@
 # 贡献指南
 
-简体中文 | [English](docs/en/CONTRIBUTING.md)
+简体中文 | [English](CONTRIBUTING_en.md)
 
 本项目欢迎广大开发者体验并参与贡献。在参与社区贡献之前，请参见 [cann-community](https://gitcode.com/cann/community) 了解行为准则，完成 CLA 协议签署，并熟悉源码仓的贡献流程。
 

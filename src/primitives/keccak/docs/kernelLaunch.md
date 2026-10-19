@@ -1,5 +1,7 @@
 # CannCryptoKeccakF1600
 
+简体中文 | [English](kernelLaunch_en.md)
+
 ## 接口原型
 
 公共头文件：`include/cann_crypto/keccak.h`。

@@ -1,6 +1,6 @@
 # Contributing Guide
 
-English | [简体中文](../../CONTRIBUTING.md)
+English | [简体中文](CONTRIBUTING.md)
 
 We welcome developers to try this project and contribute to it. Before contributing, see [cann-community](https://gitcode.com/cann/community) for the code of conduct, sign the CLA, and become familiar with the source repository's contribution process.
 
@@ -175,4 +175,4 @@ You are welcome to answer questions in the [Issue list](https://gitcode.com/cann
 | Robot commands | [Robot guide](https://gitcode.com/cann/infrastructure/blob/main/docs/robot/robot%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97.md) |
 | AI coding assistant policy | [ai-coding-assistants.md](https://gitcode.com/cann/infrastructure/blob/master/docs/strategy/ai-coding-assistants.md) |
 | crypto SIG | [CANN/sigs/crypto](https://gitcode.com/cann/community/tree/master/CANN/sigs/crypto) |
-| Security statement | [SECURITY.md](SECURITY.md) |
+| Security statement | [SECURITY.md](SECURITY_en.md) |

@@ -1,10 +1,14 @@
+<div align="center">
+
 # crypto
 
-English | [简体中文](../../README.md)
+English | [简体中文](README.md)
 
-[![license](https://img.shields.io/badge/license-CANN_Open_2.0-blue.svg)](../../LICENSE)
-[![contributing](https://img.shields.io/badge/Contributing-teal)](CONTRIBUTING.md)
+[![license](https://img.shields.io/badge/license-CANN_Open_2.0-blue.svg)](LICENSE)
+[![contributing](https://img.shields.io/badge/Contributing-teal)](CONTRIBUTING_en.md)
 [![SIG](https://img.shields.io/badge/SIG-crypto-yellow)](https://gitcode.com/cann/community/blob/master/CANN/sigs/crypto/README.md)
+
+</div>
 
 ---
 
@@ -22,7 +26,7 @@ crypto is the cryptographic operator and algorithm library for [CANN](https://hi
 
 The project focuses on two scenarios that CPUs do not cover well: protecting data already resident on an NPU without moving it back to the host, and executing cryptographic workloads on an NPU when a CPU cannot handle the required scale.
 
-- Covers Chinese cryptographic algorithms (SM2, SM3, SM4, SM9, and ZUC) and widely used international algorithms (AES, ChaCha20, SHA-2/3, X25519, Ed25519, ML-KEM, and ML-DSA).
+- The project plans to cover Chinese cryptographic algorithms (SM2, SM3, SM4, SM9, and ZUC) and widely used international algorithms (AES, ChaCha20, SHA-2/3, X25519, Ed25519, ML-KEM, and ML-DSA). The repository currently includes AES, Keccak-f, SHAKE, and NTT components. For other algorithms, refer to the corresponding source and component documentation; they should not be treated as delivered capabilities.
 - Designed for batch processing and device-resident data; Device Kernels are implemented in Ascend C.
 - Organized into three layers: mathematical engine, cryptographic primitives, and algorithm services. Lower-layer capabilities can be reused across algorithm families.
 
@@ -94,16 +98,22 @@ Dependencies flow only downward: `algorithms/` and `primitives/` do not implemen
 
 ## 📖 Guides
 
-- [Contributing guide](CONTRIBUTING.md): contribution workflow, code placement, deliverables, and review rules.
-- [Documentation index (Chinese)](../README.md): design and interface documentation.
+- [Contributing guide](CONTRIBUTING_en.md): contribution workflow, code placement, deliverables, and review rules.
+- [Documentation index](docs/README_en.md): design and interface documentation.
 
 ## 💬 More Information
 
-- [Contributing guide](CONTRIBUTING.md)
-- [Security statement](SECURITY.md)
-- [License](../../LICENSE)
+- [Contributing guide](CONTRIBUTING_en.md)
+- [Security statement](SECURITY_en.md)
+- [License](LICENSE)
 - [SIG](https://gitcode.com/cann/community/tree/master/CANN/sigs/crypto)
 - [Committer list](https://gitcode.com/cann/community/blob/master/CANN/sigs/crypto/README.md#committer%E5%88%97%E8%A1%A8)
+
+### Crypto SIG Discussion Group
+
+Scan the QR code to contact the group administrator and request to join the Crypto SIG discussion group for community discussions and collaboration.
+
+<img src="docs/images/wechat-group.png" alt="QR code for the Crypto SIG WeChat group administrator" width="260" />
 
 ---
 

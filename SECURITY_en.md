@@ -1,6 +1,6 @@
 # Security Statement
 
-English | [简体中文](../../SECURITY.md)
+English | [简体中文](SECURITY.md)
 
 ## Recommended Runtime User
 

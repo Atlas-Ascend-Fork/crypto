@@ -1,5 +1,7 @@
 # Keccak 测试
 
+简体中文 | [English](README_en.md)
+
 | 测试 | 内容 | 依赖 |
 | --- | --- | --- |
 | keccak_launch_config_test | batch 边界和分核调度 | C++17 |

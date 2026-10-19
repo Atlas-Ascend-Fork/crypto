@@ -1,5 +1,7 @@
 # 辅助脚本
 
+简体中文 | [English](README_en.md)
+
 用于构建、测试向量获取与代码检查等辅助流程。
 
 - **`ci/`**：门禁流水线调用的编译脚本 `compile.sh`、UT 脚本 `ut.sh` 与 NPU 冒烟脚本 `smoke.sh`，由 SIG 自行评审；稳定后迁移到 `.gitcode/scripts/`。

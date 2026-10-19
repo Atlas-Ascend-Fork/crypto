@@ -1,5 +1,7 @@
 # KeccakF1600Tensor
 
+简体中文 | [English](README_en.md)
+
 ## 产品支持情况
 
 | 产品 | 是否支持 |

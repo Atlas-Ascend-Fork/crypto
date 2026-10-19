@@ -1,5 +1,7 @@
 # 构建与测试
 
+简体中文 | [English](build_en.md)
+
 设备构建与仓库 AES 一样使用已安装 CANN 的 `ASC` CMake 工具链，编译 `.asc` 并通过 `<<<>>>` 启动 kernel。
 请使用新的构建目录，避免混用迁移前的 ACLNN 工程缓存。
 

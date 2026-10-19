@@ -1,5 +1,7 @@
 # primitives — 密码原语层
 
+简体中文 | [English](README_en.md)
+
 算法内核实现：AES、SM4、Keccak-f、ChaCha、GHASH、Poly1305、EC 点运算等。
 
 约束：

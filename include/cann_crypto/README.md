@@ -1,5 +1,7 @@
 # 对外公共接口
 
+简体中文 | [English](README_en.md)
+
 本目录是 CANN Crypto 唯一对外承诺兼容性的接口边界。
 
 约束：

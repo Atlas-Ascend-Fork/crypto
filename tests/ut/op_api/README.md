@@ -1,5 +1,7 @@
 # op_api
 
+简体中文 | [English](README_en.md)
+
 aclnn 接口层用例：参数校验、workspace 计算、executor 生命周期。
 
 需要昇腾设备：否，纳入门禁。

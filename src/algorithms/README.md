@@ -1,5 +1,7 @@
 # algorithms — 算法服务层
 
+简体中文 | [English](README_en.md)
+
 语义完整的密码服务，按算法族分目录：`digest` / `aead` / `mac` / `kdf` / `signature` / `key_exchange` / `kem`。
 
 每个算法目录的组织方式与 CANN 算子仓保持一致：

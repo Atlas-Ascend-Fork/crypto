@@ -1,10 +1,14 @@
+<div align="center">
+
 # crypto
 
-简体中文 | [English](docs/en/README.md)
+简体中文 | [English](README_en.md)
 
 [![license](https://img.shields.io/badge/license-CANN_Open_2.0-blue.svg)](LICENSE)
 [![contributing](https://img.shields.io/badge/贡献指南-teal)](CONTRIBUTING.md)
 [![SIG](https://img.shields.io/badge/SIG-crypto-yellow)](https://gitcode.com/cann/community/blob/master/CANN/sigs/crypto/README.md)
+
+</div>
 
 ---
 
