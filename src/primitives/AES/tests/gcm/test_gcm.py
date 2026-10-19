@@ -88,6 +88,7 @@ def test_aes128gcm_empty_plaintext():
 
 
 PLAINTEXT_LENGTHS = [
+    2560,
     20480,
     40960,
     61440,
