@@ -23,7 +23,7 @@ import sys
 import tempfile
 import unittest
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "ut/op_kernel/ntt_data"
+DATA_DIR = Path(__file__).resolve().parents[2] / "scripts"
 
 
 def load_module(name, filename):

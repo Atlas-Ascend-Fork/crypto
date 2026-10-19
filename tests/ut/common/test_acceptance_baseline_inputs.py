@@ -19,7 +19,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "src/math/ntt/scripts/acceptance_common.sh"
-BASELINES = ROOT / "src/math/ntt/tests/ut/op_kernel/ntt_data/acceptance_baselines.tsv"
+BASELINES = ROOT / "src/math/ntt/scripts/acceptance_baselines.tsv"
 
 
 def complete_host_payload():

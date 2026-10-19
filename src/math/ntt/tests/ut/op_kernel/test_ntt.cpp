@@ -13,8 +13,9 @@
 #include <cstdint>
 #include <cstdlib>
 #include "securec.h"
-#include "../../common/ntt_test_utils.h"
+#include "../../../data_utils.h"
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -24,11 +25,12 @@
 #include "../../../op_kernel/ntt.cpp"
 
 namespace {
-using cann_crypto::ntt::test::PrepackBatMatricesToB1Nz;
-using cann_crypto::ntt::test::ReadBinary;
+using cann_crypto::ntt::utils::PrepackBatMatricesToB1Nz;
+using cann_crypto::ntt::utils::ReadBinary;
 
 constexpr char kDataDir[] = "./ntt_data";
-constexpr char kSourceDataDir[] = "../../../../experimental/math/ntt/tests/ut/op_kernel/ntt_data";
+const std::string kSourceDataDir =
+    (std::filesystem::path(__FILE__).parent_path() / "../../../scripts").lexically_normal().string();
 constexpr size_t kMinGmAllocBytes = 1024;
 constexpr int32_t kMaxLaunchBlockDim = 16;
 
@@ -189,24 +191,21 @@ void RunNttCase(const NttCase& testCase)
     GmBuffer matrixPhase2Gm(matrixPhase2.size() * sizeof(int8_t));
     GmBuffer twiddleGm(twiddle.size() * sizeof(int32_t));
     GmBuffer workspace(layout.totalBytes);
-    GmBuffer tilingGm(sizeof(NttTilingData));
     ASSERT_NE(x.Get(), nullptr);
     ASSERT_NE(z.Get(), nullptr);
     ASSERT_NE(matrixPhase1Gm.Get(), nullptr);
     ASSERT_NE(matrixPhase2Gm.Get(), nullptr);
     ASSERT_NE(twiddleGm.Get(), nullptr);
     ASSERT_NE(workspace.Get(), nullptr);
-    ASSERT_NE(tilingGm.Get(), nullptr);
     x.CopyFrom(input);
     matrixPhase1Gm.CopyFrom(matrixPhase1);
     matrixPhase2Gm.CopyFrom(matrixPhase2);
     twiddleGm.CopyFrom(twiddle);
-    tilingGm.CopyObject(tiling);
 
     AscendC::SetKernelMode(KernelMode::MIX_MODE);
     ICPU_RUN_KF(
         ntt, tiling_one::LaunchBlockDim(tiling), x.Get(), matrixPhase1Gm.Get(), matrixPhase2Gm.Get(), twiddleGm.Get(),
-        z.Get(), workspace.Get(), tilingGm.Get());
+        z.Get(), workspace.Get(), tiling);
 
     ASSERT_TRUE(WriteBinary(OutputPath("output.bin"), z.As<int32_t>(), golden.size()));
     ASSERT_EQ(RunCommand(BuildCompareCommand()), 0);
@@ -217,7 +216,7 @@ protected:
     static void SetUpTestCase()
     {
         ASSERT_EQ(RunCommand(std::string("rm -rf ") + kDataDir), 0);
-        ASSERT_EQ(RunCommand(std::string("cp -rf ") + kSourceDataDir + " ./"), 0);
+        ASSERT_EQ(RunCommand(std::string("cp -rf '") + kSourceDataDir + "' " + kDataDir), 0);
         ASSERT_EQ(RunCommand(std::string("chmod -R 755 ") + kDataDir), 0);
     }
 

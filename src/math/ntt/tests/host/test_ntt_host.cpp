@@ -9,7 +9,7 @@
  */
 
 #include "ntt_internal.h"
-#include "../common/ntt_test_utils.h"
+#include "data_utils.h"
 
 #include <cstddef>
 #include <cstring>
@@ -69,8 +69,8 @@ void CheckFormalPqc()
         expected.channelBlock = 1;
         CHECK(std::memcmp(&plan.tiling, &expected, sizeof(expected)) == 0);
         CHECK(plan.userWorkspaceBytes == 79692800);
-        CHECK(plan.workspaceBytes == 96470016);
-        CHECK(plan.launchBlockDim == 16 && plan.tilingKey == 0);
+        CHECK(plan.workspaceBytes == 79692800);
+        CHECK(plan.launchBlockDim == 16);
         CHECK(plan.variant == (q == 3329 ? NttVariant::KemBat2 : NttVariant::DsaBat3));
         p.qListCount = 1;
         p.gListCount = 1;
@@ -103,7 +103,7 @@ void CheckRns()
     CHECK(plan.tiling.n1 == 256 && plan.tiling.n2 == 256);
     CHECK(plan.tiling.polyCount == 1 && plan.tiling.rnsChannels == 8);
     CHECK(plan.tiling.logP == 200 && plan.variant == NttVariant::FourStepBat4);
-    CHECK(plan.userWorkspaceBytes == 11011072 && plan.workspaceBytes == 27788288);
+    CHECK(plan.userWorkspaceBytes == 11011072 && plan.workspaceBytes == 11011072);
     CHECK(plan.launchBlockDim == 16 && plan.tiling.channelBlock == 1);
     for (int32_t lanes : {1, 2, 4}) {
         p.channelBlock = lanes;
@@ -283,7 +283,7 @@ NttStatus RecordLaunch(void* context, const NttPlan& plan, const NttBuffers&, vo
     ++probe.calls;
     probe.stream = stream;
     CHECK(plan.launchBlockDim == 16 && plan.variant == NttVariant::KemBat2);
-    CHECK(plan.tiling.polyCount == 4096 && plan.workspaceBytes == 96470016);
+    CHECK(plan.tiling.polyCount == 4096 && plan.workspaceBytes == 79692800);
     return probe.result;
 }
 
@@ -294,7 +294,7 @@ void CheckArithmeticAndPackingBoundaries()
     CHECK(tiling_one::AlignUp(7, 0) == 0);
     CHECK(tiling_one::AlignUp(7, -1) == 0);
     CHECK(tiling_one::SplitBenchMultiple(0) == 1);
-    using cann_crypto::ntt::test::PrepackBatMatricesToB1Nz;
+    using cann_crypto::ntt::utils::PrepackBatMatricesToB1Nz;
     std::vector<int8_t> raw(64 * 64, 0);
     raw[32] = 5;
     raw[32 * 64] = 7;

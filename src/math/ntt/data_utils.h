@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace cann_crypto::ntt::test {
+namespace cann_crypto::ntt::utils {
 
 template <typename T>
 bool ReadBinary(const std::string& path, std::vector<T>& out)
@@ -61,4 +61,4 @@ inline std::vector<int8_t> PrepackBatMatricesToB1Nz(const std::vector<int8_t>& r
     }
     return packed;
 }
-} // namespace cann_crypto::ntt::test
+} // namespace cann_crypto::ntt::utils

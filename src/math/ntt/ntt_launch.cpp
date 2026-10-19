@@ -24,10 +24,9 @@ NttStatus PrepareNttLaunch(const NttParams& params, NttPlan& plan, const char** 
         return status;
     }
     const auto& t = result.tiling;
-    constexpr size_t systemWorkspaceBytes = 16UL * 1024UL * 1024UL;
-    result.workspaceBytes = systemWorkspaceBytes + result.userWorkspaceBytes;
+    result.workspaceBytes = result.userWorkspaceBytes;
     result.launchBlockDim = static_cast<uint32_t>(t.blockDim * std::min(t.channelBlock, t.rnsChannels));
-    // All variants share the original mixed AIC:AIV=1:2 kernel and tiling key 0.
+    // All variants share the same directly launched mixed AIC:AIV=1:2 kernel.
     const bool directPqc =
         t.n == 256 && t.rnsChannels == 1 && t.channelBlock == 1 && t.blockDim == 16 && t.subBench == 16;
     if (directPqc && t.q == 3329) {

@@ -13,12 +13,12 @@ set -euo pipefail
 
 ENTRY_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 NTT_DIR=$(cd "${ENTRY_DIR}/.." && pwd)
-REPO_ROOT=$(cd "${NTT_DIR}/../../.." && pwd)
-BASELINE_FILE="${NTT_DIR}/tests/ut/op_kernel/ntt_data/acceptance_baselines.tsv"
-SERVER_SCRIPT="${NTT_DIR}/scripts/run_npu_server.sh"
+BASELINE_FILE="${ENTRY_DIR}/acceptance_baselines.tsv"
+RUN_SCRIPT="${NTT_DIR}/run.sh"
 ACCEPT_BATCH="${ACCEPT_BATCH:-4096}"
 ACCEPT_SOC="${ACCEPT_SOC:-ascend910b}"
-ACCEPT_VENDOR="${ACCEPT_VENDOR:-cann_crypto}"
+ACCEPT_MODE="${ACCEPT_MODE:-npu}"
+[[ "${ACCEPT_MODE}" == npu || "${ACCEPT_MODE}" == sim ]] || { echo "ACCEPT_MODE must be npu or sim" >&2; exit 2; }
 
 baseline_value()
 {
@@ -29,26 +29,25 @@ baseline_value()
         "${BASELINE_FILE}"
 }
 
-ensure_acceptance_package()
+ensure_acceptance_build()
 {
-    "${SERVER_SCRIPT}" build --mode sim --soc "${ACCEPT_SOC}" --vendor "${ACCEPT_VENDOR}"
+    bash "${RUN_SCRIPT}" --stage build -r "${ACCEPT_MODE}" -v "${ACCEPT_SOC}"
 }
 
-run_sim_profile()
+run_profile()
 {
     local profile="$1"
     local batch="$2"
     local stamp
     stamp=$(date '+%Y%m%d_%H%M%S_%N')
-    ACCEPT_LOG_ROOT="${REPO_ROOT}/build/ntt_acceptance/${profile}_${stamp}"
-    mkdir -p "${ACCEPT_LOG_ROOT}/camodel" "${ACCEPT_LOG_ROOT}/plog"
+    ACCEPT_LOG_ROOT="${NTT_DIR}/build/acceptance/${profile}_${stamp}"
+    mkdir -p "${ACCEPT_LOG_ROOT}/plog"
     touch "${ACCEPT_LOG_ROOT}/start.marker"
 
-    CAMODEL_LOG_PATH="${ACCEPT_LOG_ROOT}/camodel" \
     ASCEND_PROCESS_LOG_PATH="${ACCEPT_LOG_ROOT}/plog" \
     NTT_PROFILE="${profile}" NTT_BENCH="${batch}" \
     NTT_RUN_DIR="${ACCEPT_LOG_ROOT}" \
-        "${SERVER_SCRIPT}" sim-test --soc "${ACCEPT_SOC}" --vendor "${ACCEPT_VENDOR}"
+        bash "${RUN_SCRIPT}" -r "${ACCEPT_MODE}" -v "${ACCEPT_SOC}"
 }
 
 find_task_toml()
@@ -61,9 +60,13 @@ run_pqc_acceptance()
     local profile="$1"
     local q="$2"
     local parameter_sets="$3"
-    ensure_acceptance_package
-    echo "[ACCEPT] profile=${profile} parameter_sets=${parameter_sets} N=256 q=${q} batch=${ACCEPT_BATCH}"
-    run_sim_profile "${profile}" "${ACCEPT_BATCH}"
+    ensure_acceptance_build
+    echo "[ACCEPT] mode=${ACCEPT_MODE} profile=${profile} parameter_sets=${parameter_sets} N=256 q=${q} batch=${ACCEPT_BATCH}"
+    run_profile "${profile}" "${ACCEPT_BATCH}"
+    if [[ "${ACCEPT_MODE}" == npu ]]; then
+        echo "[PASS] ${profile} real-NPU correctness and batch processing"
+        return 0
+    fi
 
     local toml
     toml=$(find_task_toml)
@@ -116,25 +119,28 @@ PY
 
 run_rns_acceptance()
 {
-    ensure_acceptance_package
+    ensure_acceptance_build
     local block_dim=16
     local channel_block=1
     local sub_bench=16
 
     local stamp
     stamp=$(date '+%Y%m%d_%H%M%S_%N')
-    ACCEPT_LOG_ROOT="${REPO_ROOT}/build/ntt_acceptance/rns_${stamp}"
-    mkdir -p "${ACCEPT_LOG_ROOT}/camodel" "${ACCEPT_LOG_ROOT}/plog"
+    ACCEPT_LOG_ROOT="${NTT_DIR}/build/acceptance/rns_${stamp}"
+    mkdir -p "${ACCEPT_LOG_ROOT}/plog"
     touch "${ACCEPT_LOG_ROOT}/start.marker"
 
-    echo "[ACCEPT] RNS N=65536 logN=16 logP=200 blockDim=${block_dim} channelBlock=${channel_block} subBench=${sub_bench}"
-    CAMODEL_LOG_PATH="${ACCEPT_LOG_ROOT}/camodel" \
+    echo "[ACCEPT] mode=${ACCEPT_MODE} RNS N=65536 logN=16 logP=200 blockDim=${block_dim} channelBlock=${channel_block} subBench=${sub_bench}"
     ASCEND_PROCESS_LOG_PATH="${ACCEPT_LOG_ROOT}/plog" \
     NTT_PROFILE=rns NTT_N=65536 NTT_LOGP=200 \
     NTT_RNS_CHANNELS=0 NTT_BLOCK_DIM="${block_dim}" \
     NTT_CHANNEL_BLOCK="${channel_block}" NTT_W="${sub_bench}" NTT_BENCH=1 \
     NTT_RUN_DIR="${ACCEPT_LOG_ROOT}" \
-        "${SERVER_SCRIPT}" sim-test --soc "${ACCEPT_SOC}" --vendor "${ACCEPT_VENDOR}"
+        bash "${RUN_SCRIPT}" -r "${ACCEPT_MODE}" -v "${ACCEPT_SOC}"
+    if [[ "${ACCEPT_MODE}" == npu ]]; then
+        echo "[PASS] RNS real-NPU formal contract: logN=16 logP=200 correctness"
+        return 0
+    fi
 
     local toml
     toml=$(find_task_toml)

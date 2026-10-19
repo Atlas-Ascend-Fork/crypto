@@ -53,9 +53,8 @@ enum class NttVariant : uint32_t { DirectBat4, FourStepBat4, KemBat2, DsaBat3 };
 struct NttPlan {
     NttTilingData tiling{};
     size_t userWorkspaceBytes = 0;
-    size_t workspaceBytes = 0; // Includes the original CANN system workspace.
+    size_t workspaceBytes = 0; // Kernel scratch only; no framework workspace prefix.
     uint32_t launchBlockDim = 0;
-    uint64_t tilingKey = 0;
     NttVariant variant = NttVariant::DirectBat4;
 };
 
@@ -80,6 +79,11 @@ NttStatus PrepareNttLaunch(const NttParams& params, NttPlan& plan, const char** 
 NttStatus LaunchNtt(
     const NttParams& params, const NttBuffers& buffers, NttEnqueue enqueue, void* backendContext, void* stream,
     const char** error = nullptr);
+
+// Link cann_crypto_ntt_device for native Ascend C kernel launch. Tiling is copied
+// into the launch arguments before return; device buffers and workspace remain
+// caller-owned until the supplied stream completes. This wrapper never syncs.
+NttStatus LaunchNtt(const NttParams& params, const NttBuffers& buffers, void* stream, const char** error = nullptr);
 
 } // namespace cann_crypto::ntt
 #endif

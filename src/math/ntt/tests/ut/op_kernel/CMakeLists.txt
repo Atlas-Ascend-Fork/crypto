@@ -11,9 +11,7 @@
 if (COMMAND AddOpTestCase AND (UT_TEST_ALL OR OP_KERNEL_UT))
     set(ntt_tiling_files
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../op_host/ntt_tiling.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../../op_host/ntt_infershape.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../../op_host/ntt_neutral_tiling.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../../op_host/ntt_launch_tiling.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../ntt_launch.cpp
         )
     AddOpTestCase(ntt "ascend910b" "" "${ntt_tiling_files}")
 endif()
