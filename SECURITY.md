@@ -40,7 +40,7 @@
 
 | 类型 | 开源代码地址 | 文件名 | 公网 IP 地址/公网 URL 地址/域名/邮箱地址/压缩文件地址 | 用途说明 |
 | :--: | :--: | :-- | :-- | :-- |
-| 依赖 | 不涉及 | src/primitives/AES/requirements.txt | https://download.pytorch.org/whl/cpu | pip 额外索引源，用于安装 CPU 版 PyTorch 作为测试比对依赖 |
+| 依赖 | 不涉及 | torch_extension/requirements.txt | https://download.pytorch.org/whl/cpu | pip 额外索引源，用于安装 CPU 版 PyTorch 作为测试比对依赖 |
 | 自研 | 不涉及 | src/primitives/keccak/cmake/ascend/cmake/util/ascendc_gen_options.py | http://www.apache.org/licenses/LICENSE-2.0 | 该文件沿用 Ascend C 算子工程模板，保留其原有 Apache-2.0 许可证声明地址 |
 | 自研 | 不涉及 | src/primitives/keccak/cmake/ascend/cmake/util/parse_ini_to_json.py | http://www.apache.org/licenses/LICENSE-2.0 | 该文件沿用 Ascend C 算子工程模板，保留其原有 Apache-2.0 许可证声明地址 |
 

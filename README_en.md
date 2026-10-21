@@ -38,7 +38,7 @@ To customize the source successfully, select the matching CANN version and GitCo
 
 ## 🛠️ Prerequisites
 
-Install the NPU driver and CANN packages before using the project. Some components depend on `torch` and `torch_npu`; see each component's `requirements.txt` for its exact dependencies.
+Install the NPU driver and CANN packages before using the project. Native components do not depend on PyTorch. To use the optional [PyTorch integration](torch_extension/README_en.md), install `torch`, `torch_npu`, and the other dependencies in `torch_extension/requirements.txt` separately.
 
 The community also provides the [CANNLab online environment](https://gitcode.com/org/cann/cannlab/environment), which includes a matching CANN installation.
 
@@ -73,7 +73,7 @@ bash build.sh --st             # Device system tests; requires Ascend hardware
 bash build.sh -h
 ```
 
-Components are discovered automatically by recursively searching `src/` for component directories containing `CMakeLists.txt` or `setup.py`. Nested build directories already belonging to an upper-level component are skipped; components may be located at different depths, such as `src/algorithms/hash/shake/`. Adding a component does not require changing the build script.
+Components are discovered automatically by recursively searching `src/` for component directories containing `CMakeLists.txt` or `setup.py`. Nested build directories already belonging to an upper-level component are skipped; components may be located at different depths, such as `src/algorithms/hash/shake/`. Adding a component does not require changing the build script. The optional `torch_extension/` directory is outside `src/`; build its Python wheel separately as described in its [README](torch_extension/README_en.md).
 
 See [Component Organization](docs/component_layout_en.md) for Host/Kernel responsibilities, test categories, and optional framework adapters.
 
@@ -88,6 +88,7 @@ crypto/
 │   ├── math/              # Mathematical engine: big integers, modular arithmetic, NTT/RNS, GF(2^k), bit-plane transposition
 │   ├── primitives/        # Cryptographic primitives: AES, SM4, Keccak-f, ChaCha, GHASH, Poly1305, EC
 │   └── algorithms/        # Algorithm services: digest, AEAD, MAC, KDF, signature, KEM
+├── torch_extension/       # Optional PyTorch integration, built separately using the native components
 ├── reference/             # Pure C references, independent of CANN, used as correctness baselines for differential tests
 ├── tests/ut/              # Repository-level tests organized by common, op_api, op_host, and op_kernel
 ├── benchmarks/            # Benchmarks

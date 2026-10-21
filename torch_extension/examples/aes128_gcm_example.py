@@ -18,11 +18,14 @@ Usage: python3 aes128_gcm_example.py [device_id]
 import hashlib
 import logging
 import sys
+from pathlib import Path
 
 import torch
 import torch_npu  # noqa: F401  registers the NPU device
 import ascend_ops  # noqa: F401  registers torch.ops.ascend_ops
 
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src/primitives/AES/examples"))
 from aes_key_expansion import expand_key
 
 # Key, nonce and AAD reuse test case 4 of the GCM specification by McGrew and Viega.

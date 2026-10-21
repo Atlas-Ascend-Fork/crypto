@@ -12,7 +12,7 @@
 
 | 组件 | 使用与接口说明 | 测试与样例 |
 | --- | --- | --- |
-| AES | [组件介绍（英文）](../src/primitives/AES/README.md)、[CTR](../src/primitives/AES/csrc/ctr/dav-2201/README.md)、[GCM](../src/primitives/AES/csrc/gcm/dav-2201/README.md) | [调用样例](../src/primitives/AES/examples/README.md) |
+| AES | [组件介绍](../src/primitives/AES/README.md)、[CTR](../src/primitives/AES/docs/ctr/README.md)、[GCM](../src/primitives/AES/docs/gcm/README.md) | [原生样例](../src/primitives/AES/examples/README.md)、[PyTorch 样例](../torch_extension/examples/README.md) |
 | Keccak | [组件介绍](../src/primitives/keccak/README.md)、[编译与运行](../src/primitives/keccak/docs/build.md)、[Kernel 直调接口](../src/primitives/keccak/docs/kernelLaunch.md) | [测试](../src/primitives/keccak/tests/README.md) |
 | SHAKE | [组件介绍](../src/algorithms/hash/shake/README.md)、[编译与运行](../src/algorithms/hash/shake/docs/build.md)、[Kernel 直调接口](../src/algorithms/hash/shake/docs/kernelLaunch.md) | [测试](../src/algorithms/hash/shake/tests/README.md) |
 

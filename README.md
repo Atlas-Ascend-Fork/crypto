@@ -38,7 +38,7 @@ crypto 是 [CANN](https://hiascend.com/software/cann)（Compute Architecture for
 
 ## 🛠️环境准备
 
-体验本项目能力前，请先完成 NPU 驱动与 CANN 包安装，确保环境正常。部分组件依赖 torch 与 torch_npu，具体依赖以各组件 `requirements.txt` 为准。
+体验本项目能力前，请先完成 NPU 驱动与 CANN 包安装，确保环境正常。原生组件不依赖 PyTorch；使用可选的 [PyTorch 适配层](torch_extension/README.md)时，另按 `torch_extension/requirements.txt` 安装 `torch`、`torch_npu` 等依赖。
 
 亦可使用社区提供的 [CANNLab 在线环境](https://gitcode.com/org/cann/cannlab/environment)，其中已预置配套的 CANN 环境。
 
@@ -73,7 +73,7 @@ bash build.sh --st             # 设备系统测试，需要昇腾设备
 bash build.sh -h
 ```
 
-构建脚本在 `src/` 下递归查找带有 `CMakeLists.txt` 或 `setup.py` 的组件目录，并跳过已归属上层组件的嵌套构建目录；组件可以位于不同深度，例如 `src/algorithms/hash/shake/`。新增组件无需修改构建脚本。
+构建脚本在 `src/` 下递归查找带有 `CMakeLists.txt` 或 `setup.py` 的组件目录，并跳过已归属上层组件的嵌套构建目录；组件可以位于不同深度，例如 `src/algorithms/hash/shake/`。新增组件无需修改构建脚本。可选的 `torch_extension/` 位于 `src/` 之外，按其 [README](torch_extension/README.md) 单独构建 Python wheel。
 
 组件的 Host / Kernel 职责、测试分类及可选框架适配见[组件组织约定](docs/component_layout.md)。
 
@@ -88,6 +88,7 @@ crypto/
 │   ├── math/              # 数学引擎：大数与模运算、NTT/RNS、GF(2^k)、位平面转置
 │   ├── primitives/        # 密码原语：AES、SM4、Keccak-f、ChaCha、GHASH、Poly1305、EC
 │   └── algorithms/        # 算法服务：digest / aead / mac / kdf / signature / kem
+├── torch_extension/       # 可选 PyTorch 适配层，独立构建，复用原生组件
 ├── reference/             # 纯 C 参考实现，零 CANN 依赖，差分测试的正确性基准
 ├── tests/ut/              # 仓库级用例，按 common / op_api / op_host / op_kernel 划分
 ├── benchmarks/            # 基准测试

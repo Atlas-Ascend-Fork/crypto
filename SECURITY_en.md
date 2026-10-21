@@ -40,7 +40,7 @@ The following public addresses appear in the project's source:
 
 | Type | Open-Source Code Address | File | Public IP/URL/Domain/Email/Archive Address | Purpose |
 | :---: | :---: | --- | --- | --- |
-| Dependency | Not applicable | `src/primitives/AES/requirements.txt` | https://download.pytorch.org/whl/cpu | Additional pip index for installing CPU PyTorch as a test comparison dependency |
+| Dependency | Not applicable | `torch_extension/requirements.txt` | https://download.pytorch.org/whl/cpu | Additional pip index for installing CPU PyTorch as a test comparison dependency |
 | In-house | Not applicable | `src/primitives/keccak/cmake/ascend/cmake/util/ascendc_gen_options.py` | http://www.apache.org/licenses/LICENSE-2.0 | Retained Apache-2.0 license URL from the Ascend C operator project template |
 | In-house | Not applicable | `src/primitives/keccak/cmake/ascend/cmake/util/parse_ini_to_json.py` | http://www.apache.org/licenses/LICENSE-2.0 | Retained Apache-2.0 license URL from the Ascend C operator project template |
 

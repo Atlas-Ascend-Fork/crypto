@@ -17,11 +17,14 @@ Usage: python3 aes128_ctr_example.py [device_id]
 
 import logging
 import sys
+from pathlib import Path
 
 import torch
 import torch_npu  # noqa: F401  registers the NPU device
 import ascend_ops  # noqa: F401  registers torch.ops.ascend_ops
 
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src/primitives/AES/examples"))
 from aes_key_expansion import expand_key
 
 # RFC 3686 test vector #2. Its counter block is the 12-byte nonce followed by a 32-bit

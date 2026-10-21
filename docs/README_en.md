@@ -12,7 +12,7 @@ English | [简体中文](README.md)
 
 | Component | Usage and Interfaces | Tests and Examples |
 | --- | --- | --- |
-| AES | [Overview](../src/primitives/AES/README.md), [CTR](../src/primitives/AES/csrc/ctr/dav-2201/README_en.md), [GCM](../src/primitives/AES/csrc/gcm/dav-2201/README_en.md) | [Invocation examples](../src/primitives/AES/examples/README_en.md) |
+| AES | [Overview](../src/primitives/AES/README_en.md), [CTR](../src/primitives/AES/docs/ctr/README_en.md), [GCM](../src/primitives/AES/docs/gcm/README_en.md) | [Native example](../src/primitives/AES/examples/README_en.md), [PyTorch examples](../torch_extension/examples/README_en.md) |
 | Keccak | [Overview](../src/primitives/keccak/README_en.md), [Build and Run](../src/primitives/keccak/docs/build_en.md), [Direct kernel interface](../src/primitives/keccak/docs/kernelLaunch_en.md) | [Tests](../src/primitives/keccak/tests/README_en.md) |
 | SHAKE | [Overview](../src/algorithms/hash/shake/README_en.md), [Build and Run](../src/algorithms/hash/shake/docs/build_en.md), [Direct kernel interfaces](../src/algorithms/hash/shake/docs/kernelLaunch_en.md) | [Tests](../src/algorithms/hash/shake/tests/README_en.md) |
 

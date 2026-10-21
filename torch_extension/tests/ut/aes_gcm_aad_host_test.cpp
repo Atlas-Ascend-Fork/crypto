@@ -8,7 +8,7 @@
 // See LICENSE in the root of the software repository for the full text of the License.
 // -----------------------------------------------------------------------------------------------------------
 
-#include "src/primitives/AES/csrc/gcm/dav-2201/aad_host.h"
+#include "torch_extension/csrc/aad_host.h"
 
 #include <array>
 #include <cstdint>
@@ -57,7 +57,8 @@ int main()
     for (size_t index = 0; index < old_physical_order.size(); ++index) {
         old_physical_order[index] = physical_data[index];
     }
-    require(old_physical_order != expected_logical,
-            "regression input does not distinguish physical storage order from logical tensor order");
+    require(
+        old_physical_order != expected_logical,
+        "regression input does not distinguish physical storage order from logical tensor order");
     return 0;
 }

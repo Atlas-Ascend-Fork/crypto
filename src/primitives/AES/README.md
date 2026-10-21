@@ -1,67 +1,38 @@
-# AES Primitives
+# AES 原语
 
-This component provides two AES-128 NPU operators implemented with Ascend C and exposed through the `ascend_ops` PyTorch extension.
+简体中文 | [English](README_en.md)
 
-## Operators
+AES-128-CTR 和 AES-128-GCM 使用 Kernel 直调。核心共享库 `libcann_crypto_aes.so` 不依赖 PyTorch；现有 `torch.ops.ascend_ops` 接口由可选的 [torch_npu 适配层](../../../torch_extension/README.md)提供。
 
-| Operator | PyTorch call | Implementation |
-| --- | --- | --- |
-| AES-128-CTR | `torch.ops.ascend_ops.aes128ctr(input, key, nonce)` | `csrc/ctr/dav-2201/ctr.asc` |
-| AES-128-GCM | `torch.ops.ascend_ops.aes_gcm(input, key, nonce, aad)` | `csrc/gcm/dav-2201/gcm.asc` |
+## 目录与接口
 
-The operator schemas above are registered by the implementation files. The operator-specific READMEs document their input constraints and output layout:
+- `op_host/`：原生接口、参数检查、补零、Tiling、ACL 内存及同步。
+- `op_kernel/`：CTR、GCM 的 Ascend C 实现和薄启动封装；保留 GCM 的四阶段执行。
+- `tests/ut/op_host/`：CPU 上编译生产 Host 实现，以 ACL/启动 mock 检查状态传播、边界及资源释放。
+- `tests/st/`：通过公共 C 接口运行 NPU，并与 PyCryptodome 对照；38 组用例，覆盖 CTR 长度边界、GCM 空消息与 AAD。
+- `examples/`：原生 C++ 样例和不依赖框架的密钥展开脚本。
+- `docs/`：[CTR](docs/ctr/README.md) 和 [GCM](docs/gcm/README.md) 的约束与贡献记录。
 
-- [AES-128-CTR](csrc/ctr/dav-2201/README_en.md)
-- [AES-128-GCM](csrc/gcm/dav-2201/README_en.md)
+公共头文件为 [`include/cann_crypto/aes.h`](../../../include/cann_crypto/aes.h)，提供 `CannCryptoAes128Ctr` 和 `CannCryptoAes128Gcm`。输入输出使用连续设备内存，176 字节展开密钥、12 字节 nonce 及 GCM AAD 使用 Host 内存；调用方负责设备与 stream；输入生产任务须已完成或排在同一 stream 上。返回 ACL 状态码，成功返回时计算已完成。
 
-## Component layout
+现有语义保持：CTR 输出空间按 512 字节补齐，前原始长度字节为有效密文；GCM 标签位于补齐后的密文末尾，认证的是补零后的消息。当前 GCM 支持空消息或 2560 字节倍数的非空消息，以及最多 32 字节 AAD；其他长度的标签仍不保证正确，目录拆分没有更改 GHASH 算法。完整参数范围和输出容量要求见公共头文件。
 
-- `csrc/`: Ascend C kernels and PyTorch operator registration.
-- `examples/`: runnable CTR and GCM examples, including the shared AES-128 key expansion helper.
-- `tests/`: PyTorch tests for the CTR and GCM operators.
-- `setup.py`: CMake-backed wheel build.
-- `build_and_test.sh`: dependency installation, wheel build, installation, and pytest entry point.
-- `requirements.txt`: Python build and test dependencies.
-
-## Prerequisites
-
-Use a configured CANN environment with Python 3.8 or newer, PyTorch, and the matching `torch_npu` package. Install the additional Python dependencies from `requirements.txt`.
-
-The checked-in operator build files are under `csrc/*/dav-2201`; the component CMake configuration uses `dav-2201` by default.
-
-## Build and test
-
-From the repository root, build and install this component with:
+## 构建和验证
 
 ```bash
-bash build.sh --components=primitives/AES --pkg
+# From the repository root; CANN is not needed for Host UT.
+cmake -S src/primitives/AES -B build/aes-host -DCANN_BUILD_DEVICE=OFF
+cmake --build build/aes-host --parallel
+ctest --test-dir build/aes-host -L host --output-on-failure
+
+# After sourcing the CANN set_env.sh; no PyTorch dependency.
+cmake -S src/primitives/AES -B build/aes -DCANN_BUILD_DEVICE=ON -DNPU_ARCH=dav-2201
+cmake --build build/aes --parallel
+python3 -m pip install pycryptodome
+ctest --test-dir build/aes -L device --output-on-failure
+cmake --install build/aes --prefix "$PWD/install/aes"
 ```
 
-After installation, run its tests with:
+设备 ST 需要 A2 NPU、CANN 和 PyCryptodome；Host UT 仅需 C++17 编译器与 CMake。`CANN_DEVICE_ID` 可选择测试设备。当前没有 AES CPU Kernel UT；Host UT 不执行设备计算，不能代替 ST。
 
-```bash
-bash build.sh --components=primitives/AES -u --opkernel
-```
-
-Alternatively, from this component directory run the provided entry point:
-
-```bash
-cd src/primitives/AES
-bash build_and_test.sh
-```
-
-The component entry point runs `pytest tests/ -v` after building and installing the wheel.
-
-## Examples
-
-After building and installing the extension, run the examples from the [examples directory](examples/README_en.md):
-
-```bash
-cd src/primitives/AES/examples
-python3 aes128_ctr_example.py
-python3 aes128_gcm_example.py
-```
-
-Both scripts accept an optional device ID and validate the result against a known answer. `aes_key_expansion.py` expands a 16-byte AES-128 key into the round-key format consumed by the operators.
-
-The corresponding tests are [tests/ctr/test_ctr.py](tests/ctr/test_ctr.py) and [tests/gcm/test_gcm.py](tests/gcm/test_gcm.py).
+安装结果包含 `lib/libcann_crypto_aes.so` 和 `include/cann_crypto/aes.h`。原生调用不需要安装 `torch`、`torch_npu` 或 `ascend_ops`。PyTorch wheel 构建与原来的 35 项回归见[适配层说明](../../../torch_extension/README.md)。
