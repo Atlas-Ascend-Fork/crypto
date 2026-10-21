@@ -10,7 +10,7 @@
 
 #include "cann_crypto/shake.h"
 #include "shake_internal.h"
-#include "../../../primitives/keccak/launch_utils.h"
+#include "launch_utils.h"
 
 extern "C" void CannCryptoShakeLaunch(
     uint32_t bits, uint32_t blockDim, void* stream, const uint8_t* input, uint8_t* output, uint32_t batch,

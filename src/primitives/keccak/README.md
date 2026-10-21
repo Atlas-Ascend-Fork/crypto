@@ -41,3 +41,12 @@
 通过 [CannCryptoKeccakF1600](docs/kernelLaunch.md) 直接启动 kernel，示例见 [test_keccak_f1600_tensor.cpp](examples/test_keccak_f1600_tensor.cpp)。
 
 构建生成 `libcann_crypto_keccak.so`，参见[构建与测试](docs/build.md)。
+
+## 目录结构
+
+- `op_host/`：公开接口的 Host 实现、参数校验、分核调度，以及 Keccak / SHAKE 共用的运行时辅助函数。
+- `op_kernel/`：Ascend C 置换实现、Kernel 入口和 `.asc` 启动封装；保留已有的多文件拆分。
+- `tests/ut/op_host/`、`tests/ut/op_kernel/`：Host 与 Kernel 单元测试；`tests/st/`：设备端完整调用测试；`tests/assets/`：参考实现与测试数据。
+- `examples/`、`docs/`：调用示例和组件文档。
+
+公开头文件位于仓库的 `include/cann_crypto/keccak.h`。Host 与 Kernel 的目录分离不改变 Kernel 直调接口，也不引入 ACLNN 注册。

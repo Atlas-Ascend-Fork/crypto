@@ -41,3 +41,12 @@ Each state contains 25 lanes of 64 bits. The low and high 32 bits of lane `lane`
 Launch the kernel directly through [CannCryptoKeccakF1600](docs/kernelLaunch_en.md). See [test_keccak_f1600_tensor.cpp](examples/test_keccak_f1600_tensor.cpp) for an example.
 
 The build produces `libcann_crypto_keccak.so`. See [Build and Test](docs/build_en.md).
+
+## Directory Structure
+
+- `op_host/`: Host implementation of the public API, parameter validation, core scheduling, and runtime helpers shared by Keccak and SHAKE.
+- `op_kernel/`: Ascend C permutation implementation, Kernel entry points, and the `.asc` launch wrapper; the existing implementation remains split across multiple files.
+- `tests/ut/op_host/` and `tests/ut/op_kernel/`: Host and Kernel unit tests; `tests/st/`: end-to-end device tests; `tests/assets/`: reference implementations and test data.
+- `examples/` and `docs/`: invocation examples and component documentation.
+
+The public header is `include/cann_crypto/keccak.h` in the repository. Separating Host and Kernel directories preserves the direct-launch API and does not introduce ACLNN registration.

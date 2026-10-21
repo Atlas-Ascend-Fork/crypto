@@ -11,7 +11,7 @@
 #include "cann_crypto/keccak.h"
 #include "cann_crypto/shake.h"
 #include "acl/acl.h"
-#include "../../../launch_utils.h"
+#include "../../../op_host/launch_utils.h"
 
 #include <cstdint>
 #include <iostream>

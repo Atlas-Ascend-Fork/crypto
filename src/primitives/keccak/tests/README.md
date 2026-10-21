@@ -17,3 +17,5 @@
 CPU Kernel UT batch：1、7、8、64、255、256、257、320。
 
 构建命令见 [build.md](../docs/build.md)。Host mock 不执行设备 kernel，设备正确性需在 Linux CANN 环境另行验证。
+
+`ut/op_host/` 验证 Host 逻辑；`ut/op_kernel/` 中既有轻量模型测试，也有需要显式启用 `CANN_BUILD_CPU_DEBUG_TESTS=ON` 的实际 Kernel CPU 模拟。后者使用 CTest 标签 `kernel_ut`，在 CPU 上运行。`st/` 使用公开接口在真实 NPU 上执行完整调用路径，使用标签 `device`，需要 `CANN_BUILD_DEVICE=ON`。CPU 模拟通过不能替代设备 ST。

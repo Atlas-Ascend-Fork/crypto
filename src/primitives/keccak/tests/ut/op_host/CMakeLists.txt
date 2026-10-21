@@ -13,7 +13,7 @@ target_link_libraries(keccak_launch_config_test PRIVATE cann_crypto_keccak_host)
 cann_warnings(keccak_launch_config_test)
 add_test(NAME keccak_launch_config_test COMMAND keccak_launch_config_test)
 
-add_executable(crypto_direct_launch_test test_direct_launch.cpp ../../../keccak_launch.cpp)
+add_executable(crypto_direct_launch_test test_direct_launch.cpp ../../../op_host/keccak_launch.cpp)
 target_compile_features(crypto_direct_launch_test PRIVATE cxx_std_17)
 target_include_directories(crypto_direct_launch_test PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/stubs" "${CANN_CRYPTO_INCLUDE_DIR}")

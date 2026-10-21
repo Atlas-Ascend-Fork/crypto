@@ -24,10 +24,10 @@ set(CMAKE_C_STANDARD 11)
 include(cmake/CannOperator.cmake)
 
 add_library(cann_crypto_keccak_host INTERFACE)
-target_include_directories(cann_crypto_keccak_host INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(cann_crypto_keccak_host INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/op_host")
 
 if(CANN_BUILD_DEVICE)
-    cann_add_direct_library(keccak keccak_launch.cpp op_kernel/keccak_f1600_launch.asc)
+    cann_add_direct_library(keccak op_host/keccak_launch.cpp op_kernel/keccak_f1600_launch.asc)
     if(NOT CANN_CRYPTO_DEPENDENCY_ONLY)
         add_subdirectory(examples)
     endif()

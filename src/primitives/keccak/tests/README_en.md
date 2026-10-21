@@ -17,3 +17,5 @@ Device test batch sizes: 1, 7, 8, 9, 64, 255, 256, 257, 1024, 4096, 8191, and 81
 CPU Kernel UT batch sizes: 1, 7, 8, 64, 255, 256, 257, and 320.
 
 See [build_en.md](../docs/build_en.md) for build commands. Host mocks do not execute device kernels; device correctness must be verified separately in a Linux CANN environment.
+
+`ut/op_host/` checks Host logic. `ut/op_kernel/` contains lightweight model tests and CPU simulation of the actual kernels, which requires explicitly enabling `CANN_BUILD_CPU_DEBUG_TESTS=ON`. The latter runs on the CPU under the CTest label `kernel_ut`. Tests in `st/` exercise the complete public API path on a real NPU under the label `device`, with `CANN_BUILD_DEVICE=ON`. Passing CPU simulation does not replace device ST.
