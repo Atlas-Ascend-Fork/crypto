@@ -60,7 +60,7 @@ endif()
 
 install(TARGETS cann_crypto_ntt cann_crypto_ntt_device ntt_kernels ntt_kernellaunch_example
     LIBRARY DESTINATION lib ARCHIVE DESTINATION lib RUNTIME DESTINATION bin)
-install(FILES "${NTT_MODULE_DIR}/ntt_internal.h" DESTINATION include/cann_crypto/ntt)
+install(FILES "${NTT_MODULE_DIR}/op_host/ntt_internal.h" DESTINATION include/cann_crypto/ntt)
 install(FILES "${NTT_MODULE_DIR}/op_kernel/ntt_tiling_data.h" DESTINATION include/cann_crypto/ntt/op_kernel)
 install(DIRECTORY "${NTT_MODULE_DIR}/scripts/"
     DESTINATION share/cann_crypto_ntt/ntt_data FILES_MATCHING PATTERN "*.py")

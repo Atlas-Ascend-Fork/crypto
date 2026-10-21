@@ -4,6 +4,8 @@ English | [简体中文](README.md)
 
 Mathematical implementations shared by all algorithm families.
 
+Available component: [NTT](ntt/README_en.md).
+
 Scope:
 
 - Big integers and modular arithmetic (Montgomery and Barrett).

@@ -4,6 +4,8 @@
 
 被所有算法族共享的数学实现。
 
+现有组件：[NTT](ntt/README.md)。
+
 范围：
 
 - 大数与模运算（Montgomery、Barrett）

@@ -18,7 +18,7 @@ import sys
 import tempfile
 import unittest
 
-NTT_DIR = Path(__file__).resolve().parents[2]
+NTT_DIR = Path(__file__).resolve().parents[3]
 
 
 class NttRunnerTest(unittest.TestCase):

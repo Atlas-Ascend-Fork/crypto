@@ -8,9 +8,5 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # ----------------------------------------------------------------------------
 
-file(GLOB CURRENT_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
-foreach(SUB_DIR ${CURRENT_DIRS})
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${SUB_DIR}/CMakeLists.txt")
-        add_subdirectory(${SUB_DIR})
-    endif()
-endforeach()
+find_package(Python3 3.9 REQUIRED COMPONENTS Interpreter)
+add_subdirectory(ut)

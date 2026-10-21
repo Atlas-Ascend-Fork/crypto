@@ -24,7 +24,7 @@ import sys
 import tempfile
 import unittest
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "scripts"
+DATA_DIR = Path(__file__).resolve().parents[3] / "scripts"
 
 
 def load_module(name, filename):
@@ -37,7 +37,7 @@ def load_module(name, filename):
 
 GENERATOR = load_module("ntt_generator_test", "gen_pqc_data.py")
 COMPARE = load_module("ntt_compare_test", "compare_pqc_data.py")
-FIXTURES = json.loads(Path(__file__).with_name("ntt_data_golden.json").read_text())
+FIXTURES = json.loads((Path(__file__).resolve().parents[2] / "assets/ntt_data_golden.json").read_text())
 
 
 class NttDataTest(unittest.TestCase):
@@ -79,7 +79,6 @@ class NttDataTest(unittest.TestCase):
 
     def test_regular_comparison_rejects_trailing_partial_elements(self):
         import itertools
-        import struct
         compare = load_module("ntt_regular_compare_test", "compare_data.py")
         with tempfile.TemporaryDirectory() as work:
             output, golden = Path(work) / "output.bin", Path(work) / "golden.bin"
@@ -196,10 +195,10 @@ class NttGeneratorLayoutTest(unittest.TestCase):
         compiler = shutil.which("c++")
         if compiler is None:
             raise unittest.SkipTest("a C++ compiler is required to check the production Host tiling")
-        ntt_root = Path(__file__).resolve().parents[2]
+        ntt_root = Path(__file__).resolve().parents[3]
         subprocess.run([
             compiler, "-std=c++17", "-Wall", "-Wextra", "-Werror",
-            f"-I{ntt_root}", str(ntt_root / "op_host/ntt_tiling.cpp"),
+            f"-I{ntt_root}", f"-I{ntt_root / 'op_host'}", str(ntt_root / "op_host/ntt_tiling.cpp"),
             str(Path(__file__).with_name("test_ntt_generator_layout.cpp")),
             "-o", str(cls.binary),
         ], check=True, capture_output=True, text=True)
