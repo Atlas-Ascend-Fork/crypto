@@ -65,14 +65,17 @@ bash build.sh --components=primitives/AES --pkg
 # 运行单元测试
 bash build.sh -u --ophost      # op_host 层，无需昇腾设备
 bash build.sh -u --opapi       # op_api 层，无需昇腾设备
-bash build.sh -u --opkernel    # op_kernel 层，需要昇腾设备
-bash build.sh -u               # 全部层次
+bash build.sh -u --opkernel    # CPU Kernel UT，需要 CANN 与 ABI 匹配的 GTest
+bash build.sh -u               # 全部单元测试层次
+bash build.sh --st             # 设备系统测试，需要昇腾设备
 
 # 查看全部选项
 bash build.sh -h
 ```
 
 构建脚本在 `src/` 下递归查找带有 `CMakeLists.txt` 或 `setup.py` 的组件目录，并跳过已归属上层组件的嵌套构建目录；组件可以位于不同深度，例如 `src/algorithms/hash/shake/`。新增组件无需修改构建脚本。
+
+组件的 Host / Kernel 职责、测试分类及可选框架适配见[组件组织约定](docs/component_layout.md)。
 
 ## 📂目录结构
 

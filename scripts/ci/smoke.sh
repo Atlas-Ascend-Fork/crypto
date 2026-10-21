@@ -50,16 +50,16 @@ if [ "${ret}" -ne 0 ]; then
     exit 1
 fi
 
-bash build.sh -u --opkernel 2>&1 | tee smoke_ut.log
+bash build.sh --st 2>&1 | tee smoke_st.log
 ret=${PIPESTATUS[0]}
 if [ "${ret}" -ne 0 ]; then
-    echo "[ERROR] run ut opkernel is failed."
+    echo "[ERROR] device system tests failed."
     exit 1
 fi
 
 # 用例在 NPU 不可用或缺少依赖（如 pycryptodome）时会被 skip，pytest 仍返回成功。
 # 在卡上运行时不应有用例被跳过，否则门禁会在用例未真正执行的情况下通过。
-if grep -qE '[0-9]+ skipped' smoke_ut.log; then
+if grep -qE '[0-9]+ skipped' smoke_st.log; then
     echo "[ERROR] 有用例被跳过，原因见上方 SKIPPED 行，NPU 冒烟判为失败"
     exit 1
 fi

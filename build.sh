@@ -20,7 +20,7 @@ BUILD_OUT_PATH="${SCRIPT_DIR}/build_out"
 ENABLE_PACKAGE="FALSE"
 ENABLE_TEST="FALSE"
 UT_LAYERS=""
-UT_TIMEOUT="120"
+UT_TIMEOUT="1800"
 ALLOW_EMPTY="FALSE"
 THREAD_NUM="$(nproc)"
 COMPONENTS=""
@@ -42,27 +42,29 @@ usage() {
                            Host 配置构建后，执行未打 device、kernel_ut 标签的用例
     --opapi                仅运行 op_api 层用例，无需昇腾设备
     --opgraph              仅运行 op_graph 层用例，无需昇腾设备
-    --opkernel             仅运行 op_kernel 层用例，需要昇腾设备与 CANN 环境。
-                           未设置 ASCEND_HOME_PATH 时跳过设备用例
-    --ut_timeout=<N>       单用例超时秒数，默认 120
-    --allow_empty          指定层次下未发现用例时仅告警并返回成功，默认报错
+    --opkernel             运行 CPU Kernel UT，需要 CANN tikicpulib 和 ABI 匹配的
+                           GTest，不需要昇腾设备；缺少依赖时报错
+    --st                   运行设备系统测试，需要 CANN 环境与昇腾设备
+    --ut_timeout=<N>       单用例超时秒数，默认 1800（CPU 仿真耗时较长）
+    --allow_empty          未发现可执行测试入口时仅告警；测试失败仍报错
 
 其他:
     -h, --help             显示本帮助
 
 环境变量:
-    ASCEND_HOME_PATH       CANN 安装路径。对 keccak、shake 等 CANN 直调组件，
+    ASCEND_HOME_PATH       CANN 安装路径。对 CANN 直调组件，
                            未设置时仅构建 Host 侧；设置后可构建直调库与设备用例。
-                           AES 的 setup.py 构建仍需配套 CANN、PyTorch 和 torch_npu，
-                           不提供此无 CANN 的 Host-only 构建模式。
+                           可选的 torch_extension/ 单独构建 Python wheel，
+                           需要配套 CANN、PyTorch 和 torch_npu。
     ASCEND_COMPUTE_UNIT    设备编译目标，默认 ascend910b（Atlas A2），
                            Atlas A3 取 ascend910_93
 
 示例:
     bash build.sh --pkg                 # 编译全部组件
     bash build.sh -u --ophost           # 门禁：只跑 op_host 层，无需设备
-    bash build.sh -u --opkernel         # 冒烟：需要昇腾设备
-    bash build.sh --pkg -u              # 编译并运行全部用例
+    bash build.sh -u --opkernel         # CPU Kernel UT：需要 CANN 与 GTest
+    bash build.sh --st                  # 设备 ST：需要昇腾设备
+    bash build.sh --pkg -u              # 编译并运行单元测试
     bash build.sh --components=primitives/AES --pkg
 USAGE
 }
@@ -91,6 +93,7 @@ checkopts() {
       --opapi)          UT_LAYERS="${UT_LAYERS} op_api" ;;
       --opgraph)        UT_LAYERS="${UT_LAYERS} op_graph" ;;
       --opkernel)       UT_LAYERS="${UT_LAYERS} op_kernel" ;;
+      --st)             ENABLE_TEST="TRUE"; UT_LAYERS="${UT_LAYERS} st" ;;
       --ut_timeout=*)   UT_TIMEOUT="${1#*=}" ;;
       --allow_empty)    ALLOW_EMPTY="TRUE" ;;
       --components=*)
@@ -136,7 +139,7 @@ list_components() {
   done < <(find "${SCRIPT_DIR}/src" \( -name CMakeLists.txt -o -name setup.py \) -type f 2>/dev/null | sort) | sort -u
 }
 
-# CANN kernel 直调组件（keccak、shake）的构建开关。
+# CANN kernel 直调组件的构建开关。
 # 有 CANN 环境时构建 kernel 直调库，否则只构建 Host 侧，便于本地开发与无卡环境自检。
 cann_cmake_args() {
   local build_tests="$1"
@@ -256,7 +259,7 @@ build_ut() {
 
     # op_host 层：不依赖昇腾设备，构建 Host 侧后执行未打 device、kernel_ut 标签的用例。
     # 以 tests/CMakeLists.txt 为准：仅 CTest 组织的测试走此分支，
-    # 测试为 pytest 的组件（如 AES）不在此层，其用例需要设备，归入 op_kernel。
+    # pytest 组件的纯 Host 用例单独放在 tests/ut/op_host。
     if echo "${layers}" | grep -qw op_host && [ -f "${base}/CMakeLists.txt" ] \
         && [ -f "${comp_dir}/CMakeLists.txt" ]; then
       if is_cann_component "${comp_dir}"; then
@@ -270,31 +273,51 @@ build_ut() {
         run_ctest "${c}" "${c}/op_host" "${comp_dir}/build/host" \
           "-LE device|kernel_ut" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
       fi
+    elif echo "${layers}" | grep -qw op_host; then
+      run_pytest "${base}/ut/op_host" "${c}/op_host"
     fi
 
-    # op_kernel 层：需要昇腾设备
-    if echo "${layers}" | grep -qw op_kernel; then
+    # CPU Kernel UT 与设备 ST 分开，避免 -u 将设备覆盖误报为单元测试。
+    if echo "${layers}" | grep -qw op_kernel && [ -f "${base}/ut/op_kernel/CMakeLists.txt" ]; then
+      if [ -z "${ASCEND_HOME_PATH}" ]; then
+        log "无法运行 ${c}/op_kernel：请设置 ASCEND_HOME_PATH，并提供 tikicpulib 与 ABI 匹配的 GTest"
+        failed+=("${c}/op_kernel")
+      else
+        local kernel_args=(-DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+          -DCANN_BUILD_CPU_DEBUG_TESTS=ON "-DASCEND_CANN_PACKAGE_PATH=${ASCEND_HOME_PATH}"
+          "-DCANN_KERNEL_UT_TIMEOUT=${UT_TIMEOUT}")
+        if is_cann_component "${comp_dir}"; then
+          kernel_args+=(-DCANN_BUILD_TESTS=ON -DCANN_BUILD_DEVICE=OFF)
+        fi
+        run_ctest "${c}" "${c}/op_kernel" "${comp_dir}/build/kernel-ut" \
+          "-L kernel_ut" "${kernel_args[@]}"
+      fi
+    fi
+
+    if echo "${layers}" | grep -qw st; then
       if is_cann_component "${comp_dir}"; then
         if [ -z "${ASCEND_HOME_PATH}" ]; then
-          log "跳过 ${c}/op_kernel：未设置 ASCEND_HOME_PATH，设备用例需要 CANN 环境"
+          log "无法运行 ${c}/st：未设置 ASCEND_HOME_PATH"
+          failed+=("${c}/st")
         else
           local dev_args=()
           mapfile -t dev_args < <(cann_cmake_args ON)
-          run_ctest "${c}" "${c}/op_kernel" "${comp_dir}/build/device-${soc}" \
+          run_ctest "${c}" "${c}/st" "${comp_dir}/build/device-${soc}" \
             "-L device" "${dev_args[@]}"
         fi
       elif [ -f "${comp_dir}/scripts/run_npu_server.sh" ]; then
         if [ -z "${ASCEND_HOME_PATH}" ]; then
-          log "跳过 ${c}/op_kernel：未设置 ASCEND_HOME_PATH，设备用例需要 CANN 环境"
+          log "无法运行 ${c}/st：未设置 ASCEND_HOME_PATH"
+          failed+=("${c}/st")
         else
           # ntt 的设备验证由组件自带脚本完成：构建设备包并与标准答案比对
           ran=$((ran + 1))
-          log "测试 ${c}/op_kernel（run_npu_server.sh npu-test）"
+          log "测试 ${c}/st（run_npu_server.sh npu-test）"
           bash "${comp_dir}/scripts/run_npu_server.sh" npu-test --soc "${soc}" \
-            --jobs "${THREAD_NUM}" || failed+=("${c}/op_kernel")
+            --jobs "${THREAD_NUM}" || failed+=("${c}/st")
         fi
       fi
-      # 未按层拆分的组件（如 AES），其 tests 目录整体归入 op_kernel
+      # 尚未按层拆分的 Python 组件，其原有完整设备用例暂归入 ST。
       [ -d "${base}/ut" ] || run_pytest "${base}" "${c}"
     fi
 
@@ -302,10 +325,15 @@ build_ut() {
     for l in ${layers}; do
       [ "${l}" = "op_host" ] && continue
       [ "${l}" = "op_kernel" ] && continue
+      [ "${l}" = "st" ] && continue
       run_pytest "${base}/ut/${l}" "${c}/ut/${l}"
     done
   done
 
+  if [ ${#failed[@]} -gt 0 ]; then
+    log "失败: ${failed[*]}"
+    return 1
+  fi
   if [ "${ran}" -eq 0 ]; then
     if [ -n "${UT_LAYERS}" ]; then
       # 显式指定了层次却一个用例都没发现，说明用例缺失或路径不对。
@@ -319,10 +347,6 @@ build_ut() {
     fi
     log "未发现可执行的用例"
     return 0
-  fi
-  if [ ${#failed[@]} -gt 0 ]; then
-    log "失败: ${failed[*]}"
-    return 1
   fi
   log "全部通过，共 ${ran} 组"
 }

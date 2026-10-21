@@ -65,14 +65,17 @@ bash build.sh --components=primitives/AES --pkg
 # Run unit tests
 bash build.sh -u --ophost      # op_host layer; no Ascend hardware required
 bash build.sh -u --opapi       # op_api layer; no Ascend hardware required
-bash build.sh -u --opkernel    # op_kernel layer; Ascend hardware required
-bash build.sh -u               # All layers
+bash build.sh -u --opkernel    # CPU Kernel UT; requires CANN and ABI-compatible GTest
+bash build.sh -u               # All unit-test layers
+bash build.sh --st             # Device system tests; requires Ascend hardware
 
 # Show all options
 bash build.sh -h
 ```
 
 Components are discovered automatically by recursively searching `src/` for component directories containing `CMakeLists.txt` or `setup.py`. Nested build directories already belonging to an upper-level component are skipped; components may be located at different depths, such as `src/algorithms/hash/shake/`. Adding a component does not require changing the build script.
+
+See [Component Organization](docs/component_layout_en.md) for Host/Kernel responsibilities, test categories, and optional framework adapters.
 
 ## 📂 Repository Layout
 
