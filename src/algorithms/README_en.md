@@ -2,7 +2,7 @@
 
 English | [简体中文](README.md)
 
-Complete cryptographic services, organized by algorithm family: `digest` / `aead` / `mac` / `kdf` / `signature` / `key_exchange` / `kem`.
+Complete cryptographic services, organized by algorithm family: `digest` / `aead` / `cipher` / `mac` / `kdf` / `signature` / `key_exchange` / `kem`.
 
 Each algorithm directory follows the CANN operator repository layout:
 
