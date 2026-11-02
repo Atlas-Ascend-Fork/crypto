@@ -20,58 +20,13 @@ $$
 
 ## 参数说明
 
-<table style="table-layout: fixed; width: 980px"><colgroup>
-  <col style="width: 100px">
-  <col style="width: 150px">
-  <col style="width: 280px">
-  <col style="width: 330px">
-  <col style="width: 120px">
-  </colgroup>
-  <thead>
-    <tr>
-      <th>参数名</th>
-      <th>输入/输出/属性</th>
-      <th>描述</th>
-      <th>数据类型</th>
-      <th>数据格式</th>
-    </tr></thead>
-  <tbody>
-    <tr>
-      <td>input</td>
-      <td>输入</td>
-      <td>待进行 AES-128-GCM 加密计算的明文入参。</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>key</td>
-      <td>输入</td>
-      <td>预扩展的 AES-128 轮密钥，共 11 轮 176 字节（44 个 uint32_t）。</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>nonce</td>
-      <td>输入</td>
-      <td>12 字节 nonce（IV），用于构造 GCM 计数器初始值。</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>aad</td>
-      <td>输入</td>
-      <td>附加认证数据（Additional Authenticated Data），长度不超过 32 字节。</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>output</td>
-      <td>输出</td>
-      <td>AES-128-GCM 加密后的密文与 16 字节认证标签，密文长度按 512 字节向上对齐，总长度为对齐后长度 + 16。</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-  </tbody></table>
+| 参数名 | 输入/输出/属性 | 描述 | 数据类型 | 数据格式 |
+| --- | --- | --- | --- | --- |
+| input | 输入 | 待进行 AES-128-GCM 加密计算的明文入参。 | UINT8 | ND |
+| key | 输入 | 预扩展的 AES-128 轮密钥，共 11 轮 176 字节（44 个 uint32_t）。 | UINT8 | ND |
+| nonce | 输入 | 12 字节 nonce（IV），用于构造 GCM 计数器初始值。 | UINT8 | ND |
+| aad | 输入 | 附加认证数据（Additional Authenticated Data），长度不超过 32 字节。 | UINT8 | ND |
+| output | 输出 | AES-128-GCM 加密后的密文与 16 字节认证标签，密文长度按 512 字节向上对齐，总长度为对齐后长度 + 16。 | UINT8 | ND |
 
 ## 约束说明
 

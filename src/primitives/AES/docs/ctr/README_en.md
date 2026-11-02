@@ -20,51 +20,12 @@ $$
 
 ## Parameters
 
-<table style="table-layout: fixed; width: 980px"><colgroup>
-  <col style="width: 100px">
-  <col style="width: 150px">
-  <col style="width: 280px">
-  <col style="width: 330px">
-  <col style="width: 120px">
-  </colgroup>
-  <thead>
-    <tr>
-      <th>Parameter</th>
-      <th>Input / Output / Attribute</th>
-      <th>Description</th>
-      <th>Data Type</th>
-      <th>Format</th>
-    </tr></thead>
-  <tbody>
-    <tr>
-      <td>input</td>
-      <td>Input</td>
-      <td>Plaintext input for AES-128-CTR encryption.</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>key</td>
-      <td>Input</td>
-      <td>Pre-expanded AES-128 round keys: 176 bytes for 11 rounds (44 uint32_t values).</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>nonce</td>
-      <td>Input</td>
-      <td>12-byte nonce (IV) used to construct the initial CTR counter value.</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>output</td>
-      <td>Output</td>
-      <td>Ciphertext output of AES-128-CTR encryption, with its length rounded up to a multiple of 512 bytes.</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-  </tbody></table>
+| Parameter | Input / Output / Attribute | Description | Data Type | Format |
+| --- | --- | --- | --- | --- |
+| input | Input | Plaintext input for AES-128-CTR encryption. | UINT8 | ND |
+| key | Input | Pre-expanded AES-128 round keys: 176 bytes for 11 rounds (44 uint32_t values). | UINT8 | ND |
+| nonce | Input | 12-byte nonce (IV) used to construct the initial CTR counter value. | UINT8 | ND |
+| output | Output | Ciphertext output of AES-128-CTR encryption, with its length rounded up to a multiple of 512 bytes. | UINT8 | ND |
 
 ## Constraints
 

@@ -20,58 +20,13 @@ $$
 
 ## Parameters
 
-<table style="table-layout: fixed; width: 980px"><colgroup>
-  <col style="width: 100px">
-  <col style="width: 150px">
-  <col style="width: 280px">
-  <col style="width: 330px">
-  <col style="width: 120px">
-  </colgroup>
-  <thead>
-    <tr>
-      <th>Parameter</th>
-      <th>Input / Output / Attribute</th>
-      <th>Description</th>
-      <th>Data Type</th>
-      <th>Format</th>
-    </tr></thead>
-  <tbody>
-    <tr>
-      <td>input</td>
-      <td>Input</td>
-      <td>Plaintext input for AES-128-GCM encryption.</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>key</td>
-      <td>Input</td>
-      <td>Pre-expanded AES-128 round keys: 176 bytes for 11 rounds (44 uint32_t values).</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>nonce</td>
-      <td>Input</td>
-      <td>12-byte nonce (IV) used to construct the initial GCM counter value.</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>aad</td>
-      <td>Input</td>
-      <td>Additional authenticated data (AAD), up to 32 bytes.</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-    <tr>
-      <td>output</td>
-      <td>Output</td>
-      <td>AES-128-GCM ciphertext followed by a 16-byte authentication tag. The ciphertext length is rounded up to a multiple of 512 bytes; the total length is the rounded length + 16.</td>
-      <td>UINT8</td>
-      <td>ND</td>
-    </tr>
-  </tbody></table>
+| Parameter | Input / Output / Attribute | Description | Data Type | Format |
+| --- | --- | --- | --- | --- |
+| input | Input | Plaintext input for AES-128-GCM encryption. | UINT8 | ND |
+| key | Input | Pre-expanded AES-128 round keys: 176 bytes for 11 rounds (44 uint32_t values). | UINT8 | ND |
+| nonce | Input | 12-byte nonce (IV) used to construct the initial GCM counter value. | UINT8 | ND |
+| aad | Input | Additional authenticated data (AAD), up to 32 bytes. | UINT8 | ND |
+| output | Output | AES-128-GCM ciphertext followed by a 16-byte authentication tag. The ciphertext length is rounded up to a multiple of 512 bytes; the total length is the rounded length + 16. | UINT8 | ND |
 
 ## Constraints
 
