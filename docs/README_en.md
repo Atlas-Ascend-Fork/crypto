@@ -2,10 +2,6 @@
 
 English | [简体中文](README.md)
 
-| Document | Description | Status |
-| --- | --- | --- |
-| `architecture.md` | Layered architecture, API design, and repository organization | Under SIG review; not yet merged |
-
 - Documentation closely tied to code, such as algorithm interfaces and examples, is stored alongside the corresponding code.
 
 ## Component Documentation
