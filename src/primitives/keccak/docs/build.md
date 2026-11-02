@@ -5,13 +5,18 @@
 设备构建与仓库 AES 一样使用已安装 CANN 的 `ASC` CMake 工具链，编译 `.asc` 并通过 `<<<>>>` 启动 kernel。
 请使用新的构建目录，避免混用迁移前的 ACLNN 工程缓存。
 
+先从仓库根目录进入组件目录；下文各节命令均在此目录执行：
+
+```bash
+cd src/primitives/keccak
+```
+
 ## A2 设备构建及测试
 
 需要 Linux、CANN 9.1.0 和对应的驱动环境：
 
 ```bash
 source /usr/local/Ascend/cann-9.1.0/set_env.sh
-cd /workspace/crypto/src/primitives/keccak
 
 cmake -S . -B build/device \
   -DCMAKE_BUILD_TYPE=Release \

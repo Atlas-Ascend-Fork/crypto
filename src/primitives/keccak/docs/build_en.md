@@ -5,13 +5,18 @@ English | [简体中文](build.md)
 Like the repository's AES component, device builds use the installed CANN `ASC` CMake toolchain to compile `.asc` files and launch kernels through `<<<>>>`.
 Use a new build directory to avoid reusing caches from the previous ACLNN project.
 
+From the repository root, enter the component directory first. Run all commands below from this directory:
+
+```bash
+cd src/primitives/keccak
+```
+
 ## Build and Test on A2
 
 Linux, CANN 9.1.0, and the corresponding driver environment are required:
 
 ```bash
 source /usr/local/Ascend/cann-9.1.0/set_env.sh
-cd /workspace/crypto/src/primitives/keccak
 
 cmake -S . -B build/device \
   -DCMAKE_BUILD_TYPE=Release \

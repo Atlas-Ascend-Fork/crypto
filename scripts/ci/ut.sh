@@ -15,7 +15,7 @@
 # 放在 .gitcode 之外便于 SIG 自行评审，稳定后迁移到 .gitcode/scripts/。
 #
 # 参数：
-#   $1（或环境变量 ut_type）  UT 层次：ophost、opapi、opgraph、opkernel
+#   $1（或环境变量 ut_type）  UT 层次：ophost、opapi、opkernel
 # 依赖的环境变量（由 llt_action.yml 设置）：
 #   WORKSPACE      代码检出目录
 #   TARGET_BRANCH  PR 目标分支
@@ -44,13 +44,13 @@ if [ -f "${WORKSPACE}/pr_filelist.txt" ]; then
 fi
 
 case "${ut_type}" in
-    ophost|opapi|opgraph|opkernel)
+    ophost|opapi|opkernel)
         # 过渡期：仓库尚无该层用例时仅告警不阻断门禁，用例补齐后去掉 --allow_empty 恢复严格检查
         bash build.sh -u --"${ut_type}" --allow_empty
         ret=$?
         ;;
     *)
-        echo "[ERROR] 不支持的 ut_type：${ut_type}，可选 ophost、opapi、opgraph、opkernel"
+        echo "[ERROR] 不支持的 ut_type：${ut_type}，可选 ophost、opapi、opkernel"
         exit 1
         ;;
 esac

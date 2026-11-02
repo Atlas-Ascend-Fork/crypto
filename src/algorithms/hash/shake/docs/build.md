@@ -5,11 +5,16 @@
 使用 CANN 的 `ASC` CMake 工具链编译直调设备库，不生成或安装 OPP vendor 包。
 请使用新的构建目录。构建示例不需要 GTest；设备正确性测试另需 OpenSSL 开发包。
 
+先从仓库根目录进入组件目录；下文各节命令均在此目录执行：
+
+```bash
+cd src/algorithms/hash/shake
+```
+
 ## A2 设备构建及测试
 
 ```bash
 source /usr/local/Ascend/cann-9.1.0/set_env.sh
-cd /workspace/crypto/src/algorithms/hash/shake
 
 cmake -S . -B build/device \
   -DCMAKE_BUILD_TYPE=Release \
@@ -32,7 +37,6 @@ SHAKE 库包含 SHAKE128、SHAKE256 两个直调接口，Keccak 库供设备回�
 
 ```bash
 source /usr/local/Ascend/cann-9.1.0/set_env.sh
-cd /workspace/crypto/src/algorithms/hash/shake
 
 cmake -S . -B build/device-a3 \
   -DCMAKE_BUILD_TYPE=Release \

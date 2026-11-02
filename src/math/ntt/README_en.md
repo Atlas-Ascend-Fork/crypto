@@ -38,6 +38,15 @@ bash src/math/ntt/run.sh --stage build -r npu -v Ascend910B3 -i /path/to/cann
 
 The Host implementation builds as `cann_crypto_ntt`, the device launch wrapper as `cann_crypto_ntt_device`, and the kernel as `ntt_kernels`. `op_kernel/ntt.cpp` continues to build through `ascendc_library`; the directory migration does not require changing its suffix. The example uses the native wrapper for `ACLRT_LAUNCH_KERNEL` to launch the kernel.
 
-`NttParams`, `NttBuffers`, and `LaunchNtt` in `op_host/ntt_internal.h` remain an internal C++17 interface, not a stable public C ABI. The caller owns the device buffers and stream. Launch does not synchronize; buffers must remain valid until the stream completes. The installed internal header remains at `include/cann_crypto/ntt/ntt_internal.h`.
+`NttParams`, `NttBuffers`, and `LaunchNtt` in the source header [op_host/ntt_internal.h](op_host/ntt_internal.h) remain an internal C++17 interface, not a stable public C ABI. The caller owns the device buffers and stream. Launch does not synchronize; buffers must remain valid until the stream completes.
+
+The device build's [installation rules](cmake/npu_lib.cmake) install this file to `<install-prefix>/include/cann_crypto/ntt/ntt_internal.h`. This path belongs to the installation directory; the repository's top-level `include/cann_crypto/` does not contain this internal header. Building only the Host tests does not install it.
+
+The `run.sh` command above installs the device libraries and headers into `install/` under the directory printed as `[BUILD] directory`. To choose another installation location, replace `/path/to/ntt-device-build` below with that device build directory and run from the repository root:
+
+```bash
+cmake --install /path/to/ntt-device-build --prefix "$PWD/build/ntt-install"
+ls build/ntt-install/include/cann_crypto/ntt/ntt_internal.h
+```
 
 See the [test guide](tests/README_en.md) for complete validation commands and dependencies. Performance acceptance continues to use `scripts/kem_entry.sh`, `scripts/dsa_entry.sh`, and `scripts/rns_entry.sh`; `scripts/run_npu_server.sh` preserves existing callers.

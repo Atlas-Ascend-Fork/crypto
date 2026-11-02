@@ -5,11 +5,16 @@ English | [简体中文](build.md)
 Use CANN's `ASC` CMake toolchain to compile the direct-launch device libraries. No OPP vendor package is generated or installed.
 Use a new build directory. Building the examples does not require GTest; device correctness tests additionally require the OpenSSL development package.
 
+From the repository root, enter the component directory first. Run all commands below from this directory:
+
+```bash
+cd src/algorithms/hash/shake
+```
+
 ## Build and Test on A2
 
 ```bash
 source /usr/local/Ascend/cann-9.1.0/set_env.sh
-cd /workspace/crypto/src/algorithms/hash/shake
 
 cmake -S . -B build/device \
   -DCMAKE_BUILD_TYPE=Release \
@@ -32,7 +37,6 @@ Set `-DCANN_BUILD_TESTS=OFF` if only device libraries and examples are needed.
 
 ```bash
 source /usr/local/Ascend/cann-9.1.0/set_env.sh
-cd /workspace/crypto/src/algorithms/hash/shake
 
 cmake -S . -B build/device-a3 \
   -DCMAKE_BUILD_TYPE=Release \

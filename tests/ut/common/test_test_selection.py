@@ -79,6 +79,14 @@ def test_only_requested_scope_executes(project, arguments, expected):
     assert {p.stem for p in (project / "src/math/fixture").glob("*.ran")} == expected
 
 
+@pytest.mark.parametrize("extra_arguments", [[], ["--allow_empty"]])
+def test_removed_opgraph_option_is_rejected(project, extra_arguments):
+    result = run_tests(project, ["-u", "--opgraph", *extra_arguments])
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "未知选项: --opgraph" in result.stdout
+    assert not (project / "src/math/fixture/build").exists()
+
+
 @pytest.mark.parametrize("arguments", [["-u", "--opkernel"], ["--st"]])
 def test_missing_sdk_is_failure_even_when_empty_allowed(project, arguments):
     result = run_tests(project, [*arguments, "--allow_empty"], with_cann=False)

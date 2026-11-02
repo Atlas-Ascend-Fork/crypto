@@ -38,6 +38,15 @@ bash src/math/ntt/run.sh --stage build -r npu -v Ascend910B3 -i /path/to/cann
 
 Host 实现编译为 `cann_crypto_ntt`，设备启动包装编译为 `cann_crypto_ntt_device`，Kernel 编译为 `ntt_kernels`。`op_kernel/ntt.cpp` 继续通过 `ascendc_library` 构建，无需为目录整理修改源文件后缀。示例通过 `ACLRT_LAUNCH_KERNEL` 对应的原生包装调用 Kernel。
 
-`op_host/ntt_internal.h` 中的 `NttParams`、`NttBuffers` 和 `LaunchNtt` 仍是内部 C++17 接口，不是稳定的公共 C ABI。调用者持有设备缓冲区和 stream；启动接口不主动同步，缓冲区必须保持有效直到 stream 完成。安装后的内部头文件路径仍为 `include/cann_crypto/ntt/ntt_internal.h`。
+源码头文件 [op_host/ntt_internal.h](op_host/ntt_internal.h) 中的 `NttParams`、`NttBuffers` 和 `LaunchNtt` 仍是内部 C++17 接口，不是稳定的公共 C ABI。调用者持有设备缓冲区和 stream；启动接口不主动同步，缓冲区必须保持有效直到 stream 完成。
+
+设备构建的[安装规则](cmake/npu_lib.cmake)将该文件安装到 `<安装前缀>/include/cann_crypto/ntt/ntt_internal.h`。这是安装目录中的路径，仓库源码根目录下的 `include/cann_crypto/` 不包含该内部头文件；仅构建 Host 测试不会安装它。
+
+上述 `run.sh` 会将设备库和头文件安装到其输出的 `[BUILD] directory` 目录下的 `install/`。如需指定安装位置，将下列 `/path/to/ntt-device-build` 替换为该设备构建目录，再从仓库根目录执行：
+
+```bash
+cmake --install /path/to/ntt-device-build --prefix "$PWD/build/ntt-install"
+ls build/ntt-install/include/cann_crypto/ntt/ntt_internal.h
+```
 
 完整验证命令和依赖说明见[测试说明](tests/README.md)。性能验收继续使用 `scripts/kem_entry.sh`、`scripts/dsa_entry.sh`、`scripts/rns_entry.sh`；`scripts/run_npu_server.sh` 保留已有调用兼容性。

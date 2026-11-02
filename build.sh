@@ -41,7 +41,6 @@ usage() {
     --ophost               仅运行 op_host 层用例，无需昇腾设备。CMake 组件以
                            Host 配置构建后，执行未打 device、kernel_ut 标签的用例
     --opapi                仅运行 op_api 层用例，无需昇腾设备
-    --opgraph              仅运行 op_graph 层用例，无需昇腾设备
     --opkernel             运行 CPU Kernel UT，需要 CANN tikicpulib 和 ABI 匹配的
                            GTest，不需要昇腾设备；缺少依赖时报错
     --st                   运行设备系统测试，需要 CANN 环境与昇腾设备
@@ -91,7 +90,6 @@ checkopts() {
       -u)               ENABLE_TEST="TRUE" ;;
       --ophost)         UT_LAYERS="${UT_LAYERS} op_host" ;;
       --opapi)          UT_LAYERS="${UT_LAYERS} op_api" ;;
-      --opgraph)        UT_LAYERS="${UT_LAYERS} op_graph" ;;
       --opkernel)       UT_LAYERS="${UT_LAYERS} op_kernel" ;;
       --st)             ENABLE_TEST="TRUE"; UT_LAYERS="${UT_LAYERS} st" ;;
       --ut_timeout=*)   UT_TIMEOUT="${1#*=}" ;;
@@ -214,7 +212,7 @@ build_ut() {
   fi
 
   local layers="${UT_LAYERS}"
-  [ -z "${layers}" ] && layers="common op_api op_graph op_host op_kernel"
+  [ -z "${layers}" ] && layers="common op_api op_host op_kernel"
   echo ${dotted_line}; log "开始测试，层次：${layers}"
 
   local ran=0 failed=()
