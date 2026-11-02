@@ -10,17 +10,18 @@
 
 #include "ntt_internal.h"
 #include "acl/acl.h"
-#include "aclrtlaunch_ntt.h"
+
+extern "C" aclError CannCryptoNttLaunch(
+    uint32_t blockDim, void* stream, void* x, void* matrixPhase1, void* matrixPhase2, void* twiddlePhase12, void* y,
+    void* workspace, NttTilingData tiling);
 
 namespace cann_crypto::ntt {
 namespace {
 NttStatus EnqueueDirect(void*, const NttPlan& plan, const NttBuffers& buffers, void* stream)
 {
-    // The generated stub copies this POD into kernel arguments synchronously.
-    NttTilingData tiling = plan.tiling;
-    const auto status = ACLRT_LAUNCH_KERNEL(ntt)(
-        plan.launchBlockDim, static_cast<aclrtStream>(stream), buffers.x.data, buffers.matrixPhase1.data,
-        buffers.matrixPhase2.data, buffers.twiddlePhase12.data, buffers.y.data, buffers.workspace.data, &tiling);
+    const auto status = CannCryptoNttLaunch(
+        plan.launchBlockDim, stream, buffers.x.data, buffers.matrixPhase1.data, buffers.matrixPhase2.data,
+        buffers.twiddlePhase12.data, buffers.y.data, buffers.workspace.data, plan.tiling);
     return status == ACL_SUCCESS ? NttStatus::Success : NttStatus::LaunchFailed;
 }
 } // namespace

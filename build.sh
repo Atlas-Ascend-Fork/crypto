@@ -303,17 +303,6 @@ build_ut() {
           run_ctest "${c}" "${c}/st" "${comp_dir}/build/device-${soc}" \
             "-L device" "${dev_args[@]}"
         fi
-      elif [ -f "${comp_dir}/scripts/run_npu_server.sh" ]; then
-        if [ -z "${ASCEND_HOME_PATH}" ]; then
-          log "无法运行 ${c}/st：未设置 ASCEND_HOME_PATH"
-          failed+=("${c}/st")
-        else
-          # ntt 的设备验证由组件自带脚本完成：构建设备包并与标准答案比对
-          ran=$((ran + 1))
-          log "测试 ${c}/st（run_npu_server.sh npu-test）"
-          bash "${comp_dir}/scripts/run_npu_server.sh" npu-test --soc "${soc}" \
-            --jobs "${THREAD_NUM}" || failed+=("${c}/st")
-        fi
       fi
       # 尚未按层拆分的 Python 组件，其原有完整设备用例暂归入 ST。
       [ -d "${base}/ut" ] || run_pytest "${base}" "${c}"

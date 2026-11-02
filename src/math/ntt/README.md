@@ -25,18 +25,30 @@ NTT 组件使用原生 Ascend C Kernel 直调。Host 负责参数检查、Tiling
 以下命令均从仓库根目录执行。Host 库和测试仅需要 C++17 编译器、CMake 3.16+ 和 Python 3.9+：
 
 ```bash
-cmake -S src/math/ntt -B build/ntt-host -DBUILD_TESTING=ON
+cmake -S src/math/ntt -B build/ntt-host -DCANN_BUILD_TESTS=ON
 cmake --build build/ntt-host -j 4
 ctest --test-dir build/ntt-host -L host_ut --output-on-failure
 ```
 
-设备构建需要已安装的 CANN SDK；使用实际芯片型号，例如 A2 的 `Ascend910B3`：
+设备构建使用 CANN 9.0.0 的原生 ASC CMake 接口，与 AES、Keccak、SHAKE 一致。`ASCEND_COMPUTE_UNIT` 默认为 `ascend910b`（A2），A3 使用 `ascend910_93`；两者均编译为 `dav-2201`，无需单独设置 NTT 的 `SOC_VERSION`。
 
 ```bash
-bash src/math/ntt/run.sh --stage build -r npu -v Ascend910B3 -i /path/to/cann
+source /path/to/cann-9.0.0/set_env.sh
+ASCEND_COMPUTE_UNIT=ascend910b bash build.sh --pkg --components=math/ntt
+ASCEND_COMPUTE_UNIT=ascend910b bash build.sh --st --components=math/ntt
+# A3：将 ascend910b 改为 ascend910_93；可同时选择 AES、Keccak、SHAKE。
 ```
 
-Host 实现编译为 `cann_crypto_ntt`，设备启动包装编译为 `cann_crypto_ntt_device`，Kernel 编译为 `ntt_kernels`。`op_kernel/ntt.cpp` 继续通过 `ascendc_library` 构建，无需为目录整理修改源文件后缀。示例通过 `ACLRT_LAUNCH_KERNEL` 对应的原生包装调用 Kernel。
+独立脚本使用相同的目标参数，`-v` 优先于环境变量：
+
+```bash
+bash src/math/ntt/run.sh --stage build -r npu -v ascend910b -i /path/to/cann-9.0.0
+bash src/math/ntt/run.sh --stage env -v ascend910_93 -i /path/to/cann-9.0.0
+```
+
+`--stage env` 显示 SDK、架构族和编译架构，不构建、不查询设备。旧调用中的 `Ascend910B3` 等完整型号仍作为对应架构族的别名接受。真机测试会校验设备与目标架构族是否匹配。`sim` 使用 Ascend910B1 模型，运行 `-r sim -v ascend910b`；仿真型号与设备编译目标分别处理。
+
+Host 实现编译为 `cann_crypto_ntt`；设备库 `cann_crypto_ntt_device` 通过 `.asc` 包装以 `<<<...>>>` 调用 Kernel。`op_kernel/ntt.cpp` 与 CPU Kernel UT 共用，不再使用 `ascendc_library` 或生成的 `aclrtlaunch_ntt.h`。根目录设备测试通过 CTest 运行已构建的示例，覆盖 ML-KEM、ML-DSA、RNS 及启动错误返回。
 
 源码头文件 [op_host/ntt_internal.h](op_host/ntt_internal.h) 中的 `NttParams`、`NttBuffers` 和 `LaunchNtt` 仍是内部 C++17 接口，不是稳定的公共 C ABI。调用者持有设备缓冲区和 stream；启动接口不主动同步，缓冲区必须保持有效直到 stream 完成。
 

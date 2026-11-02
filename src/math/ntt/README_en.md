@@ -25,18 +25,30 @@ The NTT component uses native Ascend C kernel launch. The Host prepares paramete
 Run the following commands from the repository root. The Host library and tests require only a C++17 compiler, CMake 3.16+, and Python 3.9+:
 
 ```bash
-cmake -S src/math/ntt -B build/ntt-host -DBUILD_TESTING=ON
+cmake -S src/math/ntt -B build/ntt-host -DCANN_BUILD_TESTS=ON
 cmake --build build/ntt-host -j 4
 ctest --test-dir build/ntt-host -L host_ut --output-on-failure
 ```
 
-Device builds require an installed CANN SDK and a concrete chip model, such as `Ascend910B3` on A2:
+Device builds use the native ASC CMake interface from CANN 9.0.0, as do AES, Keccak, and SHAKE. `ASCEND_COMPUTE_UNIT` defaults to `ascend910b` (A2); use `ascend910_93` for A3. Both compile for `dav-2201`, without a separate NTT `SOC_VERSION`.
 
 ```bash
-bash src/math/ntt/run.sh --stage build -r npu -v Ascend910B3 -i /path/to/cann
+source /path/to/cann-9.0.0/set_env.sh
+ASCEND_COMPUTE_UNIT=ascend910b bash build.sh --pkg --components=math/ntt
+ASCEND_COMPUTE_UNIT=ascend910b bash build.sh --st --components=math/ntt
+# For A3, replace ascend910b with ascend910_93; AES, Keccak, and SHAKE can be selected together.
 ```
 
-The Host implementation builds as `cann_crypto_ntt`, the device launch wrapper as `cann_crypto_ntt_device`, and the kernel as `ntt_kernels`. `op_kernel/ntt.cpp` continues to build through `ascendc_library`; the directory migration does not require changing its suffix. The example uses the native wrapper for `ACLRT_LAUNCH_KERNEL` to launch the kernel.
+The standalone script accepts the same targets; `-v` overrides the environment:
+
+```bash
+bash src/math/ntt/run.sh --stage build -r npu -v ascend910b -i /path/to/cann-9.0.0
+bash src/math/ntt/run.sh --stage env -v ascend910_93 -i /path/to/cann-9.0.0
+```
+
+`--stage env` prints the SDK, target family, and compiler architecture without building or querying a device. Existing concrete names such as `Ascend910B3` remain aliases for their families. Device tests check that the actual device matches the requested family. Local `sim` uses the Ascend910B1 model with `-r sim -v ascend910b`; the simulator model is separate from the device compilation target.
+
+The Host library is `cann_crypto_ntt`. The device library `cann_crypto_ntt_device` launches the kernel through a `.asc` wrapper using `<<<...>>>`. `op_kernel/ntt.cpp` remains shared with CPU Kernel UT; `ascendc_library` and the generated `aclrtlaunch_ntt.h` are no longer used. Root device tests use CTest to run the already-built example for ML-KEM, ML-DSA, RNS, and launch error reporting.
 
 `NttParams`, `NttBuffers`, and `LaunchNtt` in the source header [op_host/ntt_internal.h](op_host/ntt_internal.h) remain an internal C++17 interface, not a stable public C ABI. The caller owns the device buffers and stream. Launch does not synchronize; buffers must remain valid until the stream completes.
 

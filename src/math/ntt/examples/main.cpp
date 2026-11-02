@@ -150,6 +150,14 @@ public:
         ret = aclrtSetDevice(deviceId_);
         CHECK_RET(ret == ACL_SUCCESS, return ret);
         deviceSelected_ = true;
+        const char* target = std::getenv("CANN_CRYPTO_SOC_TARGET");
+        const char* soc = aclrtGetSocName();
+        if (target != nullptr) {
+            const std::string model = soc == nullptr ? "" : soc;
+            const bool matches = (std::string(target) == "ascend910b" && model.rfind("Ascend910B", 0) == 0) ||
+                                 (std::string(target) == "ascend910_93" && model.rfind("Ascend910_93", 0) == 0);
+            CHECK_RET(matches, LOG_PRINT("NTT target %s does not match device %s\n", target, model.c_str()); return -1);
+        }
         ret = aclrtCreateStream(&stream_);
         CHECK_RET(ret == ACL_SUCCESS, return ret);
         ret = CreateInputs();
@@ -188,8 +196,8 @@ private:
         }
         const char* error = nullptr;
         const auto status = cann_crypto::ntt::PrepareNttLaunch(params_, plan_, &error);
-        CHECK_RET(
-            status == cann_crypto::ntt::NttStatus::Success, LOG_PRINT("NTT tiling failed: %s\n", error); return -1);
+        CHECK_RET(status == cann_crypto::ntt::NttStatus::Success, LOG_PRINT("NTT tiling failed: %s\n", error);
+                  return -1);
         LOG_PRINT(
             "[NTT direct] N=%d q=%d batch=%d blockDim=%u subBench=%d workspace=%zu\n", plan_.tiling.n, plan_.tiling.q,
             plan_.tiling.polyCount, plan_.launchBlockDim, plan_.tiling.subBench, plan_.workspaceBytes);
@@ -220,7 +228,7 @@ private:
             {device_[4], data_.output.size() * sizeof(int32_t)},
             {workspace_, plan_.workspaceBytes}};
         const char* error = nullptr;
-        LOG_PRINT("calling ACLRT_LAUNCH_KERNEL(ntt)...\n");
+        LOG_PRINT("calling native ASC NTT launch...\n");
         const auto status = LaunchNtt(params_, buffers, stream_, &error);
         CHECK_RET(status == NttStatus::Success, LOG_PRINT("NTT launch failed: %s\n", error); return -1);
         const auto ret = aclrtSynchronizeStream(stream_);

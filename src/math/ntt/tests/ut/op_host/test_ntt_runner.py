@@ -29,8 +29,7 @@ class NttRunnerTest(unittest.TestCase):
         files = {
             "include/acl/acl.h": "",
             "bin/setenv.bash": ":\n",
-            "compiler/tikcpp/ascendc_kernel_cmake/ascendc.cmake": "",
-            "compiler/tikcpp/ascendc_kernel_cmake/legacy_modules/function.cmake": "",
+            "lib64/cmake/asc-config.cmake": "",
             "tools/bisheng_compiler/bin/bisheng": "#!/bin/sh\nprintf 'test compiler\\n'\n",
         }
         for relative, content in files.items():
@@ -41,7 +40,7 @@ class NttRunnerTest(unittest.TestCase):
         self.env = os.environ.copy()
         for key in (
             "ASCEND_CANN_PACKAGE_PATH", "ASCEND_INSTALL_PATH", "ASCEND_HOME_PATH",
-            "NTT_PROFILE", "NTT_PYTHON", "NTT_BUILD_JOBS", "ACCEPT_FORCE_REBUILD",
+            "NTT_PROFILE", "NTT_PYTHON", "NTT_BUILD_JOBS", "ACCEPT_FORCE_REBUILD", "ASCEND_COMPUTE_UNIT",
         ):
             self.env.pop(key, None)
         self.env["NTT_PYTHON"] = sys.executable
@@ -67,7 +66,7 @@ class NttRunnerTest(unittest.TestCase):
 
     def test_invalid_configuration_fails_before_sdk_lookup(self):
         for args in (
-            ("-r", "cpu"), ("-r", "invalid"), ("-v", "ascend910_93"),
+            ("-r", "cpu"), ("-r", "invalid"), ("-v", "invalid"),
             ("--profile", "unknown"), ("--stage", "unknown"),
             ("-j", "0"), ("-b", "unknown"),
         ):
@@ -80,10 +79,45 @@ class NttRunnerTest(unittest.TestCase):
         result = self.run_script("run.sh", "--stage", "env", "-i", str(self.sdk))
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("[MODE] npu", result.stdout)
+        self.assertIn("[COMPUTE UNIT] ascend910b", result.stdout)
         self.assertIn(f"[SDK] {self.sdk}", result.stdout)
         build = next(line[8:] for line in result.stdout.splitlines() if line.startswith("[BUILD] "))
-        self.assertTrue(Path(build).is_relative_to(NTT_DIR / "build/kernellaunch"))
+        self.assertTrue(Path(build).is_relative_to(NTT_DIR / "build/asc"))
         self.assertFalse(Path(build).exists(), "env must not create a build directory")
+
+    def test_a2_and_a3_families_work_without_a_device(self):
+        for family in ("ascend910b", "ascend910_93"):
+            with self.subTest(family=family):
+                result = self.run_script("run.sh", "--stage", "env", "-v", family, "-i", str(self.sdk))
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f"[COMPUTE UNIT] {family}", result.stdout)
+                self.assertIn("[ARCH] dav-2201", result.stdout)
+
+    def test_target_environment_and_explicit_override(self):
+        env = {**self.env, "ASCEND_COMPUTE_UNIT": "ascend910_93"}
+        inherited = self.run_script("run.sh", "--stage", "env", "-i", str(self.sdk), env=env)
+        explicit = self.run_script("run.sh", "--stage", "env", "-i", str(self.sdk), "-v", "ascend910b", env=env)
+        self.assertEqual(inherited.returncode, 0, inherited.stderr)
+        self.assertEqual(explicit.returncode, 0, explicit.stderr)
+        self.assertIn("[COMPUTE UNIT] ascend910_93", inherited.stdout)
+        self.assertIn("[COMPUTE UNIT] ascend910b", explicit.stdout)
+        inherited_build = next(line for line in inherited.stdout.splitlines() if line.startswith("[BUILD]"))
+        explicit_build = next(line for line in explicit.stdout.splitlines() if line.startswith("[BUILD]"))
+        self.assertNotEqual(inherited_build, explicit_build)
+
+    def test_legacy_models_normalize_to_families(self):
+        for model, family in (("Ascend910B3", "ascend910b"), ("Ascend910_9382", "ascend910_93")):
+            with self.subTest(model=model):
+                old = self.run_script("run.sh", "--stage", "env", "-i", str(self.sdk), "-v", model)
+                new = self.run_script("run.sh", "--stage", "env", "-i", str(self.sdk), "-v", family)
+                self.assertEqual(old.returncode, 0, old.stderr)
+                self.assertEqual(new.returncode, 0, new.stderr)
+                self.assertEqual(old.stdout, new.stdout)
+
+    def test_a3_cannot_silently_use_the_a2_simulator(self):
+        result = self.run_script("run.sh", "--stage", "env", "-r", "sim", "-v", "ascend910_93")
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("Camodel", result.stderr)
 
     def test_explicit_sdk_overrides_environment(self):
         env = {**self.env, "ASCEND_CANN_PACKAGE_PATH": "/missing-sdk"}
