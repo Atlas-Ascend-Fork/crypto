@@ -86,8 +86,8 @@ crypto/
 │   ├── api/               # C ABI 实现：边界校验、句柄与 plan 生命周期、算法分发
 │   ├── core/              # 运行时：handle / stream / workspace / 分发 / 密钥管理
 │   ├── math/              # 数学引擎：大数与模运算、NTT/RNS、GF(2^k)、位平面转置
-│   ├── primitives/        # 密码原语：AES、SM4、Keccak-f、ChaCha、GHASH、Poly1305、EC
-│   └── algorithms/        # 算法服务：digest / aead / mac / kdf / signature / kem
+│   ├── primitives/        # 密码原语：已实现 AES、Keccak-f；SM4 / ChaCha / GHASH / Poly1305 / EC 规划中
+│   └── algorithms/        # 算法服务：已实现 hash/shake、cipher/aice；digest / aead / mac / kdf / signature / kem 规划中
 ├── torch_extension/       # 可选 PyTorch 适配层，独立构建，复用原生组件
 ├── reference/             # 纯 C 参考实现，零 CANN 依赖，差分测试的正确性基准
 ├── tests/ut/              # 仓库级用例，按 common / op_api / op_host / op_kernel 划分

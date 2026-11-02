@@ -86,8 +86,8 @@ crypto/
 │   ├── api/               # C ABI implementation: boundary validation, handles, plan lifecycle, algorithm dispatch
 │   ├── core/              # Runtime: handles, streams, workspaces, dispatch, and key management
 │   ├── math/              # Mathematical engine: big integers, modular arithmetic, NTT/RNS, GF(2^k), bit-plane transposition
-│   ├── primitives/        # Cryptographic primitives: AES, SM4, Keccak-f, ChaCha, GHASH, Poly1305, EC
-│   └── algorithms/        # Algorithm services: digest, AEAD, MAC, KDF, signature, KEM
+│   ├── primitives/        # Cryptographic primitives: AES and Keccak-f implemented; SM4, ChaCha, GHASH, Poly1305, EC planned
+│   └── algorithms/        # Algorithm services: hash/shake and cipher/aice implemented; digest, AEAD, MAC, KDF, signature, KEM planned
 ├── torch_extension/       # Optional PyTorch integration, built separately using the native components
 ├── reference/             # Pure C references, independent of CANN, used as correctness baselines for differential tests
 ├── tests/ut/              # Repository-level tests organized by common, op_api, op_host, and op_kernel
