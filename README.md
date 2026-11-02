@@ -60,7 +60,7 @@ git clone https://gitcode.com/cann/crypto.git
 bash build.sh --pkg
 
 # 编译指定组件
-bash build.sh --components=primitives/AES --pkg
+bash build.sh --components=primitives/aes --pkg
 
 # 运行单元测试
 bash build.sh -u --ophost      # op_host 层，无需昇腾设备

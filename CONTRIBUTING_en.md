@@ -63,6 +63,11 @@ For an urgent requirement, request an ad hoc SIG meeting: add the request to the
 
 #### Deliverables
 
+New component directories follow the lowercase-with-underscores convention in the [ops-nn project layout](https://gitcode.com/cann/ops-nn/blob/master/docs/zh/install/dir_structure.md) and [ops-math project layout](https://gitcode.com/cann/ops-math/blob/master/docs/zh/install/dir_structure.md):
+
+- Use lowercase letters and digits for new component directories, separating words with underscores (snake_case), such as `aes`, `keccak`, `ntt`, and `chacha20_poly1305`.
+- `${component}` is the component directory name, excluding parent category directories. For example, in `src/algorithms/hash/shake/`, `hash` is the category and `shake` is the component name; `chacha20_poly1305` is an example name for a new AEAD component that can be placed under `src/algorithms/aead/`.
+
 ```text
 ${component}                          # Component name, such as chacha20_poly1305
 ├── ${component}_internal.h           # Internal interface with neutral types

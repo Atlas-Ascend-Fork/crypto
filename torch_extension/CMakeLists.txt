@@ -18,7 +18,7 @@ include(cmake/torch.cmake)
 include(cmake/torch_npu.cmake)
 set(CANN_BUILD_DEVICE ON CACHE BOOL "Build AES for the Torch adapter" FORCE)
 set(CANN_BUILD_TESTS OFF CACHE BOOL "Core tests are run from the standalone AES build" FORCE)
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../src/primitives/AES" aes_core)
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../src/primitives/aes" aes_core)
 add_library(_C SHARED csrc/extension.cpp csrc/aes_binding.cpp)
 set_target_properties(_C PROPERTIES PREFIX "" SUFFIX ".abi3.so" OUTPUT_NAME "_C"
     BUILD_WITH_INSTALL_RPATH TRUE

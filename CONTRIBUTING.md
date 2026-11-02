@@ -63,6 +63,11 @@
 
 #### 交付件
 
+新增组件目录沿用 [ops-nn 项目目录](https://gitcode.com/cann/ops-nn/blob/master/docs/zh/install/dir_structure.md)和 [ops-math 项目目录](https://gitcode.com/cann/ops-math/blob/master/docs/zh/install/dir_structure.md)中的小写下划线命名约定：
+
+- 新增组件目录使用小写字母和数字，多个单词用下划线连接（snake_case），如 `aes`、`keccak`、`ntt`、`chacha20_poly1305`。
+- `${component}` 表示组件目录名，不包含上层分类路径。例如 `src/algorithms/hash/shake/` 中，`hash` 是分类目录，`shake` 是组件名；`chacha20_poly1305` 是新增 AEAD 组件的命名示例，可放在 `src/algorithms/aead/` 下。
+
 ```text
 ${component}                          # 组件名，如 chacha20_poly1305
 ├── ${component}_internal.h           # 中性类型的内部接口

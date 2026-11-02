@@ -9,7 +9,7 @@
 | `aes128_ctr_example.py` | `torch.ops.ascend_ops.aes128ctr` | RFC 3686 测试向量 #2 |
 | `aes128_gcm_example.py` | `torch.ops.ascend_ops.aes_gcm` | 密钥、nonce 与 AAD 取自 GCM 规范测试用例 4，明文为 2560 字节；期望值由 pycryptodome 与 pyca/cryptography 分别计算并核对一致 |
 
-[`aes_key_expansion.py`](../../src/primitives/AES/examples/aes_key_expansion.py) 按 FIPS 197 把 16 字节密钥扩展为算子所需的轮密钥，两个样例共用。
+[`aes_key_expansion.py`](../../src/primitives/aes/examples/aes_key_expansion.py) 按 FIPS 197 把 16 字节密钥扩展为算子所需的轮密钥，两个样例共用。
 
 ## 运行
 

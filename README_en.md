@@ -60,7 +60,7 @@ The repository's `build.sh` is the unified entry point for builds and tests.
 bash build.sh --pkg
 
 # Build one component
-bash build.sh --components=primitives/AES --pkg
+bash build.sh --components=primitives/aes --pkg
 
 # Run unit tests
 bash build.sh -u --ophost      # op_host layer; no Ascend hardware required

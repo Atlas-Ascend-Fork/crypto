@@ -21,12 +21,12 @@ Existing semantics are preserved: CTR output capacity is rounded to 512 bytes, w
 
 ```bash
 # From the repository root; CANN is not needed for Host UT.
-cmake -S src/primitives/AES -B build/aes-host -DCANN_BUILD_DEVICE=OFF
+cmake -S src/primitives/aes -B build/aes-host -DCANN_BUILD_DEVICE=OFF
 cmake --build build/aes-host --parallel
 ctest --test-dir build/aes-host -L host --output-on-failure
 
 # After sourcing the CANN set_env.sh; no PyTorch dependency.
-cmake -S src/primitives/AES -B build/aes -DCANN_BUILD_DEVICE=ON -DNPU_ARCH=dav-2201
+cmake -S src/primitives/aes -B build/aes -DCANN_BUILD_DEVICE=ON -DNPU_ARCH=dav-2201
 cmake --build build/aes --parallel
 python3 -m pip install pycryptodome
 ctest --test-dir build/aes -L device --output-on-failure

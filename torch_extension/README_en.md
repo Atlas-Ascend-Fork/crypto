@@ -2,7 +2,7 @@
 
 English | [简体中文](README.md)
 
-This top-level directory provides optional PyTorch adapters with a separate build entry point. It currently adapts AES-128-CTR/GCM through the repository's [native AES core](../src/primitives/AES/README_en.md). The core does not depend on PyTorch; adapters reuse native implementations, and bindings are added as needed.
+This top-level directory provides optional PyTorch adapters with a separate build entry point. It currently adapts AES-128-CTR/GCM through the repository's [native AES core](../src/primitives/aes/README_en.md). The core does not depend on PyTorch; adapters reuse native implementations, and bindings are added as needed.
 
 - `ascend_ops/`: Python import entry point.
 - `csrc/`: Tensor materialization, device guards, the current NPU stream, Meta implementations, and `TORCH_LIBRARY` registration. CTR/GCM share `aes_binding.cpp`; add per-operator subdirectories when there are enough binding files to need them.

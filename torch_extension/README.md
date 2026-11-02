@@ -2,7 +2,7 @@
 
 简体中文 | [English](README_en.md)
 
-此顶层目录提供可选的 PyTorch 适配，可单独构建，当前通过仓库中的[原生 AES 核心](../src/primitives/AES/README.md)适配 AES-128-CTR/GCM。核心不依赖 PyTorch；适配层复用原生实现，按实际需要增加绑定。
+此顶层目录提供可选的 PyTorch 适配，可单独构建，当前通过仓库中的[原生 AES 核心](../src/primitives/aes/README.md)适配 AES-128-CTR/GCM。核心不依赖 PyTorch；适配层复用原生实现，按实际需要增加绑定。
 
 - `ascend_ops/`：Python 导入入口。
 - `csrc/`：Tensor 连续化、设备 guard、当前 NPU stream、Meta 和 `TORCH_LIBRARY` 注册。CTR/GCM 共用 `aes_binding.cpp`；绑定文件较多时再按算子拆分子目录。

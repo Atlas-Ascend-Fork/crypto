@@ -9,7 +9,7 @@ Both examples encrypt known-answer inputs on the NPU and verify the results. On 
 | `aes128_ctr_example.py` | `torch.ops.ascend_ops.aes128ctr` | RFC 3686 test vector #2 |
 | `aes128_gcm_example.py` | `torch.ops.ascend_ops.aes_gcm` | Key, nonce, and AAD from GCM specification test case 4, with a 2560-byte plaintext; expected results computed independently with pycryptodome and pyca/cryptography and verified to match |
 
-Both examples use [`aes_key_expansion.py`](../../src/primitives/AES/examples/aes_key_expansion.py) to expand a 16-byte key into the operator's round-key format according to FIPS 197.
+Both examples use [`aes_key_expansion.py`](../../src/primitives/aes/examples/aes_key_expansion.py) to expand a 16-byte key into the operator's round-key format according to FIPS 197.
 
 ## Run
 

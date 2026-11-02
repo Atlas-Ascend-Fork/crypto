@@ -33,7 +33,7 @@ usage() {
 
 构建选项:
     --pkg                  构建全部组件
-    --components=a,b       只构建指定组件，逗号分隔，如 --components=primitives/AES
+    --components=a,b       只构建指定组件，逗号分隔，如 --components=primitives/aes
     -j[n]                  编译并发数，默认为 CPU 核数
 
 测试选项:
@@ -65,7 +65,7 @@ usage() {
     bash build.sh -u --opkernel         # CPU Kernel UT：需要 CANN 与 GTest
     bash build.sh --st                  # 设备 ST：需要昇腾设备
     bash build.sh --pkg -u              # 编译并运行单元测试
-    bash build.sh --components=primitives/AES --pkg
+    bash build.sh --components=primitives/aes --pkg
 USAGE
 }
 
@@ -115,7 +115,7 @@ checkopts() {
 }
 
 # 列出待处理组件。组件为 src 下自带构建文件、且其祖先目录均无构建文件的目录，
-# 因此层级不限：primitives/AES、primitives/keccak、math/ntt 为两级，
+# 因此层级不限：primitives/aes、primitives/keccak、math/ntt 为两级，
 # algorithms/hash/shake 为三级，而 tests、examples、cmake 等子目录不会被误判为组件。
 list_components() {
   if [ -n "${COMPONENTS}" ]; then

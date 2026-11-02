@@ -6,7 +6,7 @@
 
 ```bash
 # From the repository root, after loading the CANN environment.
-cmake -S src/primitives/AES -B build/aes -DCANN_BUILD_DEVICE=ON
+cmake -S src/primitives/aes -B build/aes -DCANN_BUILD_DEVICE=ON
 cmake --build build/aes --parallel
 ./build/aes/aes_gcm_example 0
 ```
