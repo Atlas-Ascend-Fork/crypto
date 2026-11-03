@@ -14,6 +14,7 @@ English | [简体中文](README.md)
 
 ## 🔥 Latest News
 
+- [2026/11/02] Merged the `AICE` stream cipher implementation, supporting 256-bit keys, 96-bit IVs, parallel processing, and in-place encryption and decryption.
 - [2026/09/15] Merged the `NTT` implementation, including transform paths for general `RNS`, `ML-KEM`, and `ML-DSA`.
 - [2026/09/15] Merged `Keccak-f[1600]` to perform 24 rounds of permutation on batches of 1600-bit states.
 - [2026/09/15] Merged `SHAKE128/256` to produce caller-specified output lengths for batches of equal-length messages.
@@ -115,7 +116,7 @@ Dependencies flow only downward: `algorithms/` and `primitives/` do not implemen
 
 ### Crypto SIG Discussion Group
 
-Scan the QR code to contact the group administrator and request to join the Crypto SIG discussion group for community discussions and collaboration.
+Scan the QR code to add the group administrator on WeChat and request to join the Crypto SIG discussion group for technical discussions and community collaboration. You are also welcome to contact the administrator with questions about contributing, code reviews, or pull request merging.
 
 <img src="docs/images/wechat-group.png" alt="QR code for the Crypto SIG WeChat group administrator" width="260" />
 
