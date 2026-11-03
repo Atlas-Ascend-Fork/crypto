@@ -33,6 +33,8 @@ crypto 是 [CANN](https://hiascend.com/software/cann)（Compute Architecture for
 
 ## 📌版本配套
 
+当前开发基线统一为 **CANN 9.0.0**，NTT、Keccak、SHAKE、AES 和数学算子使用同一套 SDK。
+
 本项目源码跟随 CANN 软件版本发布。关于 CANN 软件版本与本项目标签的对应关系，请参阅 [release 仓库](https://gitcode.com/cann/release-management)中的相应版本说明。
 
 请注意，为确保源码定制开发顺利进行，请选择配套的 CANN 版本与 GitCode 标签源码，使用 master 分支可能存在版本不匹配的风险。
@@ -40,6 +42,15 @@ crypto 是 [CANN](https://hiascend.com/software/cann)（Compute Architecture for
 ## 🛠️环境准备
 
 体验本项目能力前，请先完成 NPU 驱动与 CANN 包安装，确保环境正常。原生组件不依赖 PyTorch；使用可选的 [PyTorch 适配层](torch_extension/README.md)时，另按 `torch_extension/requirements.txt` 安装 `torch`、`torch_npu` 等依赖。
+
+在同一终端加载 CANN 9.0.0 后再构建各组件；安装位置不同时，请替换为实际的 9.0.0 路径：
+
+```bash
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
+export ASCEND_CANN_PACKAGE_PATH="$ASCEND_HOME_PATH"
+```
+
+NTT 的 NPU 与仿真模式默认仅探测 9.0.0 安装目录；自定义安装位置可通过 `-i` 或上述环境变量指定。仿真器也需来自同一套 SDK。切换 SDK 后，请使用新的构建目录，避免复用旧版本的 CMake 缓存。
 
 亦可使用社区提供的 [CANNLab 在线环境](https://gitcode.com/org/cann/cannlab/environment)，其中已预置配套的 CANN 环境。
 

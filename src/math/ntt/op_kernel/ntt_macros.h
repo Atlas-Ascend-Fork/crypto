@@ -11,23 +11,9 @@
 #ifndef NTT_MACROS_H_
 #define NTT_MACROS_H_
 
-#if defined(ASCENDC_CPU_DEBUG) && defined(__clang__)
-// CANN 8.5.0 tikicpulib declares a constexpr function returning AscendC::half,
-// but the CPU-debug half type is not literal under Clang 15. Strip constexpr
-// only while including the vendor CPU header; NPU/AscendC compilation is left
-// untouched, and the keyword is restored before project code is parsed.
-#define ASCENDC_RESTORE_CONSTEXPR_KEYWORD
-#define constexpr
-#endif
-
 #include "kernel_operator.h"
 #ifdef ASCENDC_CPU_DEBUG
 #include "securec.h"
-#endif
-
-#ifdef ASCENDC_RESTORE_CONSTEXPR_KEYWORD
-#undef constexpr
-#undef ASCENDC_RESTORE_CONSTEXPR_KEYWORD
 #endif
 
 #ifdef ASCENDC_CPU_DEBUG

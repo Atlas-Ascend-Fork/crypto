@@ -13,7 +13,7 @@ English | [简体中文](README.md)
 | Atlas inference series | × |
 | Atlas training series | × |
 
-The target environment is CANN 9.1.0 on Atlas A2 / A3, using the `dav-2201` architecture. Validate device results for the direct-launch implementation by rerunning the device tests.
+The target environment is CANN 9.0.0 on Atlas A2 / A3, using the `dav-2201` architecture. Validate device results for the direct-launch implementation by rerunning the device tests.
 
 ## Function
 

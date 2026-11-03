@@ -25,7 +25,8 @@ cmake -S src/primitives/aes -B build/aes-host -DCANN_BUILD_DEVICE=OFF
 cmake --build build/aes-host --parallel
 ctest --test-dir build/aes-host -L host --output-on-failure
 
-# After sourcing the CANN set_env.sh; no PyTorch dependency.
+# Load CANN 9.0.0; no PyTorch dependency.
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
 cmake -S src/primitives/aes -B build/aes -DCANN_BUILD_DEVICE=ON -DNPU_ARCH=dav-2201
 cmake --build build/aes --parallel
 python3 -m pip install pycryptodome
@@ -33,6 +34,6 @@ ctest --test-dir build/aes -L device --output-on-failure
 cmake --install build/aes --prefix "$PWD/install/aes"
 ```
 
-设备 ST 需要 A2 NPU、CANN 和 PyCryptodome；Host UT 仅需 C++17 编译器与 CMake。`CANN_DEVICE_ID` 可选择测试设备。当前没有 AES CPU Kernel UT；Host UT 不执行设备计算，不能代替 ST。
+设备 ST 需要 A2 NPU、CANN 9.0.0 和 PyCryptodome；Host UT 仅需 C++17 编译器与 CMake。`CANN_DEVICE_ID` 可选择测试设备。当前没有 AES CPU Kernel UT；Host UT 不执行设备计算，不能代替 ST。
 
 安装结果包含 `lib/libcann_crypto_aes.so` 和 `include/cann_crypto/aes.h`。原生调用不需要安装 `torch`、`torch_npu` 或 `ascend_ops`。PyTorch wheel 构建与原来的 35 项回归见[适配层说明](../../../torch_extension/README.md)。

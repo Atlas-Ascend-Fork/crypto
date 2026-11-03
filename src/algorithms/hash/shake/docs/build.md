@@ -14,7 +14,7 @@ cd src/algorithms/hash/shake
 ## A2 设备构建及测试
 
 ```bash
-source /usr/local/Ascend/cann-9.1.0/set_env.sh
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
 
 cmake -S . -B build/device \
   -DCMAKE_BUILD_TYPE=Release \
@@ -36,7 +36,7 @@ SHAKE 库包含 SHAKE128、SHAKE256 两个直调接口，Keccak 库供设备回�
 ## A3 设备构建及测试
 
 ```bash
-source /usr/local/Ascend/cann-9.1.0/set_env.sh
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
 
 cmake -S . -B build/device-a3 \
   -DCMAKE_BUILD_TYPE=Release \

@@ -33,6 +33,8 @@ The project focuses on two scenarios that CPUs do not cover well: protecting dat
 
 ## 📌 Version Compatibility
 
+The current development baseline is **CANN 9.0.0**. NTT, Keccak, SHAKE, AES, and the mathematical operators use the same SDK.
+
 This project's source releases follow CANN software releases. See the corresponding release notes in the [release-management repository](https://gitcode.com/cann/release-management) for the mapping between CANN software versions and this project's source tags.
 
 To customize the source successfully, select the matching CANN version and GitCode source tag. The `master` branch may not match an installed CANN version.
@@ -40,6 +42,15 @@ To customize the source successfully, select the matching CANN version and GitCo
 ## 🛠️ Prerequisites
 
 Install the NPU driver and CANN packages before using the project. Native components do not depend on PyTorch. To use the optional [PyTorch integration](torch_extension/README_en.md), install `torch`, `torch_npu`, and the other dependencies in `torch_extension/requirements.txt` separately.
+
+Load CANN 9.0.0 in the same terminal before building the components. Replace the path with your actual 9.0.0 installation if needed:
+
+```bash
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
+export ASCEND_CANN_PACKAGE_PATH="$ASCEND_HOME_PATH"
+```
+
+NTT's NPU and simulation modes automatically search only 9.0.0 installation directories. Use `-i` or the environment variables above for a custom installation path. The simulator must come from the same SDK. After switching SDKs, use a new build directory to avoid reusing an older SDK's CMake cache.
 
 The community also provides the [CANNLab online environment](https://gitcode.com/org/cann/cannlab/environment), which includes a matching CANN installation.
 

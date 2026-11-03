@@ -13,10 +13,10 @@ cd src/primitives/keccak
 
 ## Build and Test on A2
 
-Linux, CANN 9.1.0, and the corresponding driver environment are required:
+Linux, CANN 9.0.0, and the corresponding driver environment are required:
 
 ```bash
-source /usr/local/Ascend/cann-9.1.0/set_env.sh
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
 
 cmake -S . -B build/device \
   -DCMAKE_BUILD_TYPE=Release \

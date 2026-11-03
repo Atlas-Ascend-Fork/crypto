@@ -14,7 +14,7 @@ cd src/algorithms/hash/shake
 ## Build and Test on A2
 
 ```bash
-source /usr/local/Ascend/cann-9.1.0/set_env.sh
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
 
 cmake -S . -B build/device \
   -DCMAKE_BUILD_TYPE=Release \
@@ -36,7 +36,7 @@ Set `-DCANN_BUILD_TESTS=OFF` if only device libraries and examples are needed.
 ## Build and Test on A3
 
 ```bash
-source /usr/local/Ascend/cann-9.1.0/set_env.sh
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
 
 cmake -S . -B build/device-a3 \
   -DCMAKE_BUILD_TYPE=Release \

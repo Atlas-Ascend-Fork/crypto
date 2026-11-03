@@ -13,10 +13,10 @@ cd src/primitives/keccak
 
 ## A2 设备构建及测试
 
-需要 Linux、CANN 9.1.0 和对应的驱动环境：
+需要 Linux、CANN 9.0.0 和对应的驱动环境：
 
 ```bash
-source /usr/local/Ascend/cann-9.1.0/set_env.sh
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
 
 cmake -S . -B build/device \
   -DCMAKE_BUILD_TYPE=Release \
