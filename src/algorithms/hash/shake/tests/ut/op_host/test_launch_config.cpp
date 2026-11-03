@@ -8,7 +8,7 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#include "algorithms/hash/shake/shake_internal.h"
+#include "algorithms/hash/shake/op_host/shake_internal.h"
 #include "algorithms/hash/shake/op_host/shake_tiling.h"
 
 #include <cstdint>

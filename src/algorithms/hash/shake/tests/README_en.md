@@ -10,3 +10,5 @@ English | [简体中文](README.md)
 - `stress.py` repeatedly runs two representative parameter sets for each algorithm per iteration, saving logs in the build directory.
 
 See [build_en.md](../docs/build_en.md) for commands. Host tests do not require CANN; CPU Kernel UT requires GTest with a matching ABI and tikicpulib.
+
+`ut/op_host/` checks Host logic. `ut/op_kernel/` contains lightweight model tests and CPU simulation of the actual kernels, which requires explicitly enabling `CANN_BUILD_CPU_DEBUG_TESTS=ON`. The latter runs on the CPU under the CTest label `kernel_ut`. Tests in `st/` exercise the complete public API path on a real NPU under the label `device`, with `CANN_BUILD_DEVICE=ON`. Passing CPU simulation does not replace device ST.

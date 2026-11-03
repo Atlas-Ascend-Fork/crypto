@@ -9,7 +9,7 @@
  */
 
 #include "shake_internal.h"
-#include "op_host/shake_tiling.h"
+#include "shake_tiling.h"
 
 namespace cann_crypto::shake {
 bool BuildLaunchConfig(const Request& request, uint32_t aivCoreCount, LaunchConfig& config)

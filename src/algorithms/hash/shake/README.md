@@ -45,3 +45,12 @@ SHAKE128 的 rate 为 168 字节，SHAKE256 的 rate 为 136 字节；两个算�
 
 构建生成 `libcann_crypto_shake.so`，复用 Keccak 的向量置换实现和构建辅助函数。
 两个设备库分别构建，不再生成三个算子的集成 vendor 包。参见[构建与测试](docs/build.md)。
+
+## 目录结构
+
+- `op_host/`：SHAKE128 / SHAKE256 共用的参数校验、分核调度和公开接口的 Host 运行时实现。
+- `op_kernel/`：两个 Kernel 入口、共用的海绵计算实现和 `.asc` 启动封装；复用 Keccak 的向量置换实现。
+- `tests/ut/op_host/`、`tests/ut/op_kernel/`：Host 与 Kernel 单元测试；`tests/st/`：设备端完整调用测试；`tests/assets/`：测试数据与生成脚本。
+- `examples/`、`docs/`：调用示例和组件文档。
+
+SHAKE128 和 SHAKE256 保留两个公开接口、两个 Kernel 入口，位于同一个组件中。公开头文件为仓库的 `include/cann_crypto/shake.h`；目录整理不改变 Kernel 直调方式。

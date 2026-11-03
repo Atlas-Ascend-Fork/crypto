@@ -45,3 +45,12 @@ Use [CannCryptoShake128 / CannCryptoShake256](docs/kernelLaunch_en.md). See [tes
 
 The build produces `libcann_crypto_shake.so`, reusing Keccak's vector permutation implementation and build helpers.
 The two device libraries are built separately; an integrated vendor package containing all three operators is no longer generated. See [Build and Test](docs/build_en.md).
+
+## Directory Structure
+
+- `op_host/`: Shared SHAKE128 / SHAKE256 parameter validation, core scheduling, and Host runtime implementations of the public APIs.
+- `op_kernel/`: Two Kernel entry points, the shared sponge implementation, and the `.asc` launch wrapper; these reuse Keccak's vector permutation implementation.
+- `tests/ut/op_host/` and `tests/ut/op_kernel/`: Host and Kernel unit tests; `tests/st/`: end-to-end device tests; `tests/assets/`: test data and generation scripts.
+- `examples/` and `docs/`: invocation examples and component documentation.
+
+SHAKE128 and SHAKE256 retain two public APIs and two Kernel entry points within one component. The public header is `include/cann_crypto/shake.h` in the repository; the directory organization preserves direct kernel launch.

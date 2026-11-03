@@ -16,7 +16,7 @@ add_test(NAME shake_launch_config_test COMMAND shake_launch_config_test)
 add_executable(shake_direct_launch_test
     "${KECCAK_DIR}/tests/ut/op_host/test_direct_launch.cpp"
     "${KECCAK_DIR}/op_host/keccak_launch.cpp"
-    ../../../shake_runtime.cpp)
+    ../../../op_host/shake_runtime.cpp)
 target_compile_definitions(shake_direct_launch_test PRIVATE CANN_CRYPTO_TEST_SHAKE=1)
 target_include_directories(shake_direct_launch_test PRIVATE
     "${KECCAK_DIR}/tests/ut/op_host/stubs" "${CANN_CRYPTO_INCLUDE_DIR}")
