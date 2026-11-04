@@ -83,6 +83,12 @@ ${component}                          # 组件名，如 chacha20_poly1305
 
 `op_api/` 为可选。采用 opaque 密钥、变长批处理或逐条状态返回的算法，Tensor 语义不自然，可不提供 aclnn 直调接口；目录缺省即表示暂不支持。
 
+组件目录命名：
+
+- 目录名与对外头文件去除扩展名后同名且大小写一致，例如 `primitives/aes/` ↔ `include/cann_crypto/aes.h`、`primitives/keccak/` ↔ `keccak.h`。
+- 组件目录统一使用小写 snake_case（`aes`、`keccak`、`shake`、`ntt`、`aice`），不设大写例外；多词组件用下划线连接（如 `chacha20_poly1305`）。目录小写不影响文档中的算法名称写法（如 AES、SHAKE），参考 OpenSSL 的 `crypto/aes/` 目录。
+- 数学组件位于 `math/` 下一级，密码原语位于 `primitives/` 下一级；算法服务组件按算法族再分层，例如 `algorithms/hash/shake`、`algorithms/cipher/aice`。
+
 #### 交付要求
 
 | 类型 | 要求 |

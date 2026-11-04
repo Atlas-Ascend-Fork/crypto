@@ -83,6 +83,12 @@ ${component}                          # Component name, such as chacha20_poly130
 
 `op_api/` is optional. For algorithms with opaque keys, variable-length batches, or per-item status returns, tensor semantics may be unnatural; a direct aclnn entry point is not required. Its absence means direct aclnn calls are not yet supported.
 
+Component directory naming:
+
+- The directory name matches the public header without its extension, including case, for example `primitives/aes/` ↔ `include/cann_crypto/aes.h` and `primitives/keccak/` ↔ `keccak.h`.
+- Component directories use lowercase snake_case throughout (`aes`, `keccak`, `shake`, `ntt`, `aice`) with no uppercase exception; multi-word components join words with underscores (such as `chacha20_poly1305`). Lowercase directories do not change how algorithm names are spelled in prose (AES, SHAKE), following OpenSSL's `crypto/aes/` layout.
+- Math components live one level under `math/`, cryptographic primitives under `primitives/`; algorithm-service components are further grouped by algorithm family, for example `algorithms/hash/shake` and `algorithms/cipher/aice`.
+
 #### Requirements
 
 | Type | Requirement |
