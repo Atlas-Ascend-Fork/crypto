@@ -1,5 +1,7 @@
 # AICE 编译、测试与性能测试
 
+简体中文 | [English](build_en.md)
+
 以下命令在 cann-crypto 仓库根目录执行。Host 构建需要 CMake 3.16+、C99 和 C++17 编译器；
 设备构建需要 CANN Toolkit，设备测试和性能测试在对应昇腾设备上执行。
 

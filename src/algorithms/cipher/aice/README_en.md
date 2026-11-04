@@ -13,7 +13,7 @@ English | [简体中文](README.md)
 
 Encrypts and decrypts byte data with a 256-bit key and a 96-bit IV.
 Supports parallel lanes and in-place operation.
-See the [algorithm and implementation specification](docs/algorithm.md).
+See the [algorithm and implementation specification](docs/algorithm_en.md).
 
 ## Parameters
 
@@ -45,4 +45,4 @@ The public interface is declared in [aice.h](../../../../include/cann_crypto/aic
 The build produces `libcann_crypto_aice.so`.
 See [aice_example.cpp](examples/aice_example.cpp) for an encryption and decryption example.
 
-[Build, test, and benchmark](docs/build.md) · [Test coverage](tests/README.md)
+[Build, test, and benchmark](docs/build_en.md) · [Test coverage](tests/README_en.md)

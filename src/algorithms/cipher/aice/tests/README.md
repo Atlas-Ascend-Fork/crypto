@@ -1,5 +1,7 @@
 # AICE 测试
 
+简体中文 | [English](README_en.md)
+
 执行命令见[编译、测试与性能测试](../docs/build.md)。
 
 ## Host 测试

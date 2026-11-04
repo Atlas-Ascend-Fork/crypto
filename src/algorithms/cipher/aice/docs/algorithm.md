@@ -1,5 +1,7 @@
 # AICE 算法与 DAV2201 实现
 
+简体中文 | [English](algorithm_en.md)
+
 ## 算法简介
 
 AICE 面向 NPU 处理器的并行计算，以 16 位模算术组织流密码计算，
