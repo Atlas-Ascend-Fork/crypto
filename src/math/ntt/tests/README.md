@@ -20,7 +20,7 @@
 ```bash
 cmake -S src/math/ntt -B build/ntt-host -DCANN_BUILD_TESTS=ON
 cmake --build build/ntt-host -j 4
-ctest --test-dir build/ntt-host -L host_ut --output-on-failure
+cmake -E chdir build/ntt-host ctest -L host_ut --output-on-failure
 ```
 
 默认注册以上三个 Host 测试，不需要 CANN。测试配置要求 Python，避免缺失解释器时静默漏掉两个回归入口。
@@ -46,7 +46,7 @@ cmake -S src/math/ntt -B build/ntt-kernel-ut \
   -DASCEND_CANN_PACKAGE_PATH="$ASCEND_HOME_PATH" \
   -DGTest_DIR="$PWD/build/gtest-abi0/install/lib/cmake/GTest"
 cmake --build build/ntt-kernel-ut -j 4
-ctest --test-dir build/ntt-kernel-ut -L kernel_ut --output-on-failure
+cmake -E chdir build/ntt-kernel-ut ctest -L kernel_ut --output-on-failure
 ```
 
 该目标直接包含 `op_kernel/ntt.cpp`，通过 `ICPU_RUN_KF` 执行并与 `scripts/gen_data.py` 生成的 golden 比较。默认单个 CTest 进程超时为 1800 秒，可通过 `CANN_KERNEL_UT_TIMEOUT` 调整。没有启用 `CANN_BUILD_CPU_DEBUG_TESTS` 的 Host 构建不代表 Kernel UT 已通过。

@@ -57,8 +57,8 @@ After the device test build completes, you can run a single test or the smoke te
 
 ```bash
 AICE_TEST_BUILD="src/algorithms/cipher/aice/build/device-${ASCEND_COMPUTE_UNIT}"
-ctest --test-dir "$AICE_TEST_BUILD" -R '^aice_cross$' --output-on-failure
-ctest --test-dir "$AICE_TEST_BUILD" -R '^aice_device_kat$' --output-on-failure
+cmake -E chdir "$AICE_TEST_BUILD" ctest -R '^aice_cross$' --output-on-failure
+cmake -E chdir "$AICE_TEST_BUILD" ctest -R '^aice_device_kat$' --output-on-failure
 "$AICE_TEST_BUILD/bin/test_aice_device" --self-test --smoke
 "$AICE_TEST_BUILD/bin/test_aice_device" --cross-test --smoke
 "$AICE_TEST_BUILD/bin/test_aice_device_kat" --smoke
@@ -114,7 +114,7 @@ cmake -S src/algorithms/cipher/aice -B build-aice-device \
   -DASCEND_COMPUTE_UNIT=ascend910b \
   -DASCEND_CANN_PACKAGE_PATH="$ASCEND_HOME_PATH" -DCANN_DEVICE_ID=0
 cmake --build build-aice-device -j
-ctest --test-dir build-aice-device --output-on-failure
+cmake -E chdir build-aice-device ctest --output-on-failure
 cmake --install build-aice-device --prefix "$PWD/install-aice"
 ```
 
@@ -133,7 +133,7 @@ Host-only configuration:
 cmake -S src/algorithms/cipher/aice -B build-aice-host \
   -DCMAKE_BUILD_TYPE=Release -DCANN_BUILD_DEVICE=OFF -DCANN_BUILD_TESTS=ON
 cmake --build build-aice-host -j
-ctest --test-dir build-aice-host --output-on-failure
+cmake -E chdir build-aice-host ctest --output-on-failure
 ```
 
 The install step produces `lib/libcann_crypto_aice.so` and `include/cann_crypto/aice.h`.

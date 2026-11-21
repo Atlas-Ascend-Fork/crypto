@@ -27,7 +27,7 @@ Run the following commands from the repository root. The Host library and tests 
 ```bash
 cmake -S src/math/ntt -B build/ntt-host -DCANN_BUILD_TESTS=ON
 cmake --build build/ntt-host -j 4
-ctest --test-dir build/ntt-host -L host_ut --output-on-failure
+cmake -E chdir build/ntt-host ctest -L host_ut --output-on-failure
 ```
 
 Device builds use the native ASC CMake interface from CANN 9.0.0, as do AES, Keccak, and SHAKE. `ASCEND_COMPUTE_UNIT` defaults to `ascend910b` (A2); use `ascend910_93` for A3. Both compile for `dav-2201`, without a separate NTT `SOC_VERSION`.

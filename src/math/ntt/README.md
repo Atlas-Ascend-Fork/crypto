@@ -27,7 +27,7 @@ NTT 组件使用原生 Ascend C Kernel 直调。Host 负责参数检查、Tiling
 ```bash
 cmake -S src/math/ntt -B build/ntt-host -DCANN_BUILD_TESTS=ON
 cmake --build build/ntt-host -j 4
-ctest --test-dir build/ntt-host -L host_ut --output-on-failure
+cmake -E chdir build/ntt-host ctest -L host_ut --output-on-failure
 ```
 
 设备构建使用 CANN 9.0.0 的原生 ASC CMake 接口，与 AES、Keccak、SHAKE 一致。`ASCEND_COMPUTE_UNIT` 默认为 `ascend910b`（A2），A3 使用 `ascend910_93`；两者均编译为 `dav-2201`，无需单独设置 NTT 的 `SOC_VERSION`。

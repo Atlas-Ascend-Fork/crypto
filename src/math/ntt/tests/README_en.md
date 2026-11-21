@@ -20,7 +20,7 @@ Run all commands below from the repository root.
 ```bash
 cmake -S src/math/ntt -B build/ntt-host -DCANN_BUILD_TESTS=ON
 cmake --build build/ntt-host -j 4
-ctest --test-dir build/ntt-host -L host_ut --output-on-failure
+cmake -E chdir build/ntt-host ctest -L host_ut --output-on-failure
 ```
 
 The default configuration registers these three Host tests without CANN. Test configuration requires Python so a missing interpreter cannot silently omit two regression entry points.
@@ -46,7 +46,7 @@ cmake -S src/math/ntt -B build/ntt-kernel-ut \
   -DASCEND_CANN_PACKAGE_PATH="$ASCEND_HOME_PATH" \
   -DGTest_DIR="$PWD/build/gtest-abi0/install/lib/cmake/GTest"
 cmake --build build/ntt-kernel-ut -j 4
-ctest --test-dir build/ntt-kernel-ut -L kernel_ut --output-on-failure
+cmake -E chdir build/ntt-kernel-ut ctest -L kernel_ut --output-on-failure
 ```
 
 The target includes `op_kernel/ntt.cpp` directly, executes it through `ICPU_RUN_KF`, and compares its output against goldens from `scripts/gen_data.py`. The single CTest process has a 1800-second default timeout, configurable with `CANN_KERNEL_UT_TIMEOUT`. A Host build with `CANN_BUILD_CPU_DEBUG_TESTS` disabled does not establish that Kernel UT passed.
