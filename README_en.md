@@ -27,7 +27,7 @@ crypto is the cryptographic operator and algorithm library for [CANN](https://hi
 
 The project focuses on two scenarios that CPUs do not cover well: protecting data already resident on an NPU without moving it back to the host, and executing cryptographic workloads on an NPU when a CPU cannot handle the required scale.
 
-- The project plans to cover Chinese cryptographic algorithms (SM2, SM3, SM4, SM9, and ZUC) and widely used international algorithms (AES, ChaCha20, SHA-2/3, X25519, Ed25519, ML-KEM, and ML-DSA). The repository currently includes AES, Keccak-f, SHAKE, and NTT components. For other algorithms, refer to the corresponding source and component documentation; they should not be treated as delivered capabilities.
+- The project plans to cover Chinese cryptographic algorithms (SM2, SM3, SM4, SM9, and ZUC) and widely used international algorithms (AES, ChaCha20, SHA-2/3, X25519, Ed25519, ML-KEM, and ML-DSA). This working tree includes AES, Keccak-f, SHAKE, NTT, and [SM3](src/algorithms/hash/sm3/README_en.md). SM3 provides a native device-resident Kernel direct-call API. For other algorithms, refer to the corresponding source and component documentation; they should not be treated as delivered capabilities.
 - Designed for batch processing and device-resident data; Device Kernels are implemented in Ascend C.
 - Organized into three layers: mathematical engine, cryptographic primitives, and algorithm services. Lower-layer capabilities can be reused across algorithm families.
 
